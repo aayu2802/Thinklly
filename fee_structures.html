@@ -1,0 +1,432 @@
+{% extends 'akademi/elements/layouts/admin.html' %}
+	
+{% block additional_css %}
+<link href="{{ url_for('static', filename='akademi/vendor/datatables/css/jquery.dataTables.min.css') }}" rel="stylesheet">
+<link href="{{ url_for('static', filename='akademi/vendor/sweetalert2/dist/sweetalert2.min.css') }}" rel="stylesheet">
+<link href="{{ url_for('static', filename='akademi/vendor/toastr/css/toastr.min.css') }}" rel="stylesheet">
+<style>
+.badge-active {
+    background-color: #28a745;
+}
+.badge-inactive {
+    background-color: #6c757d;
+}
+.fee-component-row {
+    border-bottom: 1px solid #dee2e6;
+    padding: 10px 0;
+}
+.fee-component-row:last-child {
+    border-bottom: none;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!--**********************************
+    Content body start
+***********************************-->
+<div class="content-body">
+    <div class="container-fluid">   
+        <!-- Page Header -->
+        <div class="row">
+            <div class="col-xl-12">
+                <div class="page-title flex-wrap justify-content-between align-items-center">
+                    <div>
+                        <h4 class="mb-1">Fee Structures Management</h4>
+                        <p class="mb-0">Create and manage fee structures for different classes and sessions</p>
+                    </div>
+                    <div>
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addStructureModal">
+                            <i class="fas fa-plus me-2"></i>Add New Structure
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <!-- Filters Card -->
+        <div class="row mb-3">
+            <div class="col-xl-12">
+                <div class="card">
+                    <div class="card-body">
+                        <form method="GET" action="{{ url_for('school.fee_structures', tenant_slug=school.slug) }}">
+                            <div class="row align-items-end">
+                                <div class="col-md-4">
+                                    <label for="filter_session" class="form-label">Filter by Session</label>
+                                    <select class="form-control" id="filter_session" name="session_id">
+                                        <option value="">-- All Sessions --</option>
+                                        {% for session in sessions %}
+                                        <option value="{{ session.id }}" {% if selected_session == session.id %}selected{% endif %}>
+                                            {{ session.session_name }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="filter_class" class="form-label">Filter by Class</label>
+                                    <select class="form-control" id="filter_class" name="class_id">
+                                        <option value="">-- All Classes --</option>
+                                        {% for class in classes %}
+                                        <option value="{{ class.id }}" {% if selected_class == class.id %}selected{% endif %}>
+                                            {{ class.class_name }}-{{ class.section }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-filter me-1"></i>Apply Filter
+                                    </button>
+                                    <a href="{{ url_for('school.fee_structures', tenant_slug=school.slug) }}" class="btn btn-secondary">
+                                        <i class="fas fa-times me-1"></i>Clear
+                                    </a>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Structures Table Card -->
+        <div class="row">
+            <div class="col-xl-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title">
+                            <i class="fas fa-list me-2"></i>Fee Structures ({{ structures|length }})
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover table-striped" id="structuresTable">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Structure Name</th>
+                                        <th>Session</th>
+                                        <th>Class</th>
+                                        <th>Valid Period</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for struct in structures %}
+                                    <tr>
+                                        <td>{{ loop.index }}</td>
+                                        <td>
+                                            <strong>{{ struct.structure_name }}</strong>
+                                            {% if struct.description %}
+                                            <br><small class="text-muted">{{ struct.description[:50] }}...</small>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-info">{{ struct.session.session_name }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-primary">{{ struct.student_class.class_name }}-{{ struct.student_class.section }}</span>
+                                        </td>
+                                        <td>
+                                            <small>
+                                                {{ struct.valid_from.strftime('%d-%b-%Y') }}
+                                                {% if struct.valid_to %}
+                                                to {{ struct.valid_to.strftime('%d-%b-%Y') }}
+                                                {% endif %}
+                                            </small>
+                                        </td>
+                                        <td>
+                                            <span class="badge badge-{{ 'active' if struct.is_active else 'inactive' }}">
+                                                {{ 'Active' if struct.is_active else 'Inactive' }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <button type="button" class="btn btn-sm btn-info" 
+                                                    onclick="viewStructure({{ struct.id }})">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                                <a href="{{ url_for('school.assign_fee_structure', tenant_slug=school.slug, structure_id=struct.id) }}" 
+                                                    class="btn btn-sm btn-success">
+                                                    <i class="fas fa-user-plus"></i>
+                                                </a>
+                                                <form method="POST" action="{{ url_for('school.delete_fee_structure', tenant_slug=school.slug, structure_id=struct.id) }}" class="d-inline-flex m-0 p-0 align-items-stretch" style="border:0;" onsubmit="return confirm('Are you sure you want to delete this fee structure? This cannot be undone.');">
+                                                    <button type="submit" class="btn btn-sm btn-danger" style="border-left:none; border-radius:0 .25rem .25rem 0;">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% else %}
+                                    <tr>
+                                        <td colspan="7" class="text-center text-muted">
+                                            <i class="fas fa-inbox fa-3x mb-3"></i>
+                                            <p>No fee structures found. Click "Add New Structure" to create one.</p>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<!--**********************************
+    Content body end
+***********************************-->
+
+<!-- Add Structure Modal -->
+<div class="modal fade" id="addStructureModal" tabindex="-1" aria-labelledby="addStructureModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <form method="POST" action="{{ url_for('school.add_fee_structure', tenant_slug=school.slug) }}" id="addStructureForm">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addStructureModalLabel">
+                        <i class="fas fa-plus-circle me-2"></i>Create New Fee Structure
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label for="structure_name" class="form-label">Structure Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="structure_name" name="structure_name" required 
+                                placeholder="e.g., Class 10-A Annual Fee 2024-25">
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="session_id" class="form-label">Academic Session <span class="text-danger">*</span></label>
+                            <select class="form-control" id="session_id" name="session_id" required>
+                                <option value="">-- Select Session --</option>
+                                {% for session in sessions %}
+                                <option value="{{ session.id }}">{{ session.session_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="class_id" class="form-label">Class <span class="text-danger">*</span></label>
+                            <select class="form-control" id="class_id" name="class_id" required>
+                                <option value="">-- Select Class --</option>
+                                {% for class in classes %}
+                                <option value="{{ class.id }}">{{ class.class_name }}-{{ class.section }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="valid_from" class="form-label">Valid From <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" id="valid_from" name="valid_from" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="valid_to" class="form-label">Valid To</label>
+                            <input type="date" class="form-control" id="valid_to" name="valid_to">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="2" 
+                            placeholder="Brief description of this fee structure"></textarea>
+                    </div>
+                    
+                    <hr>
+                    
+                    <h6 class="mb-3">Fee Components</h6>
+                    <div id="feeComponentsContainer">
+                        <!-- Fee components will be added here -->
+                        <div class="fee-component-row" data-index="0">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <label class="form-label">Fee Category <span class="text-danger">*</span></label>
+                                    <select class="form-control" name="category_id[]" required>
+                                        <option value="">-- Select Category --</option>
+                                        {% for cat in categories %}
+                                        <option value="{{ cat.id }}">{{ cat.category_name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Amount (₹) <span class="text-danger">*</span></label>
+                                    <input type="number" class="form-control" name="amount[]" step="0.01" min="0" required>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Due Date</label>
+                                    <input type="date" class="form-control" name="due_date[]">
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">Installment #</label>
+                                    <input type="number" class="form-control" name="installment_number[]" value="1" min="1">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <button type="button" class="btn btn-sm btn-secondary" onclick="addFeeComponent()">
+                            <i class="fas fa-plus me-1"></i>Add More Components
+                        </button>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i>Create Structure
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- View Structure Modal -->
+<div class="modal fade" id="viewStructureModal" tabindex="-1" aria-labelledby="viewStructureModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewStructureModalLabel">
+                    <i class="fas fa-eye me-2"></i>Fee Structure Details
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="structureDetailsContent">
+                <div class="text-center">
+                    <i class="fas fa-spinner fa-spin fa-3x"></i>
+                    <p class="mt-2">Loading structure details...</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>Close
+                </button>
+                <a href="#" id="assignStructureBtn" class="btn btn-success">
+                    <i class="fas fa-user-plus me-1"></i>Assign to Students
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block additional_js %}
+<script src="{{ url_for('static', filename='akademi/vendor/datatables/js/jquery.dataTables.min.js') }}"></script>
+<script src="{{ url_for('static', filename='akademi/vendor/sweetalert2/dist/sweetalert2.min.js') }}"></script>
+<script src="{{ url_for('static', filename='akademi/vendor/toastr/js/toastr.min.js') }}"></script>
+
+<script>
+let componentIndex = 1;
+
+$(document).ready(function() {
+    // Initialize DataTable
+    $('#structuresTable').DataTable({
+        "order": [[ 0, "desc" ]],
+        "pageLength": 25,
+        "language": {
+            "search": "Search structures:",
+            "lengthMenu": "Show _MENU_ structures per page",
+            "info": "Showing _START_ to _END_ of _TOTAL_ structures",
+            "infoEmpty": "No structures available",
+            "emptyTable": "No fee structures found",
+            "zeroRecords": "No matching structures found"
+        }
+    });
+
+    // Auto-dismiss alerts
+    setTimeout(function() {
+        $('.alert').fadeOut('slow');
+    }, 5000);
+});
+
+// Add fee component
+function addFeeComponent() {
+    const container = $('#feeComponentsContainer');
+    const newComponent = `
+        <div class="fee-component-row" data-index="${componentIndex}">
+            <div class="row">
+                <div class="col-md-4">
+                    <label class="form-label">Fee Category <span class="text-danger">*</span></label>
+                    <select class="form-control" name="category_id[]" required>
+                        <option value="">-- Select Category --</option>
+                        {% for cat in categories %}
+                        <option value="{{ cat.id }}">{{ cat.category_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Amount (₹) <span class="text-danger">*</span></label>
+                    <input type="number" class="form-control" name="amount[]" step="0.01" min="0" required>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Due Date</label>
+                    <input type="date" class="form-control" name="due_date[]">
+                </div>
+                <div class="col-md-1">
+                    <label class="form-label">Inst. #</label>
+                    <input type="number" class="form-control" name="installment_number[]" value="1" min="1">
+                </div>
+                <div class="col-md-1">
+                    <label class="form-label">&nbsp;</label>
+                    <button type="button" class="btn btn-danger btn-sm w-100" onclick="removeFeeComponent(${componentIndex})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    container.append(newComponent);
+    componentIndex++;
+}
+
+// Remove fee component
+function removeFeeComponent(index) {
+    $(`.fee-component-row[data-index="${index}"]`).remove();
+}
+
+// View structure details
+function viewStructure(structureId) {
+    $('#viewStructureModal').modal('show');
+    $('#structureDetailsContent').html('<div class="text-center"><i class="fas fa-spinner fa-spin fa-3x"></i><p class="mt-2">Loading...</p></div>');
+    
+    // Update assign button link
+    const assignUrl = "{{ url_for('school.assign_fee_structure', tenant_slug=school.slug, structure_id=0) }}".replace('0', structureId);
+    $('#assignStructureBtn').attr('href', assignUrl);
+    
+    // Fetch structure details via AJAX
+    fetch("{{ url_for('school.view_fee_structure', tenant_slug=school.slug, structure_id=0) }}".replace('0', structureId))
+        .then(response => response.text())
+        .then(html => {
+            // Extract just the content we need from the full page
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const content = doc.querySelector('.content-body') || doc.body;
+            $('#structureDetailsContent').html(content.innerHTML);
+        })
+        .catch(error => {
+            $('#structureDetailsContent').html('<div class="alert alert-danger">Error loading structure details</div>');
+        });
+}
+</script>
+{% endblock %}

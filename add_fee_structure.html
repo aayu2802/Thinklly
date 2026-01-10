@@ -1,0 +1,306 @@
+{% extends 'akademi/elements/layouts/admin.html' %}
+	
+{% block additional_css %}
+<style>
+.fee-component-row {
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    background-color: #f8f9fa;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!--**********************************
+    Content body start
+***********************************-->
+<div class="content-body">
+    <div class="container-fluid">   
+        <!-- Page Header -->
+        <div class="row">
+            <div class="col-xl-12">
+                <div class="page-title flex-wrap justify-content-between align-items-center">
+                    <div>
+                        <h4 class="mb-1">Add New Fee Structure</h4>
+                        <p class="mb-0">Create a new fee structure for a class and session</p>
+                    </div>
+                    <div>
+                        <a href="{{ url_for('school.fee_structures', tenant_slug=school.slug) }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Back to List
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+                <!-- DEBUG: show categories passed to template -->
+                <div class="mb-3">
+                        <div class="alert alert-secondary">
+                                <strong>Debug:</strong> categories count = {{ categories|length if categories is not none else 'None' }}
+                                <div class="small mt-1">
+                                        {% if categories %}
+                                                {% for c in categories %}
+                                                        {{ c.id }}: {{ c.category_name }} (active={{ c.is_active }}){% if not loop.last %}, {% endif %}
+                                                {% endfor %}
+                                        {% else %}
+                                                No categories object or list is empty.
+                                        {% endif %}
+                                </div>
+                        </div>
+                </div>
+
+        <!-- Form Card -->
+        <div class="row">
+            <div class="col-xl-12">
+                <div class="card">
+                    <div class="card-body">
+                        <form method="POST" id="addStructureForm">
+                            <!-- Basic Information -->
+                            <h5 class="mb-3"><i class="fas fa-info-circle me-2"></i>Basic Information</h5>
+                            
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label for="structure_name" class="form-label">Structure Name <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="structure_name" name="structure_name" required 
+                                        placeholder="e.g., Class 10-A Annual Fee 2024-25">
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="session_id" class="form-label">Academic Session <span class="text-danger">*</span></label>
+                                    <select class="form-control" id="session_id" name="session_id" required>
+                                        <option value="">-- Select Session --</option>
+                                        {% for session in sessions %}
+                                        <option value="{{ session.id }}">{{ session.session_name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="class_id" class="form-label">Class <span class="text-danger">*</span></label>
+                                    <select class="form-control" id="class_id" name="class_id" required>
+                                        <option value="">-- Select Class --</option>
+                                        {% for class in classes %}
+                                        <option value="{{ class.id }}">{{ class.class_name }}-{{ class.section }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="valid_from" class="form-label">Valid From <span class="text-danger">*</span></label>
+                                    <input type="date" class="form-control" id="valid_from" name="valid_from" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="valid_to" class="form-label">Valid To</label>
+                                    <input type="date" class="form-control" id="valid_to" name="valid_to">
+                                    <small class="form-text text-muted">Leave empty if no end date</small>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="description" class="form-label">Description</label>
+                                <textarea class="form-control" id="description" name="description" rows="3" 
+                                    placeholder="Brief description of this fee structure"></textarea>
+                            </div>
+                            
+                            <hr class="my-4">
+                            
+                            <!-- Fee Components -->
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="mb-0"><i class="fas fa-list-alt me-2"></i>Fee Components</h5>
+                                <button type="button" class="btn btn-sm btn-primary" onclick="addFeeComponent()">
+                                    <i class="fas fa-plus me-1"></i>Add Component
+                                </button>
+                            </div>
+                            
+                            <div id="feeComponentsContainer">
+                                <!-- Initial component -->
+                                <div class="fee-component-row" data-index="0">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <strong>Component #1</strong>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <label class="form-label">Fee Category <span class="text-danger">*</span></label>
+                                            {% if categories and categories|length > 0 %}
+                                            <select class="form-control" name="category_id[]" required>
+                                                <option value="">-- Select Category --</option>
+                                                {% for cat in categories %}
+                                                <option value="{{ cat.id }}">{{ cat.category_name }}</option>
+                                                {% endfor %}
+                                            </select>
+                                            {% else %}
+                                            <select class="form-control" name="category_id[]" disabled>
+                                                <option value="">No active fee categories. Add one first.</option>
+                                            </select>
+                                            <div class="small text-muted mt-1">No categories available. <a href="{{ url_for('school.add_fee_category', tenant_slug=school.slug) }}">Add a fee category</a></div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label">Amount (₹) <span class="text-danger">*</span></label>
+                                            <input type="number" class="form-control amount-input" name="amount[]" 
+                                                step="0.01" min="0" required onchange="updateTotalAmount()">
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label">Due Date</label>
+                                            <input type="date" class="form-control" name="due_date[]">
+                                        </div>
+                                        <div class="col-md-2">
+                                            <label class="form-label">Installment #</label>
+                                            <input type="number" class="form-control" name="installment_number[]" 
+                                                value="1" min="1">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Total Amount Display -->
+                            <div class="alert alert-info mt-3">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <strong><i class="fas fa-calculator me-2"></i>Total Structure Amount:</strong>
+                                    </div>
+                                    <div class="col-md-6 text-end">
+                                        <h5 class="mb-0 text-primary">₹ <span id="totalAmount">0.00</span></h5>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <hr class="my-4">
+                            
+                            <!-- Submit Buttons -->
+                            <div class="d-flex justify-content-end gap-2">
+                                <a href="{{ url_for('school.fee_structures', tenant_slug=school.slug) }}" 
+                                    class="btn btn-secondary">
+                                    <i class="fas fa-times me-2"></i>Cancel
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-2"></i>Create Fee Structure
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<!--**********************************
+    Content body end
+***********************************-->
+{% endblock %}
+
+{% block additional_js %}
+<script>
+let componentIndex = 1;
+
+// Add fee component
+function addFeeComponent() {
+    componentIndex++;
+    const container = $('#feeComponentsContainer');
+    const newComponent = `
+        <div class="fee-component-row" data-index="${componentIndex}">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <strong>Component #${componentIndex}</strong>
+                <button type="button" class="btn btn-sm btn-danger" onclick="removeFeeComponent(${componentIndex})">
+                    <i class="fas fa-trash"></i> Remove
+                </button>
+            </div>
+            <div class="row">
+                <div class="col-md-4">
+                    <label class="form-label">Fee Category <span class="text-danger">*</span></label>
+                    {% if categories and categories|length > 0 %}
+                    <select class="form-control" name="category_id[]" required>
+                        <option value="">-- Select Category --</option>
+                        {% for cat in categories %}
+                        <option value="{{ cat.id }}">{{ cat.category_name }}</option>
+                        {% endfor %}
+                    </select>
+                    {% else %}
+                    <select class="form-control" name="category_id[]" disabled>
+                        <option value="">No active fee categories</option>
+                    </select>
+                    {% endif %}
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Amount (₹) <span class="text-danger">*</span></label>
+                    <input type="number" class="form-control amount-input" name="amount[]" 
+                        step="0.01" min="0" required onchange="updateTotalAmount()">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Due Date</label>
+                    <input type="date" class="form-control" name="due_date[]">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Installment #</label>
+                    <input type="number" class="form-control" name="installment_number[]" 
+                        value="1" min="1">
+                </div>
+            </div>
+        </div>
+    `;
+    container.append(newComponent);
+}
+
+// Remove fee component
+function removeFeeComponent(index) {
+    if ($('.fee-component-row').length <= 1) {
+        alert('At least one fee component is required.');
+        return;
+    }
+    $(`.fee-component-row[data-index="${index}"]`).remove();
+    updateTotalAmount();
+}
+
+// Update total amount
+function updateTotalAmount() {
+    let total = 0;
+    $('.amount-input').each(function() {
+        const val = parseFloat($(this).val()) || 0;
+        total += val;
+    });
+    $('#totalAmount').text(total.toFixed(2));
+}
+
+// Form validation
+$('#addStructureForm').on('submit', function(e) {
+    const componentsCount = $('.fee-component-row').length;
+    if (componentsCount === 0) {
+        e.preventDefault();
+        alert('Please add at least one fee component.');
+        return false;
+    }
+    
+    const total = parseFloat($('#totalAmount').text());
+    if (total <= 0) {
+        e.preventDefault();
+        alert('Total fee amount must be greater than zero.');
+        return false;
+    }
+    
+    return confirm('Are you sure you want to create this fee structure?');
+});
+
+// Initialize
+$(document).ready(function() {
+    updateTotalAmount();
+});
+</script>
+{% endblock %}

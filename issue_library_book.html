@@ -1,0 +1,144 @@
+{% extends 'akademi/elements/layouts/admin.html' %}
+
+{% block title %}Issue Book - Library{% endblock %}
+
+{% block content %}
+<!--**********************************
+    Content body start
+***********************************-->
+<div class="content-body">
+<div class="container-fluid">
+    <div class="page-header">
+        <h2><i class="bi bi-arrow-right-square"></i> Issue Book to Student</h2>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('school.dashboard', tenant_slug=tenant_slug) }}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('school.library_dashboard', tenant_slug=tenant_slug) }}">Library</a></li>
+                <li class="breadcrumb-item active">Issue Book</li>
+            </ol>
+        </nav>
+    </div>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Issue Details</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('school.issue_library_book', tenant_slug=tenant_slug) }}">
+                        <div class="mb-3">
+                            <label for="student_id" class="form-label">Select Student <span class="text-danger">*</span></label>
+                            <select class="form-select" id="student_id" name="student_id" required>
+                                <option value="">Choose student...</option>
+                                {% for student in students %}
+                                <option value="{{ student.id }}">
+                                    {{ student.full_name }} - {{ student.admission_number }} 
+                                    {% if student.student_class %}(Class: {{ student.student_class.class_name }}-{{ student.student_class.section }}){% endif %}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="book_id" class="form-label">Select Book <span class="text-danger">*</span></label>
+                            <select class="form-select" id="book_id" name="book_id" required>
+                                <option value="">Choose book...</option>
+                                {% for book in books %}
+                                <option value="{{ book.id }}">
+                                    {{ book.title }} by {{ book.author }} ({{ book.accession_number }}) - Available: {{ book.available_copies }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="due_date" class="form-label">Due Date <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" id="due_date" name="due_date" 
+                                   value="{{ default_due_date }}" required>
+                            <small class="text-muted">Default: {{ issue_duration_days }} days from issue date. You can change this for specific students.</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="remarks" class="form-label">Remarks (Optional)</label>
+                            <textarea class="form-control" id="remarks" name="remarks" rows="2"></textarea>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-check-circle"></i> Issue Book
+                            </button>
+                            <a href="{{ url_for('school.library_issued_books', tenant_slug=tenant_slug) }}" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="bi bi-info-circle"></i> Information</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Issue Rules:</strong></p>
+                    <ul>
+                        <li>Students can borrow a limited number of books</li>
+                        <li>Default issue duration is {{ issue_duration_days }} days</li>
+                        <li>Due date can be customized for individual students</li>
+                        <li>Students with unpaid fines cannot issue books</li>
+                        <li>Book availability is checked automatically</li>
+                    </ul>
+                    <hr>
+                    <p class="mb-0">
+                        <a href="{{ url_for('school.library_settings', tenant_slug=tenant_slug) }}" class="text-decoration-none">
+                            <i class="bi bi-gear"></i> Modify Settings
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+<!--**********************************
+    Content body end
+***********************************-->
+
+<script>
+// Add search functionality to select dropdowns
+document.addEventListener('DOMContentLoaded', function() {
+    const studentSelect = document.getElementById('student_id');
+    const bookSelect = document.getElementById('book_id');
+    
+    // Simple filter on keyup
+    function filterSelect(selectElement) {
+        const filter = selectElement.value.toUpperCase();
+        const options = selectElement.options;
+        
+        for (let i = 1; i < options.length; i++) {
+            const txtValue = options[i].textContent || options[i].innerText;
+            if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                options[i].style.display = "";
+            } else {
+                options[i].style.display = "none";
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

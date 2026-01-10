@@ -1,0 +1,835 @@
+{% extends 'akademi/elements/layouts/admin.html' %}
+	
+{% block additional_css %}
+<link href="{{ url_for('static', filename='akademi/vendor/datatables/css/jquery.dataTables.min.css') }}" rel="stylesheet">
+<style>
+.defaulter-summary-card {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    color: white;
+    border-radius: 10px;
+    padding: 25px;
+    margin-bottom: 25px;
+    box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+}
+
+.defaulter-summary-card .icon-box {
+    width: 70px;
+    height: 70px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+}
+
+.summary-amount {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin: 10px 0;
+}
+
+.summary-label {
+    font-size: 1rem;
+    opacity: 0.95;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.filter-card {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 25px;
+    border: 1px solid #dee2e6;
+}
+
+.overdue-critical {
+    background-color: #ffe5e5 !important;
+}
+
+.overdue-warning {
+    background-color: #fff8e5 !important;
+}
+
+.overdue-badge-critical {
+    background: linear-gradient(135deg, #dc3545 0%, #9b1d2a 100%);
+    color: white;
+    font-weight: bold;
+    padding: 0.5em 0.8em;
+    border-radius: 20px;
+}
+
+.overdue-badge-high {
+    background: linear-gradient(135deg, #fd7e14 0%, #e83e8c 100%);
+    color: white;
+    font-weight: bold;
+    padding: 0.5em 0.8em;
+    border-radius: 20px;
+}
+
+.overdue-badge-medium {
+    background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+    color: white;
+    font-weight: bold;
+    padding: 0.5em 0.8em;
+    border-radius: 20px;
+}
+
+.overdue-badge-low {
+    background: linear-gradient(135deg, #17a2b8 0%, #00d4ff 100%);
+    color: white;
+    font-weight: bold;
+    padding: 0.5em 0.8em;
+    border-radius: 20px;
+}
+
+.table-defaulters thead {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    color: white;
+}
+
+.table-defaulters th {
+    border: none;
+    padding: 15px;
+    font-weight: 600;
+    vertical-align: middle;
+}
+
+.table-defaulters td {
+    padding: 12px 15px;
+    vertical-align: middle;
+}
+
+.table-defaulters tbody tr:hover {
+    background-color: #f8f9fa;
+    cursor: pointer;
+}
+
+.contact-info {
+    font-size: 0.85rem;
+    color: #6c757d;
+}
+
+.contact-info i {
+    margin-right: 5px;
+}
+
+.action-btn-group {
+    display: flex;
+    gap: 5px;
+}
+
+.quick-filter-btn {
+    transition: all 0.3s;
+}
+
+.quick-filter-btn.active {
+    background: #dc3545 !important;
+    color: white !important;
+    border-color: #dc3545 !important;
+}
+
+.bulk-action-panel {
+    background: #fff3cd;
+    border: 2px solid #ffc107;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 20px;
+    display: none;
+}
+
+.bulk-action-panel.show {
+    display: block;
+}
+
+.student-checkbox {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+@media print {
+    .no-print {
+        display: none !important;
+    }
+    .table-defaulters {
+        font-size: 0.85rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!--**********************************
+    Content body start
+***********************************-->
+<div class="content-body">
+    <div class="container-fluid">   
+        <!-- Page Header -->
+        <div class="row no-print">
+            <div class="col-xl-12">
+                <div class="page-title flex-wrap justify-content-between align-items-center">
+                    <div>
+                        <h4 class="mb-1"><i class="fas fa-user-times me-2"></i>Fee Defaulters Report</h4>
+                        <p class="mb-0">List of students with overdue fees requiring immediate attention</p>
+                    </div>
+                    <div>
+                        <button class="btn btn-warning me-2" onclick="sendBulkReminders()" id="bulkReminderBtn" disabled>
+                            <i class="fas fa-sms me-2"></i>Send Bulk SMS Reminder
+                        </button>
+                        <button class="btn btn-success me-2" onclick="exportToExcel()">
+                            <i class="fas fa-file-excel me-2"></i>Export to Excel
+                        </button>
+                        <button class="btn btn-danger me-2" onclick="exportToPDF()">
+                            <i class="fas fa-file-pdf me-2"></i>Export to PDF
+                        </button>
+                        <button class="btn btn-info" onclick="window.print()">
+                            <i class="fas fa-print me-2"></i>Print
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="row">
+            <div class="col-xl-6">
+                <div class="defaulter-summary-card">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-box me-4">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div>
+                            <div class="summary-label">Total Defaulters</div>
+                            <div class="summary-amount">{{ defaulters|length }}</div>
+                            <small>Students with overdue fees</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-6">
+                <div class="defaulter-summary-card">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-box me-4">
+                            <i class="fas fa-rupee-sign"></i>
+                        </div>
+                        <div>
+                            <div class="summary-label">Total Outstanding</div>
+                            <div class="summary-amount" id="totalOutstanding">₹ 0.00</div>
+                            <small>Total amount pending from defaulters</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="row no-print">
+            <div class="col-xl-12">
+                <div class="filter-card">
+                    <form method="GET" id="filterForm">
+                        <div class="row align-items-end">
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold">Academic Session</label>
+                                <select class="form-control" name="session_id" required>
+                                    <option value="">-- Select Session --</option>
+                                    {% for session in sessions %}
+                                    <option value="{{ session.id }}" {% if selected_session == session.id %}selected{% endif %}>
+                                        {{ session.session_name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold">Minimum Days Overdue</label>
+                                <select class="form-control" name="days_overdue">
+                                    <option value="0" {% if days_overdue == 0 %}selected{% endif %}>All Overdue (0+ days)</option>
+                                    <option value="7" {% if days_overdue == 7 %}selected{% endif %}>7+ days</option>
+                                    <option value="15" {% if days_overdue == 15 %}selected{% endif %}>15+ days</option>
+                                    <option value="30" {% if days_overdue == 30 %}selected{% endif %}>30+ days</option>
+                                    <option value="60" {% if days_overdue == 60 %}selected{% endif %}>60+ days</option>
+                                    <option value="90" {% if days_overdue == 90 %}selected{% endif %}>90+ days</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fas fa-filter me-1"></i>Apply Filter
+                                </button>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Quick Filters:</label>
+                                <div class="btn-group w-100" role="group">
+                                    <button type="button" class="btn btn-outline-danger btn-sm quick-filter-btn" onclick="applyQuickFilter(0)">
+                                        All
+                                    </button>
+                                    <button type="button" class="btn btn-outline-danger btn-sm quick-filter-btn" onclick="applyQuickFilter(7)">
+                                        7+ Days
+                                    </button>
+                                    <button type="button" class="btn btn-outline-danger btn-sm quick-filter-btn" onclick="applyQuickFilter(30)">
+                                        30+ Days
+                                    </button>
+                                    <button type="button" class="btn btn-outline-danger btn-sm quick-filter-btn" onclick="applyQuickFilter(60)">
+                                        Critical (60+)
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bulk Action Panel -->
+        <div class="bulk-action-panel" id="bulkActionPanel">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong><span id="selectedCount">0</span> student(s) selected</strong>
+                </div>
+                <div>
+                    <button class="btn btn-sm btn-warning me-2" onclick="sendBulkReminders()">
+                        <i class="fas fa-sms me-1"></i>Send Reminders
+                    </button>
+                    <button class="btn btn-sm btn-secondary" onclick="clearSelection()">
+                        <i class="fas fa-times me-1"></i>Clear Selection
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Defaulters Table -->
+        <div class="row">
+            <div class="col-xl-12">
+                <div class="card">
+                    <div class="card-header bg-danger text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-list me-2"></i>Defaulters List
+                            {% if days_overdue > 0 %}
+                            <span class="badge bg-light text-danger ms-2">{{ days_overdue }}+ Days Overdue</span>
+                            {% endif %}
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        {% if defaulters %}
+                        <div class="table-responsive">
+                            <table class="table table-defaulters table-hover" id="defaultersTable">
+                                <thead>
+                                    <tr>
+                                        <th class="no-print">
+                                            <input type="checkbox" id="selectAll" class="student-checkbox" onchange="toggleSelectAll(this)">
+                                        </th>
+                                        <th>#</th>
+                                        <th>Student Name</th>
+                                        <th>Admission No</th>
+                                        <th>Class</th>
+                                        <th>Guardian Contact</th>
+                                        <th>Due Date</th>
+                                        <th>Days Overdue</th>
+                                        <th>Total Amount</th>
+                                        <th>Paid Amount</th>
+                                        <th>Outstanding</th>
+                                        <th>Status</th>
+                                        <th class="no-print">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for defaulter in defaulters %}
+                                    <tr class="{% if defaulter.days_overdue >= 60 %}overdue-critical{% elif defaulter.days_overdue >= 30 %}overdue-warning{% endif %}"
+                                        data-student-fee-id="{{ defaulter.student_fee_id }}"
+                                        data-outstanding="{{ defaulter.outstanding }}">
+                                        <td class="no-print">
+                                            <input type="checkbox" class="student-checkbox student-select" 
+                                                value="{{ defaulter.student_fee_id }}" 
+                                                data-phone="{{ defaulter.guardian_phone if defaulter.guardian_phone else '' }}"
+                                                data-name="{{ defaulter.student_name }}"
+                                                onchange="updateSelection()">
+                                        </td>
+                                        <td>{{ loop.index }}</td>
+                                        <td>
+                                            <strong>{{ defaulter.student_name }}</strong>
+                                            {% if defaulter.days_overdue >= 60 %}
+                                            <br><span class="badge bg-danger"><i class="fas fa-exclamation-triangle"></i> Critical</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ defaulter.admission_number }}</td>
+                                        <td>
+                                            <span class="badge bg-primary">{{ defaulter.class_name }}</span>
+                                        </td>
+                                        <td>
+                                            {% if defaulter.guardian_phone %}
+                                            <div class="contact-info">
+                                                <i class="fas fa-phone"></i>{{ defaulter.guardian_phone }}
+                                            </div>
+                                            {% if defaulter.guardian_email %}
+                                            <div class="contact-info">
+                                                <i class="fas fa-envelope"></i>{{ defaulter.guardian_email }}
+                                            </div>
+                                            {% endif %}
+                                            {% else %}
+                                            <span class="text-muted">N/A</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if defaulter.due_date %}
+                                            {{ defaulter.due_date }}
+                                            {% else %}
+                                            <span class="text-muted">N/A</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if defaulter.days_overdue >= 60 %}
+                                            <span class="overdue-badge-critical">
+                                                <i class="fas fa-fire"></i> {{ defaulter.days_overdue }} days
+                                            </span>
+                                            {% elif defaulter.days_overdue >= 30 %}
+                                            <span class="overdue-badge-high">
+                                                {{ defaulter.days_overdue }} days
+                                            </span>
+                                            {% elif defaulter.days_overdue >= 15 %}
+                                            <span class="overdue-badge-medium">
+                                                {{ defaulter.days_overdue }} days
+                                            </span>
+                                            {% else %}
+                                            <span class="overdue-badge-low">
+                                                {{ defaulter.days_overdue }} days
+                                            </span>
+                                            {% endif %}
+                                        </td>
+                                        <td>₹{{ "{:,.2f}".format(defaulter.total_amount) }}</td>
+                                        <td class="text-success">₹{{ "{:,.2f}".format(defaulter.paid_amount) }}</td>
+                                        <td class="text-danger fw-bold">₹{{ "{:,.2f}".format(defaulter.outstanding) }}</td>
+                                        <td>
+                                            {% if defaulter.status == 'Overdue' %}
+                                            <span class="badge bg-danger">{{ defaulter.status }}</span>
+                                            {% elif defaulter.status == 'Partially Paid' %}
+                                            <span class="badge bg-warning">{{ defaulter.status }}</span>
+                                            {% else %}
+                                            <span class="badge bg-secondary">{{ defaulter.status }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="no-print">
+                                            <div class="action-btn-group">
+                                                <a href="{{ url_for('school.view_student_fee', tenant_slug=school.slug, student_fee_id=defaulter.student_fee_id) }}" 
+                                                    class="btn btn-sm btn-primary" title="View Fee Details">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                {% if defaulter.guardian_phone %}
+                                                <button class="btn btn-sm btn-warning" title="Send SMS Reminder" 
+                                                    onclick="sendReminder('{{ defaulter.student_fee_id }}', '{{ defaulter.guardian_phone }}', '{{ defaulter.student_name }}')">
+                                                    <i class="fas fa-sms"></i>
+                                                </button>
+                                                {% endif %}
+                                                <a href="{{ url_for('school.pay_student_fee', tenant_slug=school.slug, student_fee_id=defaulter.student_fee_id) }}" 
+                                                    class="btn btn-sm btn-success" title="Make Payment">
+                                                    <i class="fas fa-money-bill"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                                <tfoot class="table-light">
+                                    <tr class="fw-bold">
+                                        <td colspan="8" class="text-end">Totals:</td>
+                                        <td id="footerTotal">₹ 0.00</td>
+                                        <td id="footerPaid">₹ 0.00</td>
+                                        <td id="footerOutstanding">₹ 0.00</td>
+                                        <td colspan="2"></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-check-circle fa-5x text-success mb-3"></i>
+                            <h4 class="text-success">No Defaulters Found!</h4>
+                            <p class="text-muted">
+                                {% if days_overdue > 0 %}
+                                All students have either paid or are not overdue by {{ days_overdue }}+ days.
+                                {% else %}
+                                All students have paid their fees on time or are not yet overdue.
+                                {% endif %}
+                            </p>
+                            {% if selected_session %}
+                            <a href="{{ url_for('school.manage_student_fees', tenant_slug=school.slug, session_id=selected_session) }}" 
+                                class="btn btn-primary mt-3">
+                                <i class="fas fa-list me-2"></i>View All Student Fees
+                            </a>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Cards (if defaulters exist) -->
+        {% if defaulters %}
+        <div class="row mt-4">
+            <div class="col-xl-3 col-md-6">
+                <div class="card border-danger">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-fire fa-2x text-danger"></i>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h6 class="mb-0 text-muted">Critical (60+ days)</h6>
+                                <h4 class="mb-0 text-danger" id="criticalCount">0</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="card border-warning">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-exclamation-triangle fa-2x text-warning"></i>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h6 class="mb-0 text-muted">High (30-59 days)</h6>
+                                <h4 class="mb-0 text-warning" id="highCount">0</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="card border-info">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-clock fa-2x text-info"></i>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h6 class="mb-0 text-muted">Medium (15-29 days)</h6>
+                                <h4 class="mb-0 text-info" id="mediumCount">0</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="card border-secondary">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-hourglass-half fa-2x text-secondary"></i>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h6 class="mb-0 text-muted">Low (0-14 days)</h6>
+                                <h4 class="mb-0 text-secondary" id="lowCount">0</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+</div>
+<!--**********************************
+    Content body end
+***********************************-->
+{% endblock %}
+
+{% block additional_js %}
+<script src="{{ url_for('static', filename='akademi/vendor/datatables/js/jquery.dataTables.min.js') }}"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+
+<script>
+let selectedStudents = [];
+
+// Initialize DataTable
+{% if defaulters %}
+$(document).ready(function() {
+    $('#defaultersTable').DataTable({
+        "order": [[ 7, "desc" ]], // Sort by Days Overdue descending
+        "pageLength": 50,
+        "language": {
+            "search": "Search defaulters:",
+            "lengthMenu": "Show _MENU_ defaulters per page",
+            "info": "Showing _START_ to _END_ of _TOTAL_ defaulters",
+            "infoEmpty": "No defaulters available",
+            "emptyTable": "No defaulters found",
+            "zeroRecords": "No matching defaulters found"
+        },
+        "columnDefs": [
+            { "orderable": false, "targets": [0, 12] } // Checkbox and actions columns not sortable
+        ]
+    });
+
+    // Calculate totals and statistics
+    calculateTotals();
+    calculateStatistics();
+
+    // Highlight active quick filter
+    const currentDaysOverdue = {{ days_overdue }};
+    $('.quick-filter-btn').each(function() {
+        if ($(this).attr('onclick').includes(`(${currentDaysOverdue})`)) {
+            $(this).addClass('active');
+        }
+    });
+});
+
+// Calculate totals
+function calculateTotals() {
+    let totalAmount = 0;
+    let paidAmount = 0;
+    let outstanding = 0;
+
+    $('#defaultersTable tbody tr').each(function() {
+        const outstandingVal = parseFloat($(this).data('outstanding')) || 0;
+        outstanding += outstandingVal;
+
+        const cells = $(this).find('td');
+        totalAmount += parseFloat(cells.eq(8).text().replace(/[₹,]/g, '')) || 0;
+        paidAmount += parseFloat(cells.eq(9).text().replace(/[₹,]/g, '')) || 0;
+    });
+
+    $('#footerTotal').text('₹' + totalAmount.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,'));
+    $('#footerPaid').text('₹' + paidAmount.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,'));
+    $('#footerOutstanding').text('₹' + outstanding.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,'));
+    $('#totalOutstanding').text('₹' + outstanding.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,'));
+}
+
+// Calculate statistics by overdue category
+function calculateStatistics() {
+    let critical = 0, high = 0, medium = 0, low = 0;
+
+    $('#defaultersTable tbody tr').each(function() {
+        const daysText = $(this).find('td').eq(7).find('span').text();
+        const days = parseInt(daysText) || 0;
+
+        if (days >= 60) critical++;
+        else if (days >= 30) high++;
+        else if (days >= 15) medium++;
+        else low++;
+    });
+
+    $('#criticalCount').text(critical);
+    $('#highCount').text(high);
+    $('#mediumCount').text(medium);
+    $('#lowCount').text(low);
+}
+{% endif %}
+
+// Quick filter
+function applyQuickFilter(days) {
+    const form = document.getElementById('filterForm');
+    form.querySelector('select[name="days_overdue"]').value = days;
+    form.submit();
+}
+
+// Select all checkbox
+function toggleSelectAll(checkbox) {
+    const checkboxes = document.querySelectorAll('.student-select');
+    checkboxes.forEach(cb => {
+        cb.checked = checkbox.checked;
+    });
+    updateSelection();
+}
+
+// Update selection
+function updateSelection() {
+    selectedStudents = [];
+    const checkboxes = document.querySelectorAll('.student-select:checked');
+    
+    checkboxes.forEach(cb => {
+        selectedStudents.push({
+            id: cb.value,
+            phone: cb.dataset.phone,
+            name: cb.dataset.name
+        });
+    });
+
+    const count = selectedStudents.length;
+    $('#selectedCount').text(count);
+    
+    if (count > 0) {
+        $('#bulkActionPanel').addClass('show');
+        $('#bulkReminderBtn').prop('disabled', false);
+    } else {
+        $('#bulkActionPanel').removeClass('show');
+        $('#bulkReminderBtn').prop('disabled', true);
+    }
+}
+
+// Clear selection
+function clearSelection() {
+    document.getElementById('selectAll').checked = false;
+    document.querySelectorAll('.student-select').forEach(cb => {
+        cb.checked = false;
+    });
+    updateSelection();
+}
+
+// Send reminder to single student
+function sendReminder(studentId, phone, studentName) {
+    if (!phone) {
+        alert('No phone number available for this student.');
+        return;
+    }
+
+    if (confirm(`Send SMS reminder to ${studentName} at ${phone}?`)) {
+        // In production, this would call an API endpoint
+        alert(`SMS reminder functionality - would send to ${phone}\n\nMessage: "Dear Parent, Fee payment for ${studentName} is overdue. Please pay at the earliest. Thank you."`);
+        
+        // Example AJAX implementation (replace URL with your reminder endpoint):
+        // $.ajax({
+        //     url: '#', // e.g. '/<tenant_slug>/send-fee-reminder'
+        //     method: 'POST',
+        //     data: {
+        //         student_id: studentId,
+        //         phone: phone
+        //     },
+        //     success: function(response) {
+        //         alert('Reminder sent successfully!');
+        //     },
+        //     error: function(xhr) {
+        //         alert('Error sending reminder: ' + xhr.responseText);
+        //     }
+        // });
+    }
+}
+
+// Send bulk reminders
+function sendBulkReminders() {
+    if (selectedStudents.length === 0) {
+        alert('Please select at least one student.');
+        return;
+    }
+
+    const studentsWithPhone = selectedStudents.filter(s => s.phone);
+    
+    if (studentsWithPhone.length === 0) {
+        alert('None of the selected students have phone numbers on file.');
+        return;
+    }
+
+    if (confirm(`Send SMS reminders to ${studentsWithPhone.length} student(s)?`)) {
+        // In production, this would call an API endpoint
+        alert(`Bulk SMS functionality - would send to ${studentsWithPhone.length} numbers\n\nMessage: "Dear Parent, Your ward's fee payment is overdue. Please pay at the earliest to avoid late fees. Thank you."`);
+        
+        // Example AJAX implementation (replace URL with your bulk reminder endpoint):
+        // $.ajax({
+        //     url: '#', // e.g. '/<tenant_slug>/send-bulk-fee-reminders'
+        //     method: 'POST',
+        //     data: JSON.stringify({
+        //         students: studentsWithPhone
+        //     }),
+        //     contentType: 'application/json',
+        //     success: function(response) {
+        //         alert(`Reminders sent successfully to ${response.count} students!`);
+        //         clearSelection();
+        //     },
+        //     error: function(xhr) {
+        //         alert('Error sending bulk reminders: ' + xhr.responseText);
+        //     }
+        // });
+    }
+}
+
+// Export to Excel
+function exportToExcel() {
+    {% if defaulters %}
+    const wb = XLSX.utils.book_new();
+    
+    // Summary sheet
+    const summary = [
+        ['Fee Defaulters Report'],
+        ['Generated on: ' + new Date().toLocaleString()],
+        ['Session: {{ sessions|selectattr("id", "equalto", selected_session)|map(attribute="session_name")|first if selected_session else "All Sessions" }}'],
+        ['Minimum Days Overdue: {{ days_overdue }}'],
+        [''],
+        ['Summary'],
+        ['Total Defaulters', {{ defaulters|length }}],
+        ['Total Outstanding', parseFloat($('#totalOutstanding').text().replace(/[₹,]/g, ''))],
+        ['Critical (60+ days)', parseInt($('#criticalCount').text())],
+        ['High (30-59 days)', parseInt($('#highCount').text())],
+        ['Medium (15-29 days)', parseInt($('#mediumCount').text())],
+        ['Low (0-14 days)', parseInt($('#lowCount').text())]
+    ];
+    const ws1 = XLSX.utils.aoa_to_sheet(summary);
+    XLSX.utils.book_append_sheet(wb, ws1, 'Summary');
+    
+    // Defaulters table
+    const table = document.getElementById('defaultersTable');
+    const ws2 = XLSX.utils.table_to_sheet(table, {
+        skip_hidden_rows: false,
+        raw: false
+    });
+    XLSX.utils.book_append_sheet(wb, ws2, 'Defaulters List');
+    
+    // Save file
+    const fileName = 'Fee_Defaulters_Report_' + new Date().toISOString().split('T')[0] + '.xlsx';
+    XLSX.writeFile(wb, fileName);
+    {% else %}
+    alert('No data to export');
+    {% endif %}
+}
+
+// Export to PDF
+function exportToPDF() {
+    {% if defaulters %}
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('l', 'mm', 'a4'); // Landscape orientation
+    
+    // Header
+    doc.setFontSize(18);
+    doc.text('Fee Defaulters Report', 14, 15);
+    
+    doc.setFontSize(10);
+    doc.text('Generated on: ' + new Date().toLocaleString(), 14, 22);
+    doc.text('Session: {{ sessions|selectattr("id", "equalto", selected_session)|map(attribute="session_name")|first if selected_session else "All Sessions" }}', 14, 28);
+    doc.text('Minimum Days Overdue: {{ days_overdue }}', 14, 34);
+    
+    // Summary
+    doc.setFontSize(12);
+    doc.text('Summary:', 14, 42);
+    doc.setFontSize(10);
+    doc.text('Total Defaulters: {{ defaulters|length }}', 14, 48);
+    doc.text('Total Outstanding: ' + $('#totalOutstanding').text(), 14, 54);
+    
+    // Table
+    const tableData = [];
+    {% for defaulter in defaulters %}
+    tableData.push([
+        '{{ loop.index }}',
+        '{{ defaulter.student_name }}',
+        '{{ defaulter.admission_number }}',
+        '{{ defaulter.class_name }}',
+        '{{ defaulter.due_date if defaulter.due_date else "N/A" }}',
+        '{{ defaulter.days_overdue }}',
+        '₹{{ "{:,.2f}".format(defaulter.outstanding) }}',
+        '{{ defaulter.status }}'
+    ]);
+    {% endfor %}
+    
+    doc.autoTable({
+        head: [['#', 'Student Name', 'Admission No', 'Class', 'Due Date', 'Days Overdue', 'Outstanding', 'Status']],
+        body: tableData,
+        startY: 62,
+        styles: { fontSize: 8 },
+        headStyles: { fillColor: [220, 53, 69] }
+    });
+    
+    // Save
+    doc.save('Fee_Defaulters_Report_' + new Date().toISOString().split('T')[0] + '.pdf');
+    {% else %}
+    alert('No data to export');
+    {% endif %}
+}
+
+// Auto-dismiss alerts
+setTimeout(function() {
+    $('.alert').fadeOut('slow');
+}, 5000);
+</script>
+{% endblock %}

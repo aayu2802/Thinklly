@@ -1,0 +1,156 @@
+{% extends 'akademi/elements/layouts/admin.html' %}
+
+{% block title %}Edit Book - Library{% endblock %}
+
+{% block content %}
+<!--**********************************
+    Content body start
+***********************************-->
+<div class="content-body">
+    <div class="container-fluid">
+        <div class="row page-titles">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('school.dashboard', tenant_slug=tenant_slug) }}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('school.library_dashboard', tenant_slug=tenant_slug) }}">Library</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('school.library_books', tenant_slug=tenant_slug) }}">Books</a></li>
+                <li class="breadcrumb-item active">Edit Book</li>
+            </ol>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-10">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title">Edit Book Details</h4>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" action="{{ url_for('school.edit_library_book', tenant_slug=tenant_slug, book_id=book.id) }}">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="accession_number" class="form-label">Accession Number</label>
+                                    <input type="text" class="form-control" id="accession_number" 
+                                           value="{{ book.accession_number }}" disabled>
+                                    <small class="text-muted">Accession number cannot be changed</small>
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label for="isbn" class="form-label">ISBN</label>
+                                    <input type="text" class="form-control" id="isbn" name="isbn" value="{{ book.isbn or '' }}">
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="title" class="form-label">Book Title <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="title" name="title" value="{{ book.title }}" required>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="author" class="form-label">Author <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="author" name="author" value="{{ book.author }}" required>
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label for="publisher" class="form-label">Publisher</label>
+                                    <input type="text" class="form-control" id="publisher" name="publisher" value="{{ book.publisher or '' }}">
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="publication_year" class="form-label">Publication Year</label>
+                                    <input type="number" class="form-control" id="publication_year" name="publication_year" 
+                                           value="{{ book.publication_year or '' }}" min="1900" max="2100">
+                                </div>
+
+                                <div class="col-md-4 mb-3">
+                                    <label for="edition" class="form-label">Edition</label>
+                                    <input type="text" class="form-control" id="edition" name="edition" value="{{ book.edition or '' }}">
+                                </div>
+
+                                <div class="col-md-4 mb-3">
+                                    <label for="language" class="form-label">Language</label>
+                                    <input type="text" class="form-control" id="language" name="language" value="{{ book.language }}">
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-3 mb-3">
+                                    <label for="pages" class="form-label">Pages</label>
+                                    <input type="number" class="form-control" id="pages" name="pages" value="{{ book.pages or '' }}" min="1">
+                                </div>
+
+                                <div class="col-md-3 mb-3">
+                                    <label for="price" class="form-label">Price (₹)</label>
+                                    <input type="number" class="form-control" id="price" name="price" 
+                                           value="{{ book.price or '' }}" step="0.01" min="0">
+                                </div>
+
+                                <div class="col-md-3 mb-3">
+                                    <label for="rack_number" class="form-label">Rack Number</label>
+                                    <input type="text" class="form-control" id="rack_number" name="rack_number" value="{{ book.rack_number or '' }}">
+                                </div>
+
+                                <div class="col-md-3 mb-3">
+                                    <label class="form-label">Total/Available Copies</label>
+                                    <input type="text" class="form-control" value="{{ book.total_copies }}/{{ book.available_copies }}" disabled>
+                                    <small class="text-muted">Cannot change while books are issued</small>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="category_id" class="form-label">Category</label>
+                                    <select class="form-select" id="category_id" name="category_id">
+                                        <option value="">Select Category</option>
+                                        {% for category in categories %}
+                                        <option value="{{ category.id }}" {% if book.category_id == category.id %}selected{% endif %}>
+                                            {{ category.name }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label for="condition" class="form-label">Condition</label>
+                                    <select class="form-select" id="condition" name="condition">
+                                        <option value="New" {% if book.condition.value == 'New' %}selected{% endif %}>New</option>
+                                        <option value="Good" {% if book.condition.value == 'Good' %}selected{% endif %}>Good</option>
+                                        <option value="Fair" {% if book.condition.value == 'Fair' %}selected{% endif %}>Fair</option>
+                                        <option value="Poor" {% if book.condition.value == 'Poor' %}selected{% endif %}>Poor</option>
+                                        <option value="Damaged" {% if book.condition.value == 'Damaged' %}selected{% endif %}>Damaged</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="description" class="form-label">Description</label>
+                                <textarea class="form-control" id="description" name="description" rows="3">{{ book.description or '' }}</textarea>
+                            </div>
+
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-save"></i> Update Book
+                                </button>
+                                <a href="{{ url_for('school.view_library_book', tenant_slug=tenant_slug, book_id=book.id) }}" 
+                                   class="btn btn-secondary">
+                                    <i class="bi bi-x-circle"></i> Cancel
+                                </a>
+                                <form method="POST" action="{{ url_for('school.delete_library_book', tenant_slug=tenant_slug, book_id=book.id) }}" 
+                                      onsubmit="return confirm('Are you sure you want to delete this book?');" class="ms-auto">
+                                    <button type="submit" class="btn btn-danger">
+                                        <i class="bi bi-trash"></i> Delete Book
+                                    </button>
+                                </form>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!--**********************************
+    Content body end
+***********************************-->
+{% endblock %}

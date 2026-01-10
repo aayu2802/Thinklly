@@ -1,0 +1,1769 @@
+{% extends 'akademi/elements/layouts/admin.html' %}
+		
+{% block additional_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='akademi/vendor/jquery-smartwizard/dist/css/smart_wizard.min.css')}}">
+<link rel="stylesheet" href="{{ url_for('static', filename='akademi/vendor/bootstrap-datepicker-master/css/bootstrap-datepicker.min.css')}}">
+<link rel="stylesheet" href="{{ url_for('static', filename='akademi/vendor/jquery-nice-select/css/nice-select.css')}}">
+<link rel="stylesheet" href="{{ url_for('static', filename='akademi/vendor/dropzone/dist/dropzone.css')}}">
+<style>
+    .required { color: #ff0000; }
+    
+    /* Avatar upload centering */
+    .avatar-upload { 
+        position: relative; 
+        max-width: 205px; 
+        margin: 0 auto; 
+        text-align: center;
+    }
+    .avatar-upload .avatar-preview { 
+        width: 192px; 
+        height: 192px; 
+        
+        position: relative; 
+        border-radius: 100%; 
+        border: 6px solid #F8F8F8; 
+        box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.1); 
+        margin: 0 auto;
+    }
+    .avatar-upload .avatar-preview > div { 
+        width: 100%; 
+        height: 100%; 
+        border-radius: 100%; 
+        background-size: cover; 
+        background-repeat: no-repeat; 
+        background-position: center; 
+        margin-top: 40px;
+    }
+    
+    /* Fix SmartWizard height issues - allow dynamic content to expand */
+    .sw-container {
+        min-height: auto !important;
+        height: auto !important;
+    }
+    .tab-content > .tab-pane {
+        min-height: auto !important;
+        height: auto !important;
+    }
+    #smartwizard .tab-content {
+        height: auto !important;
+        min-height: 500px;
+    }
+    
+    /* Center tab numbers in wizard navigation */
+    #smartwizard .nav-wizard .nav-link span {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+    }
+    
+    /* Make inactive tabs have white background instead of grey */
+    #smartwizard .nav-wizard .nav-link span {
+        background-color: #fff !important;
+        color: #717579 !important;
+    }
+    
+    /* Make the blue circle cover the whole area - remove white border */
+    #smartwizard .nav-wizard .nav-link.active span,
+    #smartwizard .nav-wizard .nav-link.done span {
+        border-color: var(--primary) !important;
+        background-color: var(--primary) !important;
+        color: #fff !important;
+    }
+    
+    #smartwizard .nav-wizard .nav-link p {
+        text-align: center;
+        margin: 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!--**********************************
+    Content body start
+***********************************-->
+<div class="content-body">
+    <div class="container-fluid">
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <!-- row -->
+        <div class="row">
+            <div class="col-xl-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title">Complete Teacher Profile</h4>
+                        <p class="mb-0">Employee ID: <strong>{{ teacher.employee_id }}</strong> | Name: <strong>{{ teacher.full_name }}</strong></p>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" enctype="multipart/form-data" id="teacherProfileForm">
+                            <input type="hidden" name="current_tab" id="current_tab" value="{{ current_tab|default(0) }}">
+                            <div id="smartwizard" class="form-wizard order-create">
+                                <ul class="nav nav-wizard">
+                                    <li><a class="nav-link" href="#wizard_basic"> 
+                                        <span>1</span> 
+                                        <p class="mt-2 mb-0">Basic Info</p>
+                                    </a></li>
+                                    <li><a class="nav-link" href="#wizard_professional">
+                                        <span>2</span>
+                                        <p class="mt-2 mb-0">Professional</p>
+                                    </a></li>
+                                    <li><a class="nav-link" href="#wizard_qualifications">
+                                        <span>3</span>
+                                        <p class="mt-2 mb-0">Qualifications</p>
+                                    </a></li>
+                                    <li><a class="nav-link" href="#wizard_experience">
+                                        <span>4</span>
+                                        <p class="mt-2 mb-0">Experience</p>
+                                    </a></li>
+                                    <li><a class="nav-link" href="#wizard_certifications">
+                                        <span>5</span>
+                                        <p class="mt-2 mb-0">Certifications</p>
+                                    </a></li>
+                                    <li><a class="nav-link" href="#wizard_banking">
+                                        <span>6</span>
+                                        <p class="mt-2 mb-0">Banking</p>
+                                    </a></li>
+                                    <li><a class="nav-link" href="#wizard_documents">
+                                        <span>7</span>
+                                        <p class="mt-2 mb-0">Documents</p>
+                                    </a></li>
+                                    <li><a class="nav-link" href="#wizard_salary">
+                                        <span>8</span>
+                                        <p class="mt-2 mb-0">Salary</p>
+                                    </a></li>
+                                </ul>
+                                <div class="tab-content">
+                                    <!-- TAB 1: Basic Info -->
+                                    <div id="wizard_basic" class="tab-pane" role="tabpanel">
+                                        <div class="row">
+                                            <div class="col-lg-6">
+                                                <h5 class="mb-3 text-primary">Personal Information</h5>
+                                                <div class="mb-3">
+                                                    <label class="form-label">First Name<span class="required">*</span></label>
+                                                    <input type="text" name="first_name" class="form-control" value="{{ teacher.first_name }}" required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label">Middle Name</label>
+                                                    <input type="text" name="middle_name" class="form-control" value="{{ teacher.middle_name or '' }}">
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label">Last Name<span class="required">*</span></label>
+                                                    <input type="text" name="last_name" class="form-control" value="{{ teacher.last_name }}" required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label">Gender<span class="required">*</span></label>
+                                                    <select name="gender" class="form-control" required>
+                                                        <option value="">Select Gender</option>
+                                                        <option value="Male" {% if teacher.gender.value == 'Male' %}selected{% endif %}>Male</option>
+                                                        <option value="Female" {% if teacher.gender.value == 'Female' %}selected{% endif %}>Female</option>
+                                                        <option value="Other" {% if teacher.gender.value == 'Other' %}selected{% endif %}>Other</option>
+                                                    </select>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label">Date of Birth<span class="required">*</span></label>
+                                                    <input type="text" name="date_of_birth" class="form-control datepicker" value="{{ teacher.date_of_birth.strftime('%Y-%m-%d') if teacher.date_of_birth else '' }}" required>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-6">
+                                                <h5 class="mb-3 text-primary text-center">Photo</h5>
+                                                <div class="avatar-upload">
+                                                    <div class="avatar-preview">
+                                                        {% if teacher.photo_url %}
+                                                        <div id="imagePreview" style="background-image: url('{{ url_for('static', filename=teacher.photo_url) }}');"></div>
+                                                        {% else %}
+                                                        <div id="imagePreview" style="background-image: url('{{ url_for('static', filename='akademi/images/no-img-avatar.png') }}');"></div>
+                                                        {% endif %}
+                                                    </div>
+                                                    <div class="change-btn mt-3 text-center">
+                                                            <input type='file' class="form-control d-none" id="imageUpload" name="photo" accept=".png, .jpg, .jpeg">
+                                                            <input type="hidden" name="remove_photo" id="remove_photo" value="0">
+                                                            <label for="imageUpload" class="dlab-upload mb-0 btn btn-primary btn-sm">Choose Photo</label>
+                                                            <a href="javascript:void(0);" class="btn btn-danger light remove-img ms-2 btn-sm">Remove</a>
+                                                        </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <hr class="my-4">
+                                        <div class="row">
+                                            <div class="col-lg-12">
+                                                <h5 class="mb-3 text-primary">Contact Information</h5>
+                                            </div>
+                                            <div class="col-lg-6">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Email<span class="required">*</span></label>
+                                                    <input type="email" name="email" class="form-control" value="{{ teacher.email }}" required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label">Primary Phone<span class="required">*</span></label>
+                                                    <input type="text" name="phone_primary" class="form-control" value="{{ teacher.phone_primary }}" required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label">Alternate Phone</label>
+                                                    <input type="text" name="phone_alternate" class="form-control" value="{{ teacher.phone_alternate or '' }}">
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-6">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Street Address</label>
+                                                    <textarea name="address_street" class="form-control" rows="2">{{ teacher.address_street or '' }}</textarea>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label">City</label>
+                                                    <input type="text" name="address_city" class="form-control" value="{{ teacher.address_city or '' }}">
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-md-6">
+                                                        <div class="mb-3">
+                                                            <label class="form-label">State</label>
+                                                            <input type="text" name="address_state" class="form-control" value="{{ teacher.address_state or '' }}">
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Pincode</label>
+                                                            <input type="text" name="address_pincode" class="form-control" value="{{ teacher.address_pincode or '' }}" maxlength="6">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <hr class="my-4">
+                                        <div class="row">
+                                            <div class="col-lg-12">
+                                                <h5 class="mb-3 text-primary">Emergency Contact</h5>
+                                            </div>
+                                            <div class="col-lg-6">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Emergency Contact Name</label>
+                                                    <input type="text" name="emergency_contact_name" class="form-control" value="{{ teacher.emergency_contact_name or '' }}">
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-6">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Emergency Contact Number</label>
+                                                    <input type="text" name="emergency_contact_number" class="form-control" value="{{ teacher.emergency_contact_number or '' }}">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Tab Navigation Buttons -->
+                                        <hr class="my-4">
+                                        <div class="row">
+                                            <div class="col-12 d-flex justify-content-between">
+                                                <button type="button" class="btn btn-secondary" disabled>
+                                                    <i class="fas fa-arrow-left me-2"></i>Previous
+                                                </button>
+                                                <div>
+                                                    <button type="submit" name="action" value="save" class="btn btn-success me-2">
+                                                        <i class="fas fa-save me-2"></i>Save
+                                                    </button>
+                                                    <button type="button" class="btn btn-primary tab-next-btn">
+                                                        Next<i class="fas fa-arrow-right ms-2"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- TAB 2: Professional Information -->
+                                    <div id="wizard_professional" class="tab-pane" role="tabpanel">
+                                        <div class="row">
+                                            <div class="col-lg-12">
+                                                <h5 class="mb-3 text-primary">Employment Details</h5>
+                                            </div>
+                                            <div class="col-lg-6">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Employee ID<span class="required">*</span></label>
+                                                    <input type="text" name="employee_id" class="form-control" value="{{ teacher.employee_id }}" readonly>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label">Joining Date<span class="required">*</span></label>
+                                                    <input type="text" name="joining_date" class="form-control datepicker" value="{{ teacher.joining_date.strftime('%Y-%m-%d') if teacher.joining_date else '' }}" required>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-6">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Employee Status<span class="required">*</span></label>
+                                                    <select name="employee_status" class="form-control" required>
+                                                        <option value="Active" {% if teacher.employee_status.value == 'Active' %}selected{% endif %}>Active</option>
+                                                        <option value="Inactive" {% if teacher.employee_status.value == 'Inactive' %}selected{% endif %}>Inactive</option>
+                                                        <option value="On Leave" {% if teacher.employee_status.value == 'On Leave' %}selected{% endif %}>On Leave</option>
+                                                        <option value="Resigned" {% if teacher.employee_status.value == 'Resigned' %}selected{% endif %}>Resigned</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <hr class="my-4">
+                                        <div class="row">
+                                            <div class="col-lg-12">
+                                                <h5 class="mb-3 text-primary">Departments</h5>
+                                                <p class="text-muted">Assign teacher to one or more departments</p>
+                                            </div>
+                                            <div class="col-lg-12">
+                                                <div id="departments-container">
+                                                    {% if teacher.departments %}
+                                                        {% for td in teacher.departments %}
+                                                        <div class="department-row mb-3 p-3 border rounded">
+                                                            <div class="row align-items-end">
+                                                                <div class="col-md-5">
+                                                                    <label class="form-label">Department</label>
+                                                                    <select name="dept_id[]" class="form-control">
+                                                                        <option value="">Select Department</option>
+                                                                        {% for dept in all_departments %}
+                                                                        <option value="{{ dept.id }}" {% if td.department_id == dept.id %}selected{% endif %}>{{ dept.name }}</option>
+                                                                        {% endfor %}
+                                                                    </select>
+                                                                </div>
+                                                                <div class="col-md-3">
+                                                                    <label class="form-label">Assigned Date</label>
+                                                                    <input type="text" name="dept_date[]" class="form-control datepicker" value="{{ td.assigned_date.strftime('%Y-%m-%d') if td.assigned_date else '' }}">
+                                                                </div>
+                                                                <div class="col-md-2">
+                                                                    <div class="form-check">
+                                                                        <input class="form-check-input" type="checkbox" name="dept_primary[]" value="1" {% if td.is_primary %}checked{% endif %}>
+                                                                        <label class="form-check-label">Primary</label>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-md-2">
+                                                                    <button type="button" class="btn btn-danger btn-sm remove-dept">Remove</button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        {% endfor %}
+                                                    {% endif %}
+                                                </div>
+                                                <button type="button" class="btn btn-primary btn-sm" id="add-department">
+                                                    <i class="fas fa-plus"></i> Add Department
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <hr class="my-4">
+                                        <div class="row">
+                                            <div class="col-lg-12">
+                                                <h5 class="mb-3 text-primary">Designations</h5>
+                                                <p class="text-muted">Assign teacher to one or more designations</p>
+                                            </div>
+                                            <div class="col-lg-12">
+                                                <div id="designations-container">
+                                                    {% if teacher.designations %}
+                                                        {% for tdesig in teacher.designations %}
+                                                        <div class="designation-row mb-3 p-3 border rounded">
+                                                            <div class="row align-items-end">
+                                                                <div class="col-md-5">
+                                                                    <label class="form-label">Designation</label>
+                                                                    <select name="desig_id[]" class="form-control">
+                                                                        <option value="">Select Designation</option>
+                                                                        {% for desig in all_designations %}
+                                                                        <option value="{{ desig.id }}" {% if tdesig.designation_id == desig.id %}selected{% endif %}>{{ desig.name }}</option>
+                                                                        {% endfor %}
+                                                                    </select>
+                                                                </div>
+                                                                <div class="col-md-3">
+                                                                    <label class="form-label">Assigned Date</label>
+                                                                    <input type="text" name="desig_date[]" class="form-control datepicker" value="{{ tdesig.assigned_date.strftime('%Y-%m-%d') if tdesig.assigned_date else '' }}">
+                                                                </div>
+                                                                <div class="col-md-2">
+                                                                    <div class="form-check">
+                                                                        <input class="form-check-input" type="checkbox" name="desig_primary[]" value="1" {% if tdesig.is_primary %}checked{% endif %}>
+                                                                        <label class="form-check-label">Primary</label>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-md-2">
+                                                                    <button type="button" class="btn btn-danger btn-sm remove-designation">Remove</button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        {% endfor %}
+                                                    {% endif %}
+                                                </div>
+                                                <button type="button" class="btn btn-primary btn-sm" id="add-designation">
+                                                    <i class="fas fa-plus"></i> Add Designation
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <hr class="my-4">
+                                        <div class="row">
+                                            <div class="col-lg-12">
+                                                <h5 class="mb-3 text-primary">Subjects Teaching</h5>
+                                                <p class="text-muted">Assign subjects that the teacher will teach</p>
+                                            </div>
+                                            <div class="col-lg-12">
+                                                <div id="subjects-container">
+                                                    {% if teacher.subjects %}
+                                                        {% for tsubj in teacher.subjects %}
+                                                        <div class="subject-row mb-3 p-3 border rounded">
+                                                            <div class="row align-items-end">
+                                                                <div class="col-md-4">
+                                                                    <label class="form-label">Subject</label>
+                                                                    <select name="subj_id[]" class="form-control">
+                                                                        <option value="">Select Subject</option>
+                                                                        {% for subj in all_subjects %}
+                                                                        <option value="{{ subj.id }}" {% if tsubj.subject_id == subj.id %}selected{% endif %}>{{ subj.name }}</option>
+                                                                        {% endfor %}
+                                                                    </select>
+                                                                </div>
+                                                                <div class="col-md-3">
+                                                                    <label class="form-label">Proficiency Level</label>
+                                                                    <select name="subj_proficiency[]" class="form-control">
+                                                                        <option value="Expert" {% if tsubj.proficiency_level.value == 'Expert' %}selected{% endif %}>Expert</option>
+                                                                        <option value="Advanced" {% if tsubj.proficiency_level.value == 'Advanced' %}selected{% endif %}>Advanced</option>
+                                                                        <option value="Intermediate" {% if tsubj.proficiency_level.value == 'Intermediate' %}selected{% endif %}>Intermediate</option>
+                                                                        <option value="Basic" {% if tsubj.proficiency_level.value == 'Basic' %}selected{% endif %}>Basic</option>
+                                                                    </select>
+                                                                </div>
+                                                                <div class="col-md-3">
+                                                                    <label class="form-label">Assigned Date</label>
+                                                                    <input type="text" name="subj_date[]" class="form-control datepicker" value="{{ tsubj.assigned_date.strftime('%Y-%m-%d') if tsubj.assigned_date else '' }}">
+                                                                </div>
+                                                                <div class="col-md-2">
+                                                                    <button type="button" class="btn btn-danger btn-sm remove-subject">Remove</button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        {% endfor %}
+                                                    {% endif %}
+                                                </div>
+                                                <button type="button" class="btn btn-primary btn-sm" id="add-subject">
+                                                    <i class="fas fa-plus"></i> Add Subject
+                                                </button>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Tab Navigation Buttons -->
+                                        <hr class="my-4">
+                                        <div class="row">
+                                            <div class="col-12 d-flex justify-content-between">
+                                                <button type="button" class="btn btn-secondary tab-prev-btn">
+                                                    <i class="fas fa-arrow-left me-2"></i>Previous
+                                                </button>
+                                                <div>
+                                                    <button type="submit" name="action" value="save" class="btn btn-success me-2">
+                                                        <i class="fas fa-save me-2"></i>Save
+                                                    </button>
+                                                    <button type="button" class="btn btn-primary tab-next-btn">
+                                                        Next<i class="fas fa-arrow-right ms-2"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- TAB 3: Qualifications -->
+                                    <div id="wizard_qualifications" class="tab-pane" role="tabpanel">
+                                        <div class="row">
+                                            <div class="col-lg-12">
+                                                <h5 class="mb-3 text-primary">Educational Qualifications</h5>
+                                                <p class="text-muted">Add educational qualifications and certifications</p>
+                                            </div>
+                                            <div class="col-lg-12">
+                                                <div id="qualifications-container">
+                                                    {% if teacher.qualifications %}
+                                                        {% for qual in teacher.qualifications %}
+                                                        <div class="qualification-row mb-3 p-3 border rounded bg-light">
+                                                            <div class="row">
+                                                                <div class="col-md-6">
+                                                                    <div class="mb-3">
+                                                                        <label class="form-label">Qualification Name<span class="required">*</span></label>
+                                                                        <input type="text" name="qual_name[]" class="form-control" value="{{ qual.qualification_name }}" placeholder="e.g., B.Ed, M.Sc">
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-md-6">
+                                                                    <div class="mb-3">
+                                                                        <label class="form-label">Qualification Type</label>
+                                                                        <select name="qual_type[]" class="form-control">
+                                                                            <option value="">Select Type</option>
+                                                                            <option value="B.Ed" {% if qual.qualification_type.value == 'B.Ed' %}selected{% endif %}>B.Ed</option>
+                                                                            <option value="M.Ed" {% if qual.qualification_type.value == 'M.Ed' %}selected{% endif %}>M.Ed</option>
+                                                                            <option value="PhD" {% if qual.qualification_type.value == 'PhD' %}selected{% endif %}>PhD</option>
+                                                                            <option value="M.Sc" {% if qual.qualification_type.value == 'M.Sc' %}selected{% endif %}>M.Sc</option>
+                                                                            <option value="M.A" {% if qual.qualification_type.value == 'M.A' %}selected{% endif %}>M.A</option>
+                                                                            <option value="B.Sc" {% if qual.qualification_type.value == 'B.Sc' %}selected{% endif %}>B.Sc</option>
+                                                                            <option value="B.A" {% if qual.qualification_type.value == 'B.A' %}selected{% endif %}>B.A</option>
+                                                                            <option value="Other" {% if qual.qualification_type.value == 'Other' %}selected{% endif %}>Other</option>
+                                                                        </select>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-md-6">
+                                                                    <div class="mb-3">
+                                                                        <label class="form-label">Institution</label>
+                                                                        <input type="text" name="qual_institution[]" class="form-control" value="{{ qual.institution or '' }}">
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-md-6">
+                                                                    <div class="mb-3">
+                                                                        <label class="form-label">Specialization</label>
+                                                                        <input type="text" name="qual_specialization[]" class="form-control" value="{{ qual.specialization or '' }}">
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-md-6">
+                                                                    <div class="mb-3">
+                                                                        <label class="form-label">Year of Completion</label>
+                                                                        <input type="number" name="qual_year[]" class="form-control" value="{{ qual.year_of_completion or '' }}" min="1950" max="2050">
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-md-4">
+                                                                    <div class="mb-3">
+                                                                        <div class="form-check mt-4">
+                                                                            <input class="form-check-input" type="checkbox" name="qual_highest[]" value="1" {% if qual.is_highest %}checked{% endif %}>
+                                                                            <label class="form-check-label">Highest</label>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-md-2">
+                                                                    <button type="button" class="btn btn-danger btn-sm remove-qualification">Remove</button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        {% endfor %}
+                                                    {% endif %}
+                                                </div>
+                                                <button type="button" class="btn btn-primary btn-sm" id="add-qualification">
+                                                    <i class="fas fa-plus"></i> Add Qualification
+                                                </button>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Tab Navigation Buttons -->
+                                        <hr class="my-4">
+                                        <div class="row">
+                                            <div class="col-12 d-flex justify-content-between">
+                                                <button type="button" class="btn btn-secondary tab-prev-btn">
+                                                    <i class="fas fa-arrow-left me-2"></i>Previous
+                                                </button>
+                                                <div>
+                                                    <button type="submit" name="action" value="save" class="btn btn-success me-2">
+                                                        <i class="fas fa-save me-2"></i>Save
+                                                    </button>
+                                                    <button type="button" class="btn btn-primary tab-next-btn">
+                                                        Next<i class="fas fa-arrow-right ms-2"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- TAB 4: Experience -->
+                                    <div id="wizard_experience" class="tab-pane" role="tabpanel">
+                                        <div class="row">
+                                            <div class="col-lg-12">
+                                                <h5 class="mb-3 text-primary">Work Experience</h5>
+                                                <p class="text-muted">Add previous work experience and employment history</p>
+                                            </div>
+                                            <div class="col-lg-12">
+                                                <div id="experience-container">
+                                                    {% if teacher.experiences %}
+                                                        {% for exp in teacher.experiences %}
+                                                        <div class="experience-row mb-3 p-3 border rounded bg-light">
+                                                            <div class="row">
+                                                                <div class="col-md-6">
+                                                                    <div class="mb-3">
+                                                                        <label class="form-label">Institution/School<span class="required">*</span></label>
+                                                                        <input type="text" name="exp_institution[]" class="form-control" value="{{ exp.institution }}">
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-md-6">
+                                                                    <div class="mb-3">
+                                                                        <label class="form-label">Role/Position<span class="required">*</span></label>
+                                                                        <input type="text" name="exp_role[]" class="form-control" value="{{ exp.role }}">
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-md-4">
+                                                                    <div class="mb-3">
+                                                                        <label class="form-label">From Date</label>
+                                                                        <input type="text" name="exp_from[]" class="form-control datepicker" value="{{ exp.from_date.strftime('%Y-%m-%d') if exp.from_date else '' }}">
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-md-4">
+                                                                    <div class="mb-3">
+                                                                        <label class="form-label">To Date</label>
+                                                                        <input type="text" name="exp_to[]" class="form-control datepicker" value="{{ exp.to_date.strftime('%Y-%m-%d') if exp.to_date else '' }}" placeholder="Leave blank if current">
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-md-4">
+                                                                    <div class="mb-3">
+                                                                        <label class="form-label">Duration (Months)</label>
+                                                                        <input type="number" name="exp_duration[]" class="form-control" value="{{ exp.duration_months or '' }}">
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-md-12">
+                                                                    <div class="mb-3">
+                                                                        <label class="form-label">Description</label>
+                                                                        <textarea name="exp_description[]" class="form-control" rows="2">{{ exp.description or '' }}</textarea>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-md-10">
+                                                                    <div class="mb-3">
+                                                                        <label class="form-label">Reason for Leaving</label>
+                                                                        <input type="text" name="exp_reason[]" class="form-control" value="{{ exp.reason_for_leaving or '' }}">
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-md-2">
+                                                                    <button type="button" class="btn btn-danger btn-sm mt-4 remove-experience">Remove</button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        {% endfor %}
+                                                    {% endif %}
+                                                </div>
+                                                <button type="button" class="btn btn-primary btn-sm" id="add-experience">
+                                                    <i class="fas fa-plus"></i> Add Experience
+                                                </button>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Tab Navigation Buttons -->
+                                        <hr class="my-4">
+                                        <div class="row">
+                                            <div class="col-12 d-flex justify-content-between">
+                                                <button type="button" class="btn btn-secondary tab-prev-btn">
+                                                    <i class="fas fa-arrow-left me-2"></i>Previous
+                                                </button>
+                                                <div>
+                                                    <button type="submit" name="action" value="save" class="btn btn-success me-2">
+                                                        <i class="fas fa-save me-2"></i>Save
+                                                    </button>
+                                                    <button type="button" class="btn btn-primary tab-next-btn">
+                                                        Next<i class="fas fa-arrow-right ms-2"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- TAB 5: Certifications -->
+                                    <div id="wizard_certifications" class="tab-pane" role="tabpanel">
+                                        <div class="row">
+                                            <div class="col-lg-12">
+                                                <h5 class="mb-3 text-primary">Professional Certifications</h5>
+                                                <p class="text-muted">Add teaching certifications like CTET, TET, etc.</p>
+                                            </div>
+                                            <div class="col-lg-12">
+                                                <div id="certifications-container">
+                                                    {% if teacher.certifications %}
+                                                        {% for cert in teacher.certifications %}
+                                                        <div class="certification-row mb-3 p-3 border rounded bg-light">
+                                                            <div class="row">
+                                                                <div class="col-md-6">
+                                                                    <div class="mb-3">
+                                                                        <label class="form-label">Certification Name<span class="required">*</span></label>
+                                                                        <input type="text" name="cert_name[]" class="form-control" value="{{ cert.certification_name }}">
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-md-6">
+                                                                    <div class="mb-3">
+                                                                        <label class="form-label">Certification Type</label>
+                                                                        <select name="cert_type[]" class="form-control">
+                                                                            <option value="">Select Type</option>
+                                                                            <option value="CTET" {% if cert.certification_type.value == 'CTET' %}selected{% endif %}>CTET</option>
+                                                                            <option value="TET" {% if cert.certification_type.value == 'TET' %}selected{% endif %}>TET</option>
+                                                                            <option value="NET" {% if cert.certification_type.value == 'NET' %}selected{% endif %}>NET</option>
+                                                                            <option value="Other" {% if cert.certification_type.value == 'Other' %}selected{% endif %}>Other</option>
+                                                                        </select>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-md-6">
+                                                                    <div class="mb-3">
+                                                                        <label class="form-label">Issuing Authority</label>
+                                                                        <input type="text" name="cert_authority[]" class="form-control" value="{{ cert.issuing_authority or '' }}">
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-md-6">
+                                                                    <div class="mb-3">
+                                                                        <label class="form-label">Certificate Number</label>
+                                                                        <input type="text" name="cert_number[]" class="form-control" value="{{ cert.certificate_number or '' }}">
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-md-4">
+                                                                    <div class="mb-3">
+                                                                        <label class="form-label">Issue Date</label>
+                                                                        <input type="text" name="cert_issue_date[]" class="form-control datepicker" value="{{ cert.issue_date.strftime('%Y-%m-%d') if cert.issue_date else '' }}">
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-md-4">
+                                                                    <div class="mb-3">
+                                                                        <label class="form-label">Expiry Date</label>
+                                                                        <input type="text" name="cert_expiry_date[]" class="form-control datepicker" value="{{ cert.expiry_date.strftime('%Y-%m-%d') if cert.expiry_date else '' }}" placeholder="Leave blank if no expiry">
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-md-2">
+                                                                    <div class="mb-3">
+                                                                        <div class="form-check mt-4">
+                                                                            <input class="form-check-input" type="checkbox" name="cert_valid[]" value="1" {% if cert.is_valid %}checked{% endif %}>
+                                                                            <label class="form-check-label">Valid</label>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-md-2">
+                                                                    <button type="button" class="btn btn-danger btn-sm mt-4 remove-certification">Remove</button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        {% endfor %}
+                                                    {% endif %}
+                                                </div>
+                                                <button type="button" class="btn btn-primary btn-sm" id="add-certification">
+                                                    <i class="fas fa-plus"></i> Add Certification
+                                                </button>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Tab Navigation Buttons -->
+                                        <hr class="my-4">
+                                        <div class="row">
+                                            <div class="col-12 d-flex justify-content-between">
+                                                <button type="button" class="btn btn-secondary tab-prev-btn">
+                                                    <i class="fas fa-arrow-left me-2"></i>Previous
+                                                </button>
+                                                <div>
+                                                    <button type="submit" name="action" value="save" class="btn btn-success me-2">
+                                                        <i class="fas fa-save me-2"></i>Save
+                                                    </button>
+                                                    <button type="button" class="btn btn-primary tab-next-btn">
+                                                        Next<i class="fas fa-arrow-right ms-2"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- TAB 6: Banking Details -->
+                                    <div id="wizard_banking" class="tab-pane" role="tabpanel">
+                                        <div class="row">
+                                            <div class="col-lg-12">
+                                                <h5 class="mb-3 text-primary">Banking & Financial Information</h5>
+                                                <p class="text-muted">Add bank account details for salary disbursement and other financial information</p>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-lg-6">
+                                                <h6 class="mb-3 text-secondary">Bank Account Details</h6>
+                                                <div class="mb-3">
+                                                    <label class="form-label">Account Holder Name<span class="required">*</span></label>
+                                                    <input type="text" name="account_holder_name" class="form-control" 
+                                                           value="{{ teacher.banking_details.account_holder_name if teacher.banking_details else '' }}" 
+                                                           placeholder="Enter full name as per bank records">
+                                                    <small class="form-text text-muted">Enter name exactly as it appears in bank account</small>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label">Bank Name<span class="required">*</span></label>
+                                                    <input type="text" name="bank_name" class="form-control" 
+                                                           value="{{ teacher.banking_details.bank_name if teacher.banking_details else '' }}" 
+                                                           placeholder="e.g., State Bank of India">
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label">Branch Name</label>
+                                                    <input type="text" name="branch_name" class="form-control" 
+                                                           value="{{ teacher.banking_details.branch_name if teacher.banking_details else '' }}" 
+                                                           placeholder="e.g., Connaught Place, New Delhi">
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label">Account Number<span class="required">*</span></label>
+                                                    <input type="text" name="account_number" class="form-control" 
+                                                           value="{{ teacher.banking_details.account_number if teacher.banking_details else '' }}" 
+                                                           placeholder="Enter bank account number">
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label">Confirm Account Number<span class="required">*</span></label>
+                                                    <input type="text" name="confirm_account_number" class="form-control" 
+                                                           value="{{ teacher.banking_details.account_number if teacher.banking_details else '' }}" 
+                                                           placeholder="Re-enter account number for verification">
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label">IFSC Code<span class="required">*</span></label>
+                                                    <input type="text" name="ifsc_code" class="form-control" 
+                                                           value="{{ teacher.banking_details.ifsc_code if teacher.banking_details else '' }}" 
+                                                           placeholder="e.g., SBIN0001234" maxlength="11" style="text-transform: uppercase;">
+                                                    <small class="form-text text-muted">11-character IFSC code</small>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label">Account Type<span class="required">*</span></label>
+                                                    <select name="account_type" class="form-control">
+                                                        <option value="">Select Account Type</option>
+                                                        <option value="Savings" {% if teacher.banking_details and teacher.banking_details.account_type.value == 'Savings' %}selected{% endif %}>Savings</option>
+                                                        <option value="Current" {% if teacher.banking_details and teacher.banking_details.account_type.value == 'Current' %}selected{% endif %}>Current</option>
+                                                        <option value="Salary" {% if teacher.banking_details and teacher.banking_details.account_type.value == 'Salary' %}selected{% endif %}>Salary</option>
+                                                        <option value="NRE" {% if teacher.banking_details and teacher.banking_details.account_type.value == 'NRE' %}selected{% endif %}>NRE (Non-Resident External)</option>
+                                                        <option value="NRO" {% if teacher.banking_details and teacher.banking_details.account_type.value == 'NRO' %}selected{% endif %}>NRO (Non-Resident Ordinary)</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-6">
+                                                <h6 class="mb-3 text-secondary">Additional Financial Information</h6>
+                                                <div class="mb-3">
+                                                    <label class="form-label">PAN Number</label>
+                                                    <input type="text" name="pan_number" class="form-control" 
+                                                           value="{{ teacher.banking_details.pan_number if teacher.banking_details else '' }}" 
+                                                           placeholder="e.g., ABCDE1234F" maxlength="10" style="text-transform: uppercase;">
+                                                    <small class="form-text text-muted">Permanent Account Number for tax purposes</small>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label">UAN Number</label>
+                                                    <input type="text" name="uan_number" class="form-control" 
+                                                           value="{{ teacher.banking_details.uan_number if teacher.banking_details else '' }}" 
+                                                           placeholder="12-digit Universal Account Number" maxlength="12">
+                                                    <small class="form-text text-muted">Universal Account Number for EPF</small>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label">PF Account Number</label>
+                                                    <input type="text" name="pf_account_number" class="form-control" 
+                                                           value="{{ teacher.banking_details.pf_account_number if teacher.banking_details else '' }}" 
+                                                           placeholder="Provident Fund Account Number">
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label">ESI Number</label>
+                                                    <input type="text" name="esi_number" class="form-control" 
+                                                           value="{{ teacher.banking_details.esi_number if teacher.banking_details else '' }}" 
+                                                           placeholder="17-digit ESI Number" maxlength="17">
+                                                    <small class="form-text text-muted">Employee State Insurance Number</small>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label">Notes</label>
+                                                    <textarea name="banking_notes" class="form-control" rows="3" 
+                                                              placeholder="Any additional notes or comments">{{ teacher.banking_details.notes if teacher.banking_details else '' }}</textarea>
+                                                </div>
+                                                {% if teacher.banking_details and teacher.banking_details.is_verified %}
+                                                <div class="alert alert-success">
+                                                    <i class="fas fa-check-circle me-2"></i>
+                                                    <strong>Verified</strong>
+                                                    {% if teacher.banking_details.verified_at %}
+                                                    <br><small>Verified on {{ teacher.banking_details.verified_at.strftime('%d %b, %Y at %I:%M %p') }}</small>
+                                                    {% endif %}
+                                                </div>
+                                                {% else %}
+                                                <div class="alert alert-warning">
+                                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                                    <strong>Pending Verification</strong>
+                                                    <br><small>Banking details need to be verified by admin</small>
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Tab Navigation Buttons -->
+                                        <hr class="my-4">
+                                        <div class="row">
+                                            <div class="col-12 d-flex justify-content-between">
+                                                <button type="button" class="btn btn-secondary tab-prev-btn">
+                                                    <i class="fas fa-arrow-left me-2"></i>Previous
+                                                </button>
+                                                <div>
+                                                    <button type="submit" name="action" value="save" class="btn btn-success me-2">
+                                                        <i class="fas fa-save me-2"></i>Save
+                                                    </button>
+                                                    <button type="button" class="btn btn-primary tab-next-btn">
+                                                        Next<i class="fas fa-arrow-right ms-2"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- TAB 7: Documents -->
+                                    <div id="wizard_documents" class="tab-pane" role="tabpanel">
+                                        <div class="row">
+                                            <div class="col-lg-12">
+                                                <h5 class="mb-3 text-primary">Document Upload</h5>
+                                                <p class="text-muted">Upload important documents like resume, degrees, ID proofs, etc.</p>
+                                            </div>
+                                            <div class="col-lg-12">
+                                                <div class="card">
+                                                    <div class="card-body">
+                                                        <div id="documents-container">
+                                                            {% if teacher.documents %}
+                                                                <table class="table table-bordered">
+                                                                    <thead>
+                                                                        <tr>
+                                                                            <th>Document Type</th>
+                                                                            <th>File Name</th>
+                                                                            <th>Uploaded</th>
+                                                                            <th>Verified</th>
+                                                                            <th>Action</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        {% for doc in teacher.documents %}
+                                                                        <tr data-doc-id="{{ doc.id }}">
+                                                                            <td>{{ doc.doc_type.value if doc.doc_type else 'N/A' }}</td>
+                                                                            <td>{{ doc.file_name }}</td>
+                                                                            <td>{{ doc.uploaded_at.strftime('%d %b, %Y') if doc.uploaded_at else 'N/A' }}</td>
+                                                                            <td>
+                                                                                {% if doc.is_verified %}
+                                                                                    <span class="badge bg-success">Verified</span>
+                                                                                {% else %}
+                                                                                    <span class="badge bg-warning">Pending</span>
+                                                                                {% endif %}
+                                                                            </td>
+                                                                            <td>
+                                                                                <a href="{{ url_for('static', filename=doc.file_path) }}" class="btn btn-sm btn-primary" target="_blank">
+                                                                                    <i class="fa fa-download"></i> View
+                                                                                </a>
+                                                                                <button type="button" class="btn btn-sm btn-danger ms-2 delete-doc" data-doc-id="{{ doc.id }}">
+                                                                                    <i class="fa fa-trash"></i> Delete
+                                                                                </button>
+                                                                            </td>
+                                                                        </tr>
+                                                                        {% endfor %}
+                                                                    </tbody>
+                                                                </table>
+                                                            {% else %}
+                                                                <p class="text-muted">No documents uploaded yet</p>
+                                                            {% endif %}
+                                                        </div>
+                                                        <hr class="my-4">
+                                                        <h6 class="mb-3">Upload New Documents</h6>
+                                                        <div id="upload-documents-container">
+                                                            <!-- Dynamic document upload rows will be added here -->
+                                                        </div>
+                                                        <button type="button" class="btn btn-sm btn-primary mb-3" id="add-document-row">
+                                                            <i class="fas fa-plus"></i> Add Document
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Tab Navigation Buttons -->
+                                        <hr class="my-4">
+                                        <div class="row">
+                                            <div class="col-12 d-flex justify-content-between">
+                                                <button type="button" class="btn btn-secondary tab-prev-btn">
+                                                    <i class="fas fa-arrow-left me-2"></i>Previous
+                                                </button>
+                                                <div>
+                                                    <button type="submit" name="action" value="save" class="btn btn-success me-2">
+                                                        <i class="fas fa-save me-2"></i>Save
+                                                    </button>
+                                                    <button type="button" class="btn btn-primary tab-next-btn">
+                                                        Next<i class="fas fa-arrow-right ms-2"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- TAB 8: Salary Structure -->
+                                    <div id="wizard_salary" class="tab-pane" role="tabpanel">
+                                        <div class="row">
+                                            <div class="col-lg-12">
+                                                <h5 class="mb-3 text-primary">Salary Structure</h5>
+                                                <p class="text-muted">Configure teacher's salary components</p>
+                                            </div>
+                                        </div>
+
+                                        <!-- Salary Summary Cards -->
+                                        <div class="row mb-4">
+                                            <div class="col-lg-3 col-md-6 mb-3">
+                                                <div class="card bg-primary text-white">
+                                                    <div class="card-body">
+                                                        <h6 class="card-subtitle mb-2 text-white-50">Basic Salary</h6>
+                                                        <h3 class="card-title mb-0" id="display_basic">₹ 0</h3>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-3 col-md-6 mb-3">
+                                                <div class="card bg-success text-white">
+                                                    <div class="card-body">
+                                                        <h6 class="card-subtitle mb-2 text-white-50">Gross Salary</h6>
+                                                        <h3 class="card-title mb-0" id="display_gross">₹ 0</h3>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-3 col-md-6 mb-3">
+                                                <div class="card bg-info text-white">
+                                                    <div class="card-body">
+                                                        <h6 class="card-subtitle mb-2 text-white-50">Net Salary</h6>
+                                                        <h3 class="card-title mb-0" id="display_net">₹ 0</h3>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-3 col-md-6 mb-3">
+                                                <div class="card bg-warning text-white">
+                                                    <div class="card-body">
+                                                        <h6 class="card-subtitle mb-2 text-white-50">Annual CTC</h6>
+                                                        <h3 class="card-title mb-0" id="display_ctc">₹ 0</h3>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <!-- Basic Salary Section -->
+                                            <div class="col-lg-6">
+                                                <div class="card mb-4">
+                                                    <div class="card-header bg-light">
+                                                        <h6 class="mb-0 text-primary">Basic Components</h6>
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Basic Salary<span class="required">*</span></label>
+                                                            <input type="number" name="basic_salary" id="basic_salary" class="form-control salary-input" 
+                                                                   value="{{ teacher.salary.basic_salary if teacher.salary else '0' }}" 
+                                                                   step="0.01" min="0" placeholder="0.00">
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Grade Pay</label>
+                                                            <input type="number" name="grade_pay" id="grade_pay" class="form-control salary-input" 
+                                                                   value="{{ teacher.salary.grade_pay if teacher.salary else '0' }}" 
+                                                                   step="0.01" min="0" placeholder="0.00">
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Effective From<span class="required">*</span></label>
+                                                            <input type="text" name="effective_from" class="form-control datepicker" 
+                                                                   value="{{ teacher.salary.effective_from.strftime('%Y-%m-%d') if teacher.salary and teacher.salary.effective_from else '' }}">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Allowances Section -->
+                                            <div class="col-lg-6">
+                                                <div class="card mb-4">
+                                                    <div class="card-header bg-light">
+                                                        <h6 class="mb-0 text-success">Allowances (Earnings)</h6>
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <div class="mb-3">
+                                                            <label class="form-label">HRA (House Rent)</label>
+                                                            <input type="number" name="hra" id="hra" class="form-control salary-input" 
+                                                                   value="{{ teacher.salary.hra if teacher.salary else '0' }}" 
+                                                                   step="0.01" min="0" placeholder="0.00">
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            <label class="form-label">DA (Dearness Allowance)</label>
+                                                            <input type="number" name="da" id="da" class="form-control salary-input" 
+                                                                   value="{{ teacher.salary.da if teacher.salary else '0' }}" 
+                                                                   step="0.01" min="0" placeholder="0.00">
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            <label class="form-label">TA (Transport Allowance)</label>
+                                                            <input type="number" name="ta" id="ta" class="form-control salary-input" 
+                                                                   value="{{ teacher.salary.ta if teacher.salary else '0' }}" 
+                                                                   step="0.01" min="0" placeholder="0.00">
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Medical Allowance</label>
+                                                            <input type="number" name="medical_allowance" id="medical_allowance" class="form-control salary-input" 
+                                                                   value="{{ teacher.salary.medical_allowance if teacher.salary else '0' }}" 
+                                                                   step="0.01" min="0" placeholder="0.00">
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Special Allowance</label>
+                                                            <input type="number" name="special_allowance" id="special_allowance" class="form-control salary-input" 
+                                                                   value="{{ teacher.salary.special_allowance if teacher.salary else '0' }}" 
+                                                                   step="0.01" min="0" placeholder="0.00">
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Other Allowances</label>
+                                                            <input type="number" name="other_allowances" id="other_allowances" class="form-control salary-input" 
+                                                                   value="{{ teacher.salary.other_allowances if teacher.salary else '0' }}" 
+                                                                   step="0.01" min="0" placeholder="0.00">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <!-- Deductions Section -->
+                                            <div class="col-lg-6">
+                                                <div class="card mb-4">
+                                                    <div class="card-header bg-light">
+                                                        <h6 class="mb-0 text-danger">Deductions</h6>
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <div class="row">
+                                                            <div class="col-md-6 mb-3">
+                                                                <label class="form-label">EPF (Employee)</label>
+                                                                <input type="number" name="pf_employee" id="pf_employee" class="form-control salary-input" 
+                                                                       value="{{ teacher.salary.pf_employee if teacher.salary else '0' }}" 
+                                                                       step="0.01" min="0" placeholder="0.00">
+                                                            </div>
+                                                            <div class="col-md-6 mb-3">
+                                                                <label class="form-label">EPF (Employer)</label>
+                                                                <input type="number" name="pf_employer" id="pf_employer" class="form-control salary-input" 
+                                                                       value="{{ teacher.salary.pf_employer if teacher.salary else '0' }}" 
+                                                                       step="0.01" min="0" placeholder="0.00">
+                                                            </div>
+                                                        </div>
+                                                        <div class="row">
+                                                            <div class="col-md-6 mb-3">
+                                                                <label class="form-label">ESI (Employee)</label>
+                                                                <input type="number" name="esi_employee" id="esi_employee" class="form-control salary-input" 
+                                                                       value="{{ teacher.salary.esi_employee if teacher.salary else '0' }}" 
+                                                                       step="0.01" min="0" placeholder="0.00">
+                                                            </div>
+                                                            <div class="col-md-6 mb-3">
+                                                                <label class="form-label">ESI (Employer)</label>
+                                                                <input type="number" name="esi_employer" id="esi_employer" class="form-control salary-input" 
+                                                                       value="{{ teacher.salary.esi_employer if teacher.salary else '0' }}" 
+                                                                       step="0.01" min="0" placeholder="0.00">
+                                                            </div>
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Professional Tax</label>
+                                                            <input type="number" name="professional_tax" id="professional_tax" class="form-control salary-input" 
+                                                                   value="{{ teacher.salary.professional_tax if teacher.salary else '0' }}" 
+                                                                   step="0.01" min="0" placeholder="0.00">
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            <label class="form-label">TDS (Income Tax)</label>
+                                                            <input type="number" name="tds" id="tds" class="form-control salary-input" 
+                                                                   value="{{ teacher.salary.tds if teacher.salary else '0' }}" 
+                                                                   step="0.01" min="0" placeholder="0.00">
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Other Deductions</label>
+                                                            <input type="number" name="other_deductions" id="other_deductions" class="form-control salary-input" 
+                                                                   value="{{ teacher.salary.other_deductions if teacher.salary else '0' }}" 
+                                                                   step="0.01" min="0" placeholder="0.00">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Notes Section -->
+                                            <div class="col-lg-6">
+                                                <div class="card mb-4">
+                                                    <div class="card-header bg-light">
+                                                        <h6 class="mb-0">Notes & Remarks</h6>
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Notes</label>
+                                                            <textarea name="salary_notes" class="form-control" rows="23" 
+                                                                      placeholder="Any additional notes about salary structure, increments, or special conditions">{{ teacher.salary.notes if teacher.salary else '' }}</textarea>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Tab Navigation Buttons -->
+                                        <hr class="my-4">
+                                        <div class="row">
+                                            <div class="col-12 d-flex justify-content-between">
+                                                <button type="button" class="btn btn-secondary tab-prev-btn">
+                                                    <i class="fas fa-arrow-left me-2"></i>Previous
+                                                </button>
+                                                <div>
+                                                    <button type="submit" name="action" value="save" class="btn btn-success me-2">
+                                                        <i class="fas fa-save me-2"></i>Save
+                                                    </button>
+                                                    <button type="submit" name="action" value="finish" class="btn btn-primary">
+                                                        <i class="fas fa-check me-2"></i>Finish
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!--**********************************
+    Content body end
+***********************************-->
+{% endblock %}
+
+{% block additional_js %}
+<script src="{{ url_for('static', filename='akademi/vendor/jquery-smartwizard/dist/js/jquery.smartWizard.js')}}"></script>
+<script src="{{ url_for('static', filename='akademi/vendor/bootstrap-datepicker-master/js/bootstrap-datepicker.min.js')}}"></script>
+<script src="{{ url_for('static', filename='akademi/js/teacher-validation.js')}}"></script>
+<script>
+$(document).ready(function(){
+    // Check if we need to restore a specific tab from URL or backend
+    var urlParams = new URLSearchParams(window.location.search);
+    var savedTab = urlParams.get('tab') || '{{ current_tab|default(0) }}';
+    
+    // Initialize Smart Wizard
+    var wizard = $('#smartwizard').smartWizard({
+        selected: parseInt(savedTab),
+        theme: 'default',
+        justified: true,
+        darkMode:false,
+        autoAdjustHeight: false,  // Disable auto height - let CSS handle it
+        cycleSteps: false,
+        backButtonSupport: true,
+        enableURLhash: false,
+        transition: {
+            animation:'none'
+        },
+        toolbarSettings: {
+            toolbarPosition: 'none'  // Hide default toolbar, we have custom buttons
+        }
+    });
+    
+    // No need for complex height refresh - CSS handles it now
+    function refreshWizardHeight() {
+        // Just ensure any hidden content is visible
+        $('#smartwizard .tab-pane.active').css('display', 'block');
+    }
+
+    // Initialize datepicker
+    $('.datepicker').datepicker({ 
+        autoclose: true, 
+        todayHighlight: true,
+        format: 'yyyy-mm-dd'
+    });
+
+    // Image upload preview
+    function readURL(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                $('#imagePreview').css('background-image', 'url('+e.target.result +')');
+                $('#imagePreview').hide();
+                $('#imagePreview').fadeIn(650);
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+    
+    $("#imageUpload").change(function() {
+        readURL(this);
+    });
+    
+    $('.remove-img').on('click', function() {
+        var imageUrl = "{{ url_for('static', filename='akademi/images/no-img-avatar.png')}}";
+        $('.avatar-preview, #imagePreview').removeAttr('style');
+        $('#imagePreview').css('background-image', 'url(' + imageUrl + ')');
+        // Clear file input and mark removal so backend can delete stored photo
+        $('#imageUpload').val('');
+        $('#remove_photo').val('1');
+    });
+
+    // If user selects a new image, unset the remove flag
+    $("#imageUpload").on('change', function() {
+        $('#remove_photo').val('0');
+    });
+
+    // Add Department
+    $('#add-department').click(function() {
+        var html = `
+            <div class="department-row mb-3 p-3 border rounded">
+                <div class="row align-items-end">
+                    <div class="col-md-5">
+                        <label class="form-label">Department</label>
+                        <select name="dept_id[]" class="form-control">
+                            <option value="">Select Department</option>
+                            {% for dept in all_departments %}
+                            <option value="{{ dept.id }}">{{ dept.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Assigned Date</label>
+                        <input type="text" name="dept_date[]" class="form-control datepicker">
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="dept_primary[]" value="1">
+                            <label class="form-check-label">Primary</label>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="button" class="btn btn-danger btn-sm remove-dept">Remove</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        $('#departments-container').append(html);
+        $('.datepicker').datepicker({ autoclose: true, todayHighlight: true, format: 'yyyy-mm-dd' });
+        refreshWizardHeight();
+    });
+
+    // Remove Department
+    $(document).on('click', '.remove-dept', function() {
+        $(this).closest('.department-row').remove();
+        refreshWizardHeight();
+    });
+
+    // Add Designation
+    $('#add-designation').click(function() {
+        var html = `
+            <div class="designation-row mb-3 p-3 border rounded">
+                <div class="row align-items-end">
+                    <div class="col-md-5">
+                        <label class="form-label">Designation</label>
+                        <select name="desig_id[]" class="form-control">
+                            <option value="">Select Designation</option>
+                            {% for desig in all_designations %}
+                            <option value="{{ desig.id }}">{{ desig.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Assigned Date</label>
+                        <input type="text" name="desig_date[]" class="form-control datepicker">
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="desig_primary[]" value="1">
+                            <label class="form-check-label">Primary</label>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="button" class="btn btn-danger btn-sm remove-designation">Remove</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        $('#designations-container').append(html);
+        $('.datepicker').datepicker({ autoclose: true, todayHighlight: true, format: 'yyyy-mm-dd' });
+        refreshWizardHeight();
+    });
+
+    // Remove Designation
+    $(document).on('click', '.remove-designation', function() {
+        $(this).closest('.designation-row').remove();
+        refreshWizardHeight();
+    });
+
+    // Add Subject
+    $('#add-subject').click(function() {
+        var html = `
+            <div class="subject-row mb-3 p-3 border rounded">
+                <div class="row align-items-end">
+                    <div class="col-md-4">
+                        <label class="form-label">Subject</label>
+                        <select name="subj_id[]" class="form-control">
+                            <option value="">Select Subject</option>
+                            {% for subj in all_subjects %}
+                            <option value="{{ subj.id }}">{{ subj.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Proficiency Level</label>
+                        <select name="subj_proficiency[]" class="form-control">
+                            <option value="Expert">Expert</option>
+                            <option value="Advanced" selected>Advanced</option>
+                            <option value="Intermediate">Intermediate</option>
+                            <option value="Basic">Basic</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Assigned Date</label>
+                        <input type="text" name="subj_date[]" class="form-control datepicker">
+                    </div>
+                    <div class="col-md-2">
+                        <button type="button" class="btn btn-danger btn-sm remove-subject">Remove</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        $('#subjects-container').append(html);
+        $('.datepicker').datepicker({ autoclose: true, todayHighlight: true, format: 'yyyy-mm-dd' });
+        refreshWizardHeight();
+    });
+
+    // Remove Subject
+    $(document).on('click', '.remove-subject', function() {
+        $(this).closest('.subject-row').remove();
+        refreshWizardHeight();
+    });
+
+    // Add Qualification
+    $('#add-qualification').click(function() {
+        var html = `
+            <div class="qualification-row mb-3 p-3 border rounded bg-light">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Qualification Name<span class="required">*</span></label>
+                            <input type="text" name="qual_name[]" class="form-control" placeholder="e.g., B.Ed, M.Sc">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Qualification Type</label>
+                            <select name="qual_type[]" class="form-control">
+                                <option value="">Select Type</option>
+                                <option value="B.Ed">B.Ed</option>
+                                <option value="M.Ed">M.Ed</option>
+                                <option value="PhD">PhD</option>
+                                <option value="M.Sc">M.Sc</option>
+                                <option value="M.A">M.A</option>
+                                <option value="B.Sc">B.Sc</option>
+                                <option value="B.A">B.A</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Institution</label>
+                            <input type="text" name="qual_institution[]" class="form-control">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Specialization</label>
+                            <input type="text" name="qual_specialization[]" class="form-control">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Year of Completion</label>
+                            <input type="number" name="qual_year[]" class="form-control" min="1950" max="2050">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <div class="form-check mt-4">
+                                <input class="form-check-input" type="checkbox" name="qual_highest[]" value="1">
+                                <label class="form-check-label">Highest</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="button" class="btn btn-danger btn-sm remove-qualification">Remove</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        $('#qualifications-container').append(html);
+        refreshWizardHeight();
+    });
+
+    // Remove Qualification
+    $(document).on('click', '.remove-qualification', function() {
+        $(this).closest('.qualification-row').remove();
+        refreshWizardHeight();
+    });
+
+    // Add Experience
+    $('#add-experience').click(function() {
+        var html = `
+            <div class="experience-row mb-3 p-3 border rounded bg-light">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Institution/School<span class="required">*</span></label>
+                            <input type="text" name="exp_institution[]" class="form-control">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Role/Position<span class="required">*</span></label>
+                            <input type="text" name="exp_role[]" class="form-control">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label class="form-label">From Date</label>
+                            <input type="text" name="exp_from[]" class="form-control datepicker">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label class="form-label">To Date</label>
+                            <input type="text" name="exp_to[]" class="form-control datepicker" placeholder="Leave blank if current">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label class="form-label">Duration (Months)</label>
+                            <input type="number" name="exp_duration[]" class="form-control">
+                        </div>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="mb-3">
+                            <label class="form-label">Description</label>
+                            <textarea name="exp_description[]" class="form-control" rows="2"></textarea>
+                        </div>
+                    </div>
+                    <div class="col-md-10">
+                        <div class="mb-3">
+                            <label class="form-label">Reason for Leaving</label>
+                            <input type="text" name="exp_reason[]" class="form-control">
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="button" class="btn btn-danger btn-sm mt-4 remove-experience">Remove</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        $('#experience-container').append(html);
+        $('.datepicker').datepicker({ autoclose: true, todayHighlight: true, format: 'yyyy-mm-dd' });
+        refreshWizardHeight();
+    });
+
+    // Remove Experience
+    $(document).on('click', '.remove-experience', function() {
+        $(this).closest('.experience-row').remove();
+        refreshWizardHeight();
+    });
+
+    // Add Certification
+    $('#add-certification').click(function() {
+        var html = `
+            <div class="certification-row mb-3 p-3 border rounded bg-light">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Certification Name<span class="required">*</span></label>
+                            <input type="text" name="cert_name[]" class="form-control">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Certification Type</label>
+                            <select name="cert_type[]" class="form-control">
+                                <option value="">Select Type</option>
+                                <option value="CTET">CTET</option>
+                                <option value="TET">TET</option>
+                                <option value="NET">NET</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Issuing Authority</label>
+                            <input type="text" name="cert_authority[]" class="form-control">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Certificate Number</label>
+                            <input type="text" name="cert_number[]" class="form-control">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label class="form-label">Issue Date</label>
+                            <input type="text" name="cert_issue_date[]" class="form-control datepicker">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label class="form-label">Expiry Date</label>
+                            <input type="text" name="cert_expiry_date[]" class="form-control datepicker" placeholder="Leave blank if no expiry">
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="mb-3">
+                            <div class="form-check mt-4">
+                                <input class="form-check-input" type="checkbox" name="cert_valid[]" value="1" checked>
+                                <label class="form-check-label">Valid</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="button" class="btn btn-danger btn-sm mt-4 remove-certification">Remove</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        $('#certifications-container').append(html);
+        $('.datepicker').datepicker({ autoclose: true, todayHighlight: true, format: 'yyyy-mm-dd' });
+        refreshWizardHeight();
+    });
+
+    // Remove Certification
+    $(document).on('click', '.remove-certification', function() {
+        $(this).closest('.certification-row').remove();
+        refreshWizardHeight();
+    });
+
+    // Add Document Upload Row
+    $('#add-document-row').click(function() {
+        var html = `
+            <div class="document-upload-row mb-3 p-3 border rounded bg-light">
+                <div class="row align-items-end">
+                    <div class="col-md-4">
+                        <label class="form-label">Document Type<span class="required">*</span></label>
+                        <select name="doc_type[]" class="form-control" required>
+                            <option value="">Select Type</option>
+                            <option value="Resume">Resume</option>
+                            <option value="Degree">Degree</option>
+                            <option value="Marksheet">Marksheet</option>
+                            <option value="ID Proof">ID Proof</option>
+                            <option value="Experience Letter">Experience Letter</option>
+                            <option value="Police Verification">Police Verification</option>
+                            <option value="Medical Certificate">Medical Certificate</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Upload File<span class="required">*</span></label>
+                        <input type="file" name="documents[]" class="form-control" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" required>
+                        <small class="text-muted">PDF, DOC, DOCX, JPG, PNG</small>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="button" class="btn btn-danger btn-sm remove-document-row">Remove</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        $('#upload-documents-container').append(html);
+        refreshWizardHeight();
+    });
+
+    // Remove Document Upload Row
+    $(document).on('click', '.remove-document-row', function() {
+        $(this).closest('.document-upload-row').remove();
+        refreshWizardHeight();
+    });
+
+    // Delete existing uploaded document (AJAX)
+    $(document).on('click', '.delete-doc', function() {
+        var btn = $(this);
+        var docId = btn.data('doc-id');
+        if (!docId) return;
+
+        if (!confirm('Are you sure you want to delete this document? This action cannot be undone.')) return;
+
+        // Build endpoint: /<tenant_slug>/teachers/<id>/documents/<doc_id>/delete
+        var tenantSlug = '{{ school.slug }}';
+        var teacherId = '{{ teacher.id }}';
+        var url = '/' + tenantSlug + '/teachers/' + teacherId + '/documents/' + docId + '/delete';
+
+        // Send POST request
+        $.ajax({
+            url: url,
+            method: 'POST',
+            dataType: 'json'
+        }).done(function(resp) {
+            if (resp && resp.success) {
+                // Remove the table row
+                $('tr[data-doc-id="' + docId + '"]').remove();
+                alert(resp.message || 'Document deleted');
+                refreshWizardHeight();
+            } else {
+                alert(resp.message || 'Failed to delete document');
+            }
+        }).fail(function(xhr) {
+            var msg = 'Error deleting document';
+            try { msg = xhr.responseJSON.message || msg; } catch(e) {}
+            alert(msg);
+        });
+    });
+
+    // Handle custom navigation buttons
+    $('.tab-next-btn').on('click', function() {
+        wizard.smartWizard("next");
+    });
+    
+    $('.tab-prev-btn').on('click', function() {
+        wizard.smartWizard("prev");
+    });
+    
+    // Update hidden field when tab changes
+    $("#smartwizard").on("showStep", function(e, anchorObject, stepIndex, stepDirection, stepPosition) {
+        $('#current_tab').val(stepIndex);
+        console.log('Tab changed to:', stepIndex); // Debug log
+    });
+    
+    // Form submission handling
+    $('#teacherProfileForm').on('submit', function(e) {
+        // Update the current tab value right before submission to ensure accuracy
+        var currentStepIndex = wizard.smartWizard("getStepIndex");
+        $('#current_tab').val(currentStepIndex);
+        console.log('Submitting with tab:', currentStepIndex); // Debug log
+        
+        var action = $('button[type="submit"][name="action"]:focus').val() || 
+                     $('button[type="submit"][name="action"][clicked]').val() || 
+                     'save';
+        
+        // Store the clicked action
+        var actionInput = $('<input>').attr({
+            type: 'hidden',
+            name: 'submit_action',
+            value: action
+        });
+        $(this).append(actionInput);
+        
+        var currentTab = $('#current_tab').val();
+        
+        // For save action, we want to reload with current tab
+        if (action === 'save') {
+            // Add current tab to form action URL
+            var form = $(this);
+            var currentAction = form.attr('action') || window.location.pathname;
+            
+            // Remove any existing tab parameter
+            if (currentAction.indexOf('?') > -1) {
+                currentAction = currentAction.split('?')[0];
+            }
+            
+            form.attr('action', currentAction + '?tab=' + currentTab);
+        }
+        // For finish action, redirect will be handled by backend
+        
+        var isValid = true;
+        // Add custom validation here if needed
+        if (!isValid) {
+            e.preventDefault();
+            alert('Please fill all required fields');
+        }
+    });
+    
+    // Track which submit button was clicked
+    $('button[type="submit"][name="action"]').on('click', function() {
+        $('button[type="submit"][name="action"]').removeAttr('clicked');
+        $(this).attr('clicked', 'true');
+    });
+
+    // ===== SALARY CALCULATION FUNCTIONS =====
+    
+    // Simple Salary Calculation
+    function calculateSalarySimple() {
+        // Get all values
+        let basic = parseFloat($('#basic_salary').val()) || 0;
+        let gradePay = parseFloat($('#grade_pay').val()) || 0;
+        let hra = parseFloat($('#hra').val()) || 0;
+        let da = parseFloat($('#da').val()) || 0;
+        let ta = parseFloat($('#ta').val()) || 0;
+        let medical = parseFloat($('#medical_allowance').val()) || 0;
+        let special = parseFloat($('#special_allowance').val()) || 0;
+        let otherAllow = parseFloat($('#other_allowances').val()) || 0;
+        
+        let pfEmp = parseFloat($('#pf_employee').val()) || 0;
+        let pfEmpr = parseFloat($('#pf_employer').val()) || 0;
+        let esiEmp = parseFloat($('#esi_employee').val()) || 0;
+        let esiEmpr = parseFloat($('#esi_employer').val()) || 0;
+        let profTax = parseFloat($('#professional_tax').val()) || 0;
+        let tds = parseFloat($('#tds').val()) || 0;
+        let otherDed = parseFloat($('#other_deductions').val()) || 0;
+        
+        // Calculate
+        let gross = basic + gradePay + hra + da + ta + medical + special + otherAllow;
+        let totalDeductions = pfEmp + esiEmp + profTax + tds + otherDed;
+        let net = gross - totalDeductions;
+        let ctc = (gross + pfEmpr + esiEmpr) * 12;
+        
+        // Update display
+        $('#display_basic').text('₹ ' + basic.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2}));
+        $('#display_gross').text('₹ ' + gross.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2}));
+        $('#display_net').text('₹ ' + net.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2}));
+        $('#display_ctc').text('₹ ' + ctc.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2}));
+    }
+    
+    // Trigger calculation on any salary input change
+    $(document).on('change keyup', '.salary-input', function() {
+        calculateSalarySimple();
+    });
+    
+    // Initial calculation on page load
+    calculateSalarySimple();
+});
+</script>
+{% endblock %}

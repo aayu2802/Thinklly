@@ -1,0 +1,231 @@
+{% extends 'akademi/elements/layouts/admin.html' %}
+		
+{% block additional_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename=  'akademi/vendor/wow-master/css/libs/animate.css')}}">
+<link rel="stylesheet" href="{{ url_for('static', filename=  'akademi/vendor/bootstrap-datepicker-master/css/bootstrap-datepicker.min.css')}}">
+<link rel="stylesheet" href="{{ url_for('static', filename=  'akademi/vendor/datatables/css/jquery.dataTables.min.css')}}">
+<link rel="stylesheet" href="{{ url_for('static', filename=  'akademi/vendor/jquery-nice-select/css/nice-select.css')}}">
+{% endblock %}
+
+{% block content %}
+<!--**********************************
+    Content body start
+***********************************-->
+<div class="content-body">
+    <div class="container-fluid">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+        
+                <!-- Bulk CSV upload: download template and upload file -->
+                <div class="row mb-3">
+                        <div class="col-xl-12">
+                                <div class="card">
+                                        <div class="card-body d-flex align-items-center justify-content-between">
+                                                <div>
+                                                        <h5 class="mb-0">Bulk Teacher Upload</h5>
+                                                        <small class="text-muted">Download template CSV, edit and upload to add many teachers at once.</small>
+                                                </div>
+                                                <div>
+                                                    <form id="bulkTeacherUploadForm" action="{{ url_for('school.bulk_upload_teachers', tenant_slug=school.slug) }}" method="POST" enctype="multipart/form-data" class="mb-2">
+                                                        <input type="file" name="csv_file" accept=".csv" class="form-control form-control-sm" required>
+                                                    </form>
+                                                    <div class="d-flex align-items-center" style="gap:8px;">
+                                                        <a href="{{ url_for('school.download_teacher_template', tenant_slug=school.slug) }}" class="btn btn-outline-primary btn-sm">Download CSV Template</a>
+                                                        <button class="btn btn-primary btn-sm" type="button" onclick="document.getElementById('bulkTeacherUploadForm').submit();">Upload CSV</button>
+                                                    </div>
+                                                </div>
+                                        </div>
+                                </div>
+                        </div>
+                </div>
+
+                <form method="POST" enctype="multipart/form-data" id="addTeacherForm">
+        <div class="row">
+            <div class="col-xl-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Personal Details</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-xl-6 col-sm-6">
+                                <div class="mb-3">
+                                    <label for="employee_id" class="form-label text-primary">Employee ID<span class="required">*</span></label>
+                                    <input type="text" class="form-control" id="employee_id" name="employee_id" placeholder="EMP001" maxlength="50" required>
+                                    <small class="form-text text-muted">3-50 characters, letters, numbers, hyphens, and underscores only</small>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="first_name" class="form-label text-primary">First Name<span class="required">*</span></label>
+                                    <input type="text" class="form-control" id="first_name" name="first_name" placeholder="James" maxlength="100">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="middle_name" class="form-label text-primary">Middle Name</label>
+                                    <input type="text" class="form-control" id="middle_name" name="middle_name" placeholder="Robert" maxlength="100">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="last_name" class="form-label text-primary">Last Name<span class="required">*</span></label>
+                                    <input type="text" class="form-control" id="last_name" name="last_name" placeholder="Lee" maxlength="100">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="gender" class="form-label text-primary">Gender<span class="required">*</span></label>
+                                    <select class="form-control" id="gender" name="gender">
+                                        <option value="">Select Gender</option>
+                                        <option value="Male">Male</option>
+                                        <option value="Female">Female</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="date_of_birth" class="form-label text-primary">Date of Birth<span class="required">*</span></label>
+                                    <input class="form-control" type="text" id="date_of_birth" name="date_of_birth" required>
+                                    <small class="form-text text-muted">Teacher must be 18-70 years old</small>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="email" class="form-label text-primary">Email<span class="required">*</span></label>
+                                    <input type="email" class="form-control" id="email" name="email" placeholder="hello@example.com" maxlength="150">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="phone_primary" class="form-label text-primary">Phone Number (Primary)<span class="required">*</span></label>
+                                    <input type="text" class="form-control" id="phone_primary" name="phone_primary" placeholder="9876543210" maxlength="10" required>
+                                    <small class="form-text text-muted">Exactly 10 digits</small>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="phone_alternate" class="form-label text-primary">Phone Number (Alternate)</label>
+                                    <input type="text" class="form-control" id="phone_alternate" name="phone_alternate" placeholder="9876543210" maxlength="10">
+                                    <small class="form-text text-muted">Exactly 10 digits</small>
+                                </div>
+                            </div>
+                            <div class="col-xl-6 col-sm-6">
+                                <div class="mb-3">
+                                    <label class="form-label text-primary">Photo<span class="required">*</span></label>
+                                    <div class="avatar-upload">
+                                        <div class="avatar-preview">
+                                            <div id="imagePreview" style="background-image: url({{ url_for('static', filename=  'akademi/images/no-img-avatar.png')}});"> 			
+                                            </div>
+                                        </div>
+                                        <div class="change-btn mt-1">
+                                            <input type='file' class="form-control d-none" id="imageUpload" name="photo" accept=".png, .jpg, .jpeg">
+                                            <label for="imageUpload" class="dlab-upload mb-0 btn btn-primary btn-sm">Choose File</label>
+                                            <a href="javascript:void(0);" class="btn btn-danger light remove-img ms-2 btn-sm">Remove</a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="address_street" class="form-label text-primary">Street Address</label>
+                                    <textarea class="form-control" id="address_street" name="address_street" rows="3" maxlength="255"></textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="address_city" class="form-label text-primary">City</label>
+                                    <input type="text" class="form-control" id="address_city" name="address_city" placeholder="New York" maxlength="100">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="address_state" class="form-label text-primary">State</label>
+                                    <input type="text" class="form-control" id="address_state" name="address_state" placeholder="New York" maxlength="100">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="address_pincode" class="form-label text-primary">Pincode</label>
+                                    <input type="text" class="form-control" id="address_pincode" name="address_pincode" placeholder="123456" maxlength="6">
+                                    <small class="form-text text-muted">Exactly 6 digits</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Emergency Contact & Employment Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-xl-6 col-sm-6">
+                            <div class="mb-3">
+                                <label for="emergency_contact_name" class="form-label text-primary">Emergency Contact Name</label>
+                                <input type="text" class="form-control" id="emergency_contact_name" name="emergency_contact_name" placeholder="John Doe" maxlength="150">
+                            </div>
+                            <div class="mb-3">
+                                <label for="emergency_contact_number" class="form-label text-primary">Emergency Contact Number</label>
+                                <input type="text" class="form-control" id="emergency_contact_number" name="emergency_contact_number" placeholder="9876543210" maxlength="10">
+                                <small class="form-text text-muted">Exactly 10 digits</small>
+                            </div>
+                        </div>
+                        <div class="col-xl-6 col-sm-6">
+                            <div class="mb-3">
+                                <label for="joining_date" class="form-label text-primary">Joining Date<span class="required">*</span></label>
+                                <input type="text" class="form-control" id="joining_date" name="joining_date" required>
+                                <small class="form-text text-muted">Must be at least 18 years after Date of Birth</small>
+                            </div>
+                            <div class="mb-3">
+                                <label for="employee_status" class="form-label text-primary">Employee Status<span class="required">*</span></label>
+                                <select class="form-control" id="employee_status" name="employee_status">
+                                    <option value="Active" selected>Active</option>
+                                    <option value="Inactive">Inactive</option>
+                                    <option value="On Leave">On Leave</option>
+                                    <option value="Resigned">Resigned</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="float-end">
+                        <button class="btn btn-outline-primary me-3" type="button">Save as Draft</button>
+                        <button class="btn btn-primary" type="submit">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </form>
+</div>
+
+<!--**********************************
+    Content body end
+***********************************-->
+{% endblock %}
+{% block additional_js %}
+<script src="{{ url_for('static', filename='akademi/vendor/bootstrap-datepicker-master/js/bootstrap-datepicker.min.js')}}"></script>
+<script src="{{ url_for('static', filename='akademi/js/teacher-validation.js')}}"></script>
+<script>
+		$(function () {
+			  $("#date_of_birth, #joining_date").datepicker({ 
+					autoclose: true, 
+					todayHighlight: true,
+					format: 'yyyy-mm-dd'
+			  });
+		
+		});
+
+	</script>
+    
+    <script>	
+		function readURL(input) {
+    if (input.files && input.files[0]) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            $('#imagePreview').css('background-image', 'url('+e.target.result +')');
+            $('#imagePreview').hide();
+            $('#imagePreview').fadeIn(650);
+        }
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+$("#imageUpload").change(function() {
+    readURL(this);
+});
+	$('.remove-img').on('click', function() {
+		var imageUrl = "{{ url_for('static', filename=  'akademi/images/no-img-avatar.png')}}";
+		$('.avatar-preview, #imagePreview').removeAttr('style');
+		$('#imagePreview').css('background-image', 'url(' + imageUrl + ')');
+	});
+	
+	</script>
+{% endblock %}

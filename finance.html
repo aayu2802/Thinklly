@@ -1,0 +1,446 @@
+﻿{% extends 'akademi/elements/layouts/admin.html' %}
+
+{% block additional_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename=  'akademi/vendor/wow-master/css/libs/animate.css')}}">
+<link rel="stylesheet" href="{{ url_for('static', filename=  'akademi/vendor/datatables/css/jquery.dataTables.min.css')}}">
+{% endblock %}
+
+{% block content %}
+<!--**********************************
+	Content body start
+***********************************-->
+<div class="content-body">
+	<div class="container-fluid">
+		<!-- Quick Navigation -->
+		<div class="row mb-4">
+			<div class="col-xl-12">
+				<div class="card">
+					<div class="card-header border-0">
+						<h4 class="heading mb-0">Expense Management</h4>
+					</div>
+					<div class="card-body">
+						<div class="row">
+							<!-- <div class="col-xl-3 col-lg-4 col-md-6 mb-3">
+								<a href="{{ url_for('school.expense_dashboard', tenant_slug=request.view_args.get('tenant_slug', '')) }}" class="btn btn-primary btn-block w-100 p-3">
+									<i class="fas fa-tachometer-alt me-2"></i> Expense Dashboard
+								</a>
+							</div> -->
+							<div class="col-xl-3 col-lg-4 col-md-6 mb-3">
+								<a href="{{ url_for('school.add_expense', tenant_slug=request.view_args.get('tenant_slug', '')) }}" class="btn btn-success btn-block w-100 p-3">
+									<i class="fas fa-plus-circle me-2"></i> Add Expense
+								</a>
+							</div>
+							<div class="col-xl-3 col-lg-4 col-md-6 mb-3">
+								<a href="{{ url_for('school.expense_list', tenant_slug=request.view_args.get('tenant_slug', '')) }}" class="btn btn-info btn-block w-100 p-3">
+									<i class="fas fa-list me-2"></i> Expense List
+								</a>
+							</div>
+							<div class="col-xl-3 col-lg-4 col-md-6 mb-3">
+								<a href="{{ url_for('school.budget_setup', tenant_slug=request.view_args.get('tenant_slug', '')) }}" class="btn btn-warning btn-block w-100 p-3">
+									<i class="fas fa-wallet me-2"></i> Budget Setup
+								</a>
+							</div>
+							<div class="col-xl-3 col-lg-4 col-md-6 mb-3">
+								<a href="{{ url_for('school.expense_reports', tenant_slug=request.view_args.get('tenant_slug', '')) }}" class="btn btn-secondary btn-block w-100 p-3">
+									<i class="fas fa-chart-bar me-2"></i> Reports
+								</a>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="col-xl-3 col-sm-6">
+				<div class="card">
+					<div class="card-body">
+						<ul class="d-flex align-items-center">
+							<li class="icon-box icon-box-lg bg-primary me-3">
+								<svg width="30" height="38" viewBox="0 0 30 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+										<path fill-rule="evenodd" clip-rule="evenodd" d="M12.9288 37.75H3.75C1.67875 37.75 0 36.0713 0 34V23.5863C0 21.7738 1.29625 20.2213 3.07875 19.8975C5.72125 19.4163 10.2775 18.5875 12.855 18.12C14.2737 17.8612 15.7263 17.8612 17.145 18.12C19.7225 18.5875 24.2788 19.4163 26.9213 19.8975C28.7038 20.2213 30 21.7738 30 23.5863C30 26.3125 30 31.0825 30 34C30 36.0713 28.3212 37.75 26.25 37.75H12.9288ZM24.785 22.05L24.79 22.0563C25.0088 22.3838 25.06 22.795 24.9287 23.1662L24.0462 25.6662C23.9312 25.9925 23.685 26.2575 23.3675 26.3963L21.7075 27.12L22.3675 28.4412C22.5525 28.81 22.5425 29.2462 22.3425 29.6075L19.2075 35.25H26.25C26.94 35.25 27.5 34.69 27.5 34C27.5 31.0825 27.5 26.3125 27.5 23.5863C27.5 22.9825 27.0675 22.465 26.4738 22.3562L24.785 22.05ZM21.3663 21.4275L16.6975 20.5788C15.575 20.375 14.425 20.375 13.3025 20.5788L8.63375 21.4275L7.63625 22.9238L8.13 24.3213L10.5 25.3537C10.8138 25.4912 11.0575 25.7512 11.175 26.0737C11.2925 26.3962 11.2712 26.7525 11.1175 27.0588L10.1625 28.9688L13.6525 35.25H16.3475L19.8375 28.9688L18.8825 27.0588C18.7288 26.7525 18.7075 26.3962 18.825 26.0737C18.9425 25.7512 19.1862 25.4912 19.5 25.3537L21.87 24.3213L22.3638 22.9238L21.3663 21.4275ZM5.215 22.05L3.52625 22.3562C2.9325 22.465 2.5 22.9825 2.5 23.5863V34C2.5 34.69 3.06 35.25 3.75 35.25H10.7925L7.6575 29.6075C7.4575 29.2462 7.4475 28.81 7.6325 28.4412L8.2925 27.12L6.6325 26.3963C6.315 26.2575 6.06875 25.9925 5.95375 25.6662L5.07125 23.1662C4.94 22.795 4.99125 22.3838 5.21 22.0563L5.215 22.05ZM23.75 29V31.5C23.75 32.19 24.31 32.75 25 32.75C25.69 32.75 26.25 32.19 26.25 31.5V29C26.25 28.31 25.69 27.75 25 27.75C24.31 27.75 23.75 28.31 23.75 29ZM15 0.25C10.5163 0.25 6.875 3.89125 6.875 8.375C6.875 12.8587 10.5163 16.5 15 16.5C19.4837 16.5 23.125 12.8587 23.125 8.375C23.125 3.89125 19.4837 0.25 15 0.25ZM15 2.75C18.105 2.75 20.625 5.27 20.625 8.375C20.625 11.48 18.105 14 15 14C11.895 14 9.375 11.48 9.375 8.375C9.375 5.27 11.895 2.75 15 2.75Z" fill="white"/>
+									</svg>
+							</li>
+							<li>
+								<span>Total Students</span>
+								<h3 class="my-1">{{ total_students }}</h3>
+								<span class="text-muted">Active Students</span>
+							</li>
+						</ul>
+					</div>
+				</div>
+			</div>
+			<div class="col-xl-3 col-sm-6">
+				<div class="card">
+					<div class="card-body">
+						<ul class="d-flex align-items-center">
+							<li class="icon-box icon-box-lg bg-secondary me-3">
+								<svg width="30" height="38" viewBox="0 0 30 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+									<path fill-rule="evenodd" clip-rule="evenodd" d="M0 34C0 36.0713 1.67875 37.75 3.75 37.75H26.25C28.3212 37.75 30 36.0713 30 34C30 31.0825 30 26.3125 30 23.5863C30 21.7738 28.7038 20.2213 26.9213 19.8975C24.2788 19.4163 19.7225 18.5875 17.145 18.12C15.7263 17.8612 14.2737 17.8612 12.855 18.12C10.2775 18.5875 5.72125 19.4163 3.07875 19.8975C1.29625 20.2213 0 21.7738 0 23.5863V34ZM17.885 20.795L19.7612 27.9288C20.0075 28.865 19.6775 29.8588 18.92 30.4638C18.28 30.9738 17.2713 31.7788 16.5713 32.3388C15.6525 33.0713 14.3475 33.0713 13.4287 32.3388C12.7287 31.7788 11.72 30.9738 11.08 30.4638C10.3225 29.8588 9.9925 28.865 10.2388 27.9288L12.115 20.795L3.52625 22.3562C2.9325 22.465 2.5 22.9825 2.5 23.5863V34C2.5 34.69 3.06 35.25 3.75 35.25C8.98 35.25 21.02 35.25 26.25 35.25C26.94 35.25 27.5 34.69 27.5 34C27.5 31.0825 27.5 26.3125 27.5 23.5863C27.5 22.9825 27.0675 22.465 26.4738 22.3562L17.885 20.795ZM15.2038 20.4288C15.0675 20.425 14.9325 20.425 14.7962 20.4288L12.6663 28.5312L14.9887 30.3837C14.995 30.39 15.005 30.39 15.0113 30.3837L17.3337 28.5312L15.2038 20.4288ZM15 0.25C10.5163 0.25 6.875 3.89125 6.875 8.375C6.875 12.8587 10.5163 16.5 15 16.5C19.4837 16.5 23.125 12.8587 23.125 8.375C23.125 3.89125 19.4837 0.25 15 0.25ZM15 2.75C18.105 2.75 20.625 5.27 20.625 8.375C20.625 11.48 18.105 14 15 14C11.895 14 9.375 11.48 9.375 8.375C9.375 5.27 11.895 2.75 15 2.75Z" fill="white"/>
+								</svg>
+							</li>
+							<li>
+								<span>Total Teachers</span>
+								<h3 class="my-1">{{ total_teachers }}</h3>
+								<span class="text-muted">Active Teachers</span>
+							</li>
+						</ul>
+					</div>
+				</div>
+			</div>
+			<div class="col-xl-6">
+				<div class="card">
+					<div class="card-body pb-0">
+						<div class="d-sm-flex d-block align-items-center justify-content-between">
+							<ul class="d-flex align-items-center">
+								<li class="icon-box icon-box-lg bg-warning me-3">
+									<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+										<path d="M36.2365 21.8435C33.9956 21.0315 31.5096 21.212 29.4077 22.3374L25.9812 23.8788C25.7043 22.3007 24.4923 21.1148 22.9963 21.0692C22.9875 21.069 17.8587 21.0111 17.8587 21.0111C13.7536 19.885 11.0862 21.332 9.56458 22.7579C9.25338 23.0496 8.9797 23.3498 8.73885 23.646C8.32825 23.2038 7.60347 23.0856 7.07492 23.3762L2.41928 25.9354C1.81543 26.2674 1.5527 26.9956 1.80594 27.6358L6.35586 39.1377C6.65483 39.8934 7.57364 40.2274 8.29056 39.8333L12.9462 37.2742C13.3826 37.0343 13.6395 36.5873 13.6536 36.1162H20.6022C21.7356 36.1162 22.8546 35.8185 23.8382 35.2553C23.8382 35.2553 36.9065 27.7589 36.9803 27.6919C38.8104 26.027 38.8668 22.7966 36.2365 21.8435C37.2858 22.2237 33.9956 21.0315 36.2365 21.8435ZM8.33218 36.688L4.7968 27.7508L7.03304 26.5216L10.5684 35.4588L8.33218 36.688ZM35.2316 25.5773L22.4747 32.8826C21.9054 33.2087 21.2578 33.381 20.6019 33.381H12.6919L10.036 26.667C10.2636 26.2034 10.7117 25.4342 11.4394 24.7522C12.93 23.3555 14.8946 22.998 17.2791 23.6898C17.3983 23.7244 17.5218 23.7427 17.6459 23.7441L22.918 23.8034C23.0526 23.815 23.3011 24.1143 23.3011 24.568C23.3011 25.035 23.0445 25.3327 22.9103 25.3327H17.7302V28.0679H22.9103C23.552 28.0679 24.1492 27.8509 24.6463 27.4791L30.5779 24.8109C30.6094 24.7968 30.6401 24.7815 30.6704 24.765C32.0933 23.9914 33.7815 23.8636 35.3018 24.4145C35.9035 24.6326 35.4688 25.3364 35.2316 25.5773ZM27 19.7079C21.5669 19.7079 17.1467 15.2874 17.1467 9.85393C17.1467 4.42051 21.5668 0 27 0C32.4331 0 36.8532 4.42051 36.8532 9.85393C36.8532 15.2874 32.433 19.7079 27 19.7079ZM27 2.73521C23.0775 2.73521 19.8864 5.92863 19.8864 9.85393C19.8864 13.7792 23.0776 16.9727 27 16.9727C30.9225 16.9727 34.1136 13.7791 34.1136 9.85393C34.1136 5.92872 30.9224 2.73521 27 2.73521Z" fill="white"/>
+										<path d="M27.6362 8.73923C26.5469 8.29188 26.4627 8.09966 26.4627 7.87684C26.4627 7.73453 26.5333 7.40368 27.1876 7.40368C27.7862 7.40368 28.532 7.73966 29.058 8.0859L29.7897 6.16795C29.2673 5.83539 28.6324 5.54966 28.0388 5.45829V4.21103H26.0879V5.57966C24.9289 5.94496 24.2147 6.87146 24.2147 8.02479C24.2147 9.55231 25.4368 10.2343 26.6304 10.6991C27.5841 11.0828 27.664 11.3765 27.664 11.6217C27.664 11.9989 27.3164 12.2426 26.7785 12.2426C26.077 12.2426 25.2614 11.838 24.6903 11.3952L23.9863 13.3439C24.5686 13.7954 25.2426 14.0933 26.0009 14.2045V15.4969H27.964V14.0901C29.1592 13.7095 29.9242 12.7193 29.9242 11.5354C29.9242 9.87812 28.7015 9.1706 27.6362 8.73923Z" fill="white"/>
+										</svg>
+								</li>
+								<li>
+									<span>School Balance</span>
+									<h3 class="my-1">₹{{ "{:,.2f}".format(school_balance) }}</h3>
+									<span class="text-muted">Income - Expenses ({{ today.strftime('%Y') }})</span>
+								</li>
+							</ul>
+							<ul>
+								<li id="NewCustomers"></li>
+							</ul>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="col-xl-6">
+				<div class="card h-auto">
+					<div class="card-header border-0 pb-0">
+						<h3 class="heading mb-0">Fee Collection Summary</h3>
+						<div class="p-static">
+							<div class="d-flex align-items-center mb-3 mb-sm-0">
+								<div class="round weekly" id="dzOldSeries">
+									<div>
+										<input type="checkbox" id="checkbox1" name="radio" value="weekly" checked>
+										<label for="checkbox1" class="checkmark"></label>
+									</div>
+									<div>
+										<span class="fs-14">Monthly</span>
+										<h4 class="fs-5 font-w600 mb-0">₹{{ "{:,.0f}".format(monthly_fee_collection) }}</h4>
+									</div>
+								</div>
+								<div class="round " id="dzNewSeries">
+									<div>
+										<input type="checkbox" id="checkbox" name="radio" value="monthly">
+										<label for="checkbox" class="checkmark"></label>
+									</div>
+									<div>
+										<span class="fs-14">Yearly</span>
+										<h4 class="fs-5 font-w600 mb-0">₹{{ "{:,.0f}".format(yearly_fee_collection) }}</h4>
+									</div>	
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="card-body px-2 pb-0">
+						<div id="marketChart"></div>
+					</div>
+				</div>
+			</div>
+			<div class="col-xl-6 col-lg-12">
+				<div class="card">
+					<div class="card-header border-0 p-static pb-2">	
+						<div>
+							<h4 class="card-title">Income vs Expenses ({{ today.strftime('%Y') }})</h4>
+						</div>
+					</div>
+					<div class="card-body tab-content p-3 py-0">
+						<div class="tab-pane fade show active" id="monthly">
+							<div id="chartTimeline"></div>
+						</div>
+						
+					</div>
+				</div>
+			</div>
+			<div class="col-xl-7">
+				<div class="card">
+					<div class="card-header border-0 p-3">
+						<h4 class="heading mb-0">Students with Pending Fees</h4>
+					</div>
+					<div class="card-body p-0">
+						<div class="table-responsive basic-tbl">
+							<table id="example-1" class="display" style="min-width: 700px">
+								<thead>
+									<tr>
+										<th>Name</th>
+										<th>Admission No.</th>
+										<th>Class</th>
+										<th>Pending Fees</th>
+										<th>Status</th>
+										<th>Action</th>
+									</tr>
+								</thead>
+								<tbody>
+									{% for fee in unpaid_students %}
+									<tr>
+										<td>
+											<div class="trans-list">
+												{% if fee.student and fee.student.photo_url %}
+												<img src="{{ url_for('static', filename=fee.student.photo_url) }}" alt="" class="avatar avatar-sm me-3">
+												{% else %}
+												<img src="{{ url_for('static', filename='akademi/images/profile.svg') }}" alt="" class="avatar avatar-sm me-3">
+												{% endif %}
+												<h4>{{ fee.student.full_name if fee.student else 'N/A' }}</h4>
+											</div>
+										</td>
+										<td><span class="text-primary font-w600">{{ fee.student.admission_number if fee.student else 'N/A' }}</span></td>
+										<td>
+											<div class="d-flex align-items-center">	
+												<div class="icon-box icon-box-sm bg-secondary">
+													<img src="{{ url_for('static', filename='akademi/images/profile.svg') }}" alt="">
+												</div>	
+												<div class="ms-2">
+													<span class="mb-0">Class</span>
+													<h6 class="text-primary mb-0 font-w600">{% if fee.student and fee.student.student_class %}{{ fee.student.student_class.class_name }}-{{ fee.student.student_class.section }}{% else %}N/A{% endif %}</h6>
+												</div>
+											</div>
+										</td>
+										<td><span class="text-danger font-w600">â‚¹{{ '{:,.2f}'.format(fee.balance_amount|float) }}</span></td>
+										<td>
+											{% if fee.status.value == 'Overdue' %}
+											<span class="badge bg-danger">Overdue</span>
+											{% elif fee.status.value == 'Partially Paid' %}
+											<span class="badge bg-warning">Partial</span>
+											{% else %}
+											<span class="badge bg-secondary">Pending</span>
+											{% endif %}
+										</td>
+										<td>
+											<a href="{{ url_for('school.fee_management', tenant_slug=school.slug) }}" class="btn btn-sm btn-primary">View</a>
+										</td>
+									</tr>
+									{% else %}
+									<tr>
+										<td colspan="6" class="text-center py-3">No students with pending fees</td>
+									</tr>
+									{% endfor %}
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="col-xl-5">
+				<div class="card">
+					<div class="card-header border-0 p-3">
+						<h4 class="heading mb-0">Recent Expenses</h4>
+					</div>
+					<div class="card-body p-0">
+						<div class="table-responsive">
+							<table class="table table-hover">
+								<thead>
+									<tr>
+										<th>Category</th>
+										<th>Date</th>
+										<th class="text-end">Amount</th>
+										<th class="text-center">Status</th>
+									</tr>
+								</thead>
+								<tbody>
+									{% for expense in recent_expenses %}
+									<tr>
+										<td>
+											<div class="d-flex align-items-center">
+												<div class="icon-box bg-primary-light icon-box-sm me-2">
+													<i class="fa fa-money text-primary"></i>
+												</div>
+												<span class="font-w600">{{ expense.category.value if expense.category else 'Other' }}</span>
+											</div>
+										</td>
+										<td>
+											<span class="text-muted">{{ expense.expense_date.strftime('%d %b %Y') if expense.expense_date else 'N/A' }}</span>
+										</td>
+										<td class="text-end">
+											<span class="font-w600">₹{{ '{:,.2f}'.format(expense.amount|float) }}</span>
+										</td>
+										<td class="text-center">
+											{% if expense.status and expense.status.value == 'Approved' %}
+											<span class="badge badge-sm badge-success light">Approved</span>
+											{% elif expense.status and expense.status.value == 'Rejected' %}
+											<span class="badge badge-sm badge-danger light">Rejected</span>
+											{% else %}
+											<span class="badge badge-sm badge-warning light">Pending</span>
+											{% endif %}
+										</td>
+									</tr>
+									{% else %}
+									<tr>
+										<td colspan="4" class="text-center py-4">
+											<i class="fa fa-inbox fa-2x text-muted mb-2"></i>
+											<p class="text-muted mb-0">No recent expenses</p>
+										</td>
+									</tr>
+									{% endfor %}
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<!--**********************************
+    Content body end
+***********************************-->
+{% endblock %}
+{% block additional_js %}
+<script src="{{ url_for('static', filename='akademi/vendor/datatables/js/jquery.dataTables.min.js')}}"></script>
+<script src="{{ url_for('static', filename='akademi/js/plugins-init/datatables.init.js')}}"></script>
+<script src="{{ url_for('static', filename='akademi/vendor/chart.js/Chart.bundle.min.js')}}"></script>
+<script src="{{ url_for('static', filename='akademi/vendor/apexchart/apexchart.js')}}"></script>
+<script src="{{ url_for('static', filename='akademi/vendor/jquery-nice-select/js/jquery.nice-select.min.js')}}"></script>
+<script src="{{ url_for('static', filename='akademi/vendor/wow-master/dist/wow.min.js')}}"></script>
+
+<script>
+(function($) {
+    "use strict";
+
+    // Fee Collection Chart (marketChart)
+    var options = {
+        series: [{
+            name: 'Fee Collection',
+            data: {{ monthly_income_trend }}
+        }],
+        chart: {
+            height: 300,
+            type: 'area',
+            toolbar: {
+                show: false
+            },
+        },
+        dataLabels: {
+            enabled: false
+        },
+        stroke: {
+            curve: 'smooth',
+            width: 3,
+            colors: ['#FF9B52']
+        },
+        fill: {
+            type: 'gradient',
+            gradient: {
+                shadeIntensity: 1,
+                opacityFrom: 0.5,
+                opacityTo: 0.1,
+            }
+        },
+        colors: ['#FF9B52'],
+        xaxis: {
+            categories: {{ month_labels | tojson }},
+            labels: {
+                style: {
+                    colors: '#787878',
+                    fontSize: '13px',
+                    fontFamily: 'poppins',
+                    fontWeight: 100
+                }
+            }
+        },
+        yaxis: {
+            labels: {
+                formatter: function(value) {
+                    return '₹' + value.toLocaleString();
+                },
+                style: {
+                    colors: '#787878',
+                    fontSize: '13px',
+                    fontFamily: 'poppins',
+                    fontWeight: 100
+                }
+            }
+        },
+        grid: {
+            borderColor: '#f1f1f1',
+        },
+        tooltip: {
+            y: {
+                formatter: function(value) {
+                    return '₹' + value.toLocaleString();
+                }
+            }
+        }
+    };
+
+    var marketChart = new ApexCharts(document.querySelector("#marketChart"), options);
+    marketChart.render();
+
+    // Income vs Expenses Chart (chartTimeline)
+    var timelineOptions = {
+        series: [{
+            name: 'Income',
+            data: {{ monthly_income_trend }}
+        }, {
+            name: 'Expenses',
+            data: {{ monthly_expense_trend }}
+        }],
+        chart: {
+            height: 300,
+            type: 'line',
+            toolbar: {
+                show: false
+            },
+        },
+        colors: ['#3AB67A', '#FF5E5E'],
+        dataLabels: {
+            enabled: false
+        },
+        stroke: {
+            curve: 'smooth',
+            width: 3
+        },
+        xaxis: {
+            categories: {{ month_labels | tojson }},
+            labels: {
+                style: {
+                    colors: '#787878',
+                    fontSize: '13px',
+                    fontFamily: 'poppins',
+                    fontWeight: 100
+                }
+            }
+        },
+        yaxis: {
+            labels: {
+                formatter: function(value) {
+                    return '₹' + value.toLocaleString();
+                },
+                style: {
+                    colors: '#787878',
+                    fontSize: '13px',
+                    fontFamily: 'poppins',
+                    fontWeight: 100
+                }
+            }
+        },
+        legend: {
+            position: 'top',
+            horizontalAlign: 'right'
+        },
+        grid: {
+            borderColor: '#f1f1f1',
+        },
+        tooltip: {
+            y: {
+                formatter: function(value) {
+                    return '₹' + value.toLocaleString();
+                }
+            }
+        }
+    };
+
+    var chartTimeline = new ApexCharts(document.querySelector("#chartTimeline"), timelineOptions);
+    chartTimeline.render();
+
+})(jQuery);
+</script>
+{% endblock %}

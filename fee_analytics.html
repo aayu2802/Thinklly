@@ -1,0 +1,772 @@
+{% extends 'akademi/elements/layouts/admin.html' %}
+	
+{% block additional_css %}
+<link href="{{ url_for('static', filename='akademi/vendor/datatables/css/jquery.dataTables.min.css') }}" rel="stylesheet">
+<style>
+.analytics-card {
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 25px;
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: none;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+
+.analytics-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+}
+
+.analytics-card.total-collection {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.analytics-card.cash {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+}
+
+.analytics-card.online {
+    background: linear-gradient(135deg, #17a2b8 0%, #00d4ff 100%);
+    color: white;
+}
+
+.analytics-card.cheque {
+    background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+    color: white;
+}
+
+.analytics-card.fine {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    color: white;
+}
+
+.analytics-card.receipts {
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+    color: white;
+}
+
+.analytics-card.outstanding {
+    background: linear-gradient(135deg, #fd7e14 0%, #e83e8c 100%);
+    color: white;
+}
+
+.analytics-card.students-dues {
+    background: linear-gradient(135deg, #e83e8c 0%, #dc3545 100%);
+    color: white;
+}
+
+.analytics-card.overdue-amount {
+    background: linear-gradient(135deg, #dc3545 0%, #9b1d2a 100%);
+    color: white;
+}
+
+.analytics-card.overdue-count {
+    background: linear-gradient(135deg, #c82333 0%, #7a1b23 100%);
+    color: white;
+}
+
+.icon-box {
+    width: 60px;
+    height: 60px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+}
+
+.card-amount {
+    font-size: 2rem;
+    font-weight: bold;
+    margin: 10px 0;
+}
+
+.card-label {
+    font-size: 0.9rem;
+    opacity: 0.95;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.progress-custom {
+    height: 25px;
+    border-radius: 5px;
+    background-color: #e9ecef;
+}
+
+.progress-bar-custom {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 0.85rem;
+}
+
+.table-custom thead {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.table-custom th {
+    border: none;
+    padding: 15px;
+    font-weight: 600;
+}
+
+.table-custom td {
+    padding: 12px 15px;
+    vertical-align: middle;
+}
+
+.table-custom tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+.badge-count {
+    padding: 0.4em 0.7em;
+    font-size: 0.8rem;
+}
+
+.chart-container {
+    position: relative;
+    height: 350px;
+    margin-bottom: 30px;
+}
+
+.filter-card {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 25px;
+}
+
+.stat-increase {
+    color: #28a745;
+    font-size: 0.85rem;
+}
+
+.stat-decrease {
+    color: #dc3545;
+    font-size: 0.85rem;
+}
+
+.defaulter-row-overdue {
+    background-color: #ffe5e5;
+}
+
+.section-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 3px solid #667eea;
+}
+
+@media print {
+    .no-print {
+        display: none !important;
+    }
+    .analytics-card {
+        page-break-inside: avoid;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!--**********************************
+    Content body start
+***********************************-->
+<div class="content-body">
+    <div class="container-fluid">   
+        <!-- Page Header -->
+        <div class="row no-print">
+            <div class="col-xl-12">
+                <div class="page-title flex-wrap justify-content-between align-items-center">
+                    <div>
+                        <h4 class="mb-1">Fee Collection Analytics</h4>
+                        <p class="mb-0">Comprehensive overview of fee collection and outstanding amounts</p>
+                    </div>
+                    <div>
+                        <button class="btn btn-success me-2" onclick="exportToExcel()">
+                            <i class="fas fa-file-excel me-2"></i>Export to Excel
+                        </button>
+                        <button class="btn btn-info" onclick="window.print()">
+                            <i class="fas fa-print me-2"></i>Print Report
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="row no-print">
+            <div class="col-xl-12">
+                <div class="filter-card">
+                    <form method="GET" id="filterForm">
+                        <div class="row align-items-end">
+                            <div class="col-md-2">
+                                <label class="form-label fw-bold">Start Date</label>
+                                <input type="date" class="form-control" name="start_date" 
+                                    value="{{ start_date.strftime('%Y-%m-%d') if start_date else '' }}">
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label fw-bold">End Date</label>
+                                <input type="date" class="form-control" name="end_date" 
+                                    value="{{ end_date.strftime('%Y-%m-%d') if end_date else '' }}">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold">Academic Session</label>
+                                <select class="form-control" name="session_id">
+                                    <option value="">-- All Sessions --</option>
+                                    {% for session in sessions %}
+                                    <option value="{{ session.id }}" {% if selected_session == session.id %}selected{% endif %}>
+                                        {{ session.session_name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fas fa-filter me-1"></i>Apply Filter
+                                </button>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="btn-group w-100" role="group">
+                                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setQuickFilter(7)">Last 7 Days</button>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setQuickFilter(30)">Last 30 Days</button>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setQuickFilter(90)">Last 90 Days</button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Collection Summary Cards -->
+        <h5 class="section-title"><i class="fas fa-chart-line me-2"></i>Collection Summary</h5>
+        <div class="row">
+            <div class="col-xl-2 col-md-4 col-sm-6">
+                <div class="analytics-card total-collection">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-box me-3">
+                            <i class="fas fa-rupee-sign"></i>
+                        </div>
+                        <div>
+                            <div class="card-label">Total Collection</div>
+                            <div class="card-amount">₹{{ "{:,.2f}".format(collection_summary.total_collected) }}</div>
+                            <small>{{ collection_summary.total_receipts }} receipts</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-2 col-md-4 col-sm-6">
+                <div class="analytics-card cash">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-box me-3">
+                            <i class="fas fa-money-bill-wave"></i>
+                        </div>
+                        <div>
+                            <div class="card-label">Cash</div>
+                            <div class="card-amount">₹{{ "{:,.2f}".format(collection_summary.cash_collected) }}</div>
+                            <small>{{ "%.1f"|format((collection_summary.cash_collected / collection_summary.total_collected * 100) if collection_summary.total_collected > 0 else 0) }}%</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-2 col-md-4 col-sm-6">
+                <div class="analytics-card online">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-box me-3">
+                            <i class="fas fa-mobile-alt"></i>
+                        </div>
+                        <div>
+                            <div class="card-label">Online/UPI</div>
+                            <div class="card-amount">₹{{ "{:,.2f}".format(collection_summary.online_collected) }}</div>
+                            <small>{{ "%.1f"|format((collection_summary.online_collected / collection_summary.total_collected * 100) if collection_summary.total_collected > 0 else 0) }}%</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-2 col-md-4 col-sm-6">
+                <div class="analytics-card cheque">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-box me-3">
+                            <i class="fas fa-money-check"></i>
+                        </div>
+                        <div>
+                            <div class="card-label">Cheque/DD</div>
+                            <div class="card-amount">₹{{ "{:,.2f}".format(collection_summary.cheque_collected) }}</div>
+                            <small>{{ "%.1f"|format((collection_summary.cheque_collected / collection_summary.total_collected * 100) if collection_summary.total_collected > 0 else 0) }}%</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-2 col-md-4 col-sm-6">
+                <div class="analytics-card fine">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-box me-3">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div>
+                            <div class="card-label">Fine Collected</div>
+                            <div class="card-amount">₹{{ "{:,.2f}".format(collection_summary.fine_collected) }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-2 col-md-4 col-sm-6">
+                <div class="analytics-card receipts">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-box me-3">
+                            <i class="fas fa-receipt"></i>
+                        </div>
+                        <div>
+                            <div class="card-label">Total Receipts</div>
+                            <div class="card-amount">{{ collection_summary.total_receipts }}</div>
+                            <small>Verified payments</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Outstanding Summary Cards -->
+        <h5 class="section-title mt-4"><i class="fas fa-exclamation-circle me-2"></i>Outstanding Summary</h5>
+            {% set overdue_amt = outstanding_summary.overdue_amount if (outstanding_summary.overdue_amount is defined) else outstanding_summary.outstanding %}
+            {% set overdue_count = outstanding_summary.overdue_count if (outstanding_summary.overdue_count is defined) else (defaulters|length) %}
+        <div class="row">
+            <div class="col-xl-3 col-md-6">
+                <div class="analytics-card outstanding">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-box me-3">
+                            <i class="fas fa-coins"></i>
+                        </div>
+                        <div>
+                            <div class="card-label">Total Outstanding</div>
+                            <div class="card-amount">₹{{ "{:,.2f}".format(outstanding_summary.outstanding) }}</div>
+                            <small>From {{ outstanding_summary.total_students }} students</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="analytics-card students-dues">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-box me-3">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div>
+                            <div class="card-label">Students with Dues</div>
+                            <div class="card-amount">{{ outstanding_summary.total_students }}</div>
+                            <small>Pending/Partial payments</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="analytics-card overdue-amount">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-box me-3">
+                            <i class="fas fa-calendar-times"></i>
+                        </div>
+                        <div>
+                            <div class="card-label">Overdue Amount</div>
+                            <div class="card-amount">₹{{ "{:,.2f}".format(overdue_amt) }}</div>
+                            <small>Past due date</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="analytics-card overdue-count">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-box me-3">
+                            <i class="fas fa-user-clock"></i>
+                        </div>
+                        <div>
+                            <div class="card-label">Overdue Students</div>
+                            <div class="card-amount">{{ overdue_count }}</div>
+                            <small>Immediate attention needed</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="row mt-4">
+            <div class="col-xl-6">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Payment Mode Distribution</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="paymentModeChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-6">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Collection vs Outstanding</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="collectionOverviewChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Class-wise Collection Table -->
+        {% if class_wise %}
+        <div class="row mt-4">
+            <div class="col-xl-12">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0"><i class="fas fa-school me-2"></i>Class-wise Collection Report</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-custom" id="classWiseTable">
+                                <thead>
+                                    <tr>
+                                        <th>Class</th>
+                                        <th>Students</th>
+                                        <th>Total Amount</th>
+                                        <th>Paid Amount</th>
+                                        <th>Outstanding</th>
+                                        <th>Collection %</th>
+                                        <th>Status Count</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for cls in class_wise %}
+                                    <tr>
+                                        <td><strong>{{ cls.class_name }}</strong></td>
+                                        <td><span class="badge bg-primary badge-count">{{ cls.total_students }}</span></td>
+                                        <td>₹{{ "{:,.2f}".format(cls.total_amount) }}</td>
+                                        <td class="text-success">₹{{ "{:,.2f}".format(cls.paid_amount) }}</td>
+                                        <td class="text-danger">₹{{ "{:,.2f}".format(cls.outstanding) }}</td>
+                                        <td>
+                                            <div class="progress progress-custom">
+                                                <div class="progress-bar progress-bar-custom 
+                                                    {% if cls.collection_percentage >= 80 %}bg-success
+                                                    {% elif cls.collection_percentage >= 50 %}bg-warning
+                                                    {% else %}bg-danger{% endif %}" 
+                                                    role="progressbar" 
+                                                    style="width: {{ cls.collection_percentage }}%"
+                                                    aria-valuenow="{{ cls.collection_percentage }}" 
+                                                    aria-valuemin="0" 
+                                                    aria-valuemax="100">
+                                                    {{ "%.1f"|format(cls.collection_percentage) }}%
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-success me-1" title="Paid">{{ cls.paid_count }}</span>
+                                            <span class="badge bg-warning me-1" title="Pending">{{ cls.pending_count }}</span>
+                                            <span class="badge bg-danger" title="Overdue">{{ cls.overdue_count }}</span>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Top Defaulters Table -->
+        <div class="row mt-4">
+            <div class="col-xl-12">
+                <div class="card">
+                    <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-user-times me-2"></i>Top Defaulters (First 20)</h5>
+                        <a href="{{ url_for('school.defaulters_report', tenant_slug=school.slug, session_id=selected_session) }}" 
+                            class="btn btn-light btn-sm">
+                            <i class="fas fa-list me-1"></i>View Full Defaulters Report
+                        </a>
+                    </div>
+                    <div class="card-body">
+                        {% if defaulters %}
+                        <div class="table-responsive">
+                            <table class="table table-custom table-hover" id="defaultersTable">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Student Name</th>
+                                        <th>Admission No</th>
+                                        <th>Class</th>
+                                        <th>Outstanding Amount</th>
+                                        <th>Due Date</th>
+                                        <th>Days Overdue</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for defaulter in defaulters %}
+                                    <tr class="{% if defaulter.days_overdue > 30 %}defaulter-row-overdue{% endif %}">
+                                        <td>{{ loop.index }}</td>
+                                        <td><strong>{{ defaulter.student_name }}</strong></td>
+                                        <td>{{ defaulter.admission_number }}</td>
+                                        <td><span class="badge bg-primary">{{ defaulter.class_name }}</span></td>
+                                        <td class="text-danger fw-bold">₹{{ "{:,.2f}".format(defaulter.outstanding) }}</td>
+                                        <td>{{ defaulter.due_date if defaulter.due_date else 'N/A' }}</td>
+                                        <td>
+                                            <span class="badge 
+                                                {% if defaulter.days_overdue > 60 %}bg-danger
+                                                {% elif defaulter.days_overdue > 30 %}bg-warning
+                                                {% else %}bg-secondary{% endif %}">
+                                                {{ defaulter.days_overdue }} days
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="badge 
+                                                {% if defaulter.status == 'Overdue' %}bg-danger
+                                                {% elif defaulter.status == 'Partially Paid' %}bg-warning
+                                                {% else %}bg-secondary{% endif %}">
+                                                {{ defaulter.status }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-check-circle fa-4x text-success mb-3"></i>
+                            <h5 class="text-success">No Defaulters Found!</h5>
+                            <p class="text-muted">All students have paid their fees on time.</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<!--**********************************
+    Content body end
+***********************************-->
+{% endblock %}
+
+{% block additional_js %}
+<script src="{{ url_for('static', filename='akademi/vendor/datatables/js/jquery.dataTables.min.js') }}"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+<script>
+// Data from backend
+const collectionData = {
+    total: {{ collection_summary.total_collected }},
+    cash: {{ collection_summary.cash_collected }},
+    online: {{ collection_summary.online_collected }},
+    cheque: {{ collection_summary.cheque_collected }},
+    fine: {{ collection_summary.fine_collected }}
+};
+
+const outstandingData = {
+    total: {{ outstanding_summary.total_amount }},
+    paid: {{ outstanding_summary.total_paid }},
+    outstanding: {{ outstanding_summary.outstanding }}
+};
+
+// Payment Mode Pie Chart
+const paymentModeCtx = document.getElementById('paymentModeChart').getContext('2d');
+const paymentModeChart = new Chart(paymentModeCtx, {
+    type: 'pie',
+    data: {
+        labels: ['Cash', 'Online/UPI', 'Cheque/DD', 'Fine'],
+        datasets: [{
+            data: [
+                collectionData.cash,
+                collectionData.online,
+                collectionData.cheque,
+                collectionData.fine
+            ],
+            backgroundColor: [
+                '#28a745',
+                '#17a2b8',
+                '#ffc107',
+                '#dc3545'
+            ],
+            borderWidth: 2,
+            borderColor: '#fff'
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: {
+                    padding: 15,
+                    font: {
+                        size: 12
+                    }
+                }
+            },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        let label = context.label || '';
+                        if (label) {
+                            label += ': ';
+                        }
+                        label += '₹' + context.parsed.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                        const percentage = ((context.parsed / total) * 100).toFixed(1);
+                        label += ' (' + percentage + '%)';
+                        return label;
+                    }
+                }
+            }
+        }
+    }
+});
+
+// Collection Overview Bar Chart
+const collectionOverviewCtx = document.getElementById('collectionOverviewChart').getContext('2d');
+const collectionOverviewChart = new Chart(collectionOverviewCtx, {
+    type: 'bar',
+    data: {
+        labels: ['Total Amount', 'Collected', 'Outstanding'],
+        datasets: [{
+            label: 'Amount (₹)',
+            data: [
+                outstandingData.total,
+                outstandingData.paid,
+                outstandingData.outstanding
+            ],
+            backgroundColor: [
+                '#667eea',
+                '#28a745',
+                '#dc3545'
+            ],
+            borderWidth: 0
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false
+            },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        return '₹' + context.parsed.y.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+                    }
+                }
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    callback: function(value) {
+                        return '₹' + value.toFixed(0).replace(/\d(?=(\d{3})+$)/g, '$&,');
+                    }
+                }
+            }
+        }
+    }
+});
+
+// Initialize DataTables
+{% if class_wise %}
+$('#classWiseTable').DataTable({
+    "order": [[ 5, "asc" ]],
+    "pageLength": 25,
+    "dom": 'Bfrtip',
+    "buttons": []
+});
+{% endif %}
+
+$('#defaultersTable').DataTable({
+    "order": [[ 4, "desc" ]],
+    "pageLength": 20,
+    "dom": 'Bfrtip',
+    "buttons": []
+});
+
+// Quick Filter Functions
+function setQuickFilter(days) {
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+    
+    const form = document.getElementById('filterForm');
+    form.querySelector('input[name="start_date"]').value = startDate.toISOString().split('T')[0];
+    form.querySelector('input[name="end_date"]').value = endDate.toISOString().split('T')[0];
+    form.submit();
+}
+
+// Export to Excel
+function exportToExcel() {
+    const wb = XLSX.utils.book_new();
+    
+    // Collection Summary Sheet
+    const collectionSummary = [
+        ['Fee Collection Analytics Report'],
+        ['Generated on: ' + new Date().toLocaleString()],
+        [''],
+        ['Collection Summary'],
+        ['Category', 'Amount (₹)'],
+        ['Total Collection', {{ collection_summary.total_collected }}],
+        ['Cash Collection', {{ collection_summary.cash_collected }}],
+        ['Online Collection', {{ collection_summary.online_collected }}],
+        ['Cheque Collection', {{ collection_summary.cheque_collected }}],
+        ['Fine Collection', {{ collection_summary.fine_collected }}],
+        ['Total Receipts', {{ collection_summary.total_receipts }}],
+        [''],
+        ['Outstanding Summary'],
+        ['Total Outstanding', {{ outstanding_summary.outstanding }}],
+        ['Students with Dues', {{ outstanding_summary.total_students }}]
+    ];
+    const ws1 = XLSX.utils.aoa_to_sheet(collectionSummary);
+    XLSX.utils.book_append_sheet(wb, ws1, 'Collection Summary');
+    
+    // Class-wise Sheet
+    {% if class_wise %}
+    const classWiseTable = document.getElementById('classWiseTable');
+    const ws2 = XLSX.utils.table_to_sheet(classWiseTable);
+    XLSX.utils.book_append_sheet(wb, ws2, 'Class-wise Collection');
+    {% endif %}
+    
+    // Defaulters Sheet
+    {% if defaulters %}
+    const defaultersTable = document.getElementById('defaultersTable');
+    const ws3 = XLSX.utils.table_to_sheet(defaultersTable);
+    XLSX.utils.book_append_sheet(wb, ws3, 'Defaulters');
+    {% endif %}
+    
+    // Save file
+    const fileName = 'Fee_Analytics_' + new Date().toISOString().split('T')[0] + '.xlsx';
+    XLSX.writeFile(wb, fileName);
+}
+
+// Auto-update charts on window resize
+window.addEventListener('resize', function() {
+    paymentModeChart.resize();
+    collectionOverviewChart.resize();
+});
+</script>
+{% endblock %}

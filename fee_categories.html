@@ -1,0 +1,309 @@
+{% extends 'akademi/elements/layouts/admin.html' %}
+	
+{% block additional_css %}
+<link href="{{ url_for('static', filename='akademi/vendor/datatables/css/jquery.dataTables.min.css') }}" rel="stylesheet">
+<link href="{{ url_for('static', filename='akademi/vendor/sweetalert2/dist/sweetalert2.min.css') }}" rel="stylesheet">
+<link href="{{ url_for('static', filename='akademi/vendor/toastr/css/toastr.min.css') }}" rel="stylesheet">
+<style>
+.badge-active {
+    background-color: #28a745;
+}
+.badge-inactive {
+    background-color: #6c757d;
+}
+.badge-mandatory {
+    background-color: #dc3545;
+}
+.badge-optional {
+    background-color: #17a2b8;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!--**********************************
+    Content body start
+***********************************-->
+<div class="content-body">
+    <div class="container-fluid">   
+        <!-- Page Header -->
+        <div class="row">
+            <div class="col-xl-12">
+                <div class="page-title flex-wrap justify-content-between align-items-center">
+                    <div>
+                        <h4 class="mb-1">Fee Categories Management</h4>
+                        <p class="mb-0">Manage different types of fee categories (Tuition, Library, Lab, Sports, etc.)</p>
+                    </div>
+                    <div>
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
+                            <i class="fas fa-plus me-2"></i>Add New Category
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <!-- Categories Table Card -->
+        <div class="row">
+            <div class="col-xl-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title">
+                            <i class="fas fa-list me-2"></i>All Fee Categories ({{ categories|length }})
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover table-striped" id="categoriesTable">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Category Name</th>
+                                        <th>Code</th>
+                                        <th>Description</th>
+                                        <th>Type</th>
+                                        <th>Display Order</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for cat in categories %}
+                                    <tr>
+                                        <td>{{ loop.index }}</td>
+                                        <td>
+                                            <strong>{{ cat.category_name }}</strong>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-info">{{ cat.category_code }}</span>
+                                        </td>
+                                        <td>
+                                            {{ cat.description[:60] + '...' if cat.description and cat.description|length > 60 else cat.description or '-' }}
+                                        </td>
+                                        <td>
+                                            <span class="badge badge-{{ 'mandatory' if cat.is_mandatory else 'optional' }}">
+                                                {{ 'Mandatory' if cat.is_mandatory else 'Optional' }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-secondary">{{ cat.display_order }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge badge-{{ 'active' if cat.is_active else 'inactive' }}">
+                                                {{ 'Active' if cat.is_active else 'Inactive' }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <button type="button" class="btn btn-sm btn-warning" 
+                                                    onclick="editCategory({{ cat.id }}, '{{ cat.category_name }}', '{{ cat.category_code }}', '{{ cat.description or '' }}', {{ cat.is_mandatory|lower }}, {{ cat.display_order }})">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <form method="POST" action="{{ url_for('school.toggle_fee_category_status', tenant_slug=school.slug, category_id=cat.id) }}" class="d-inline-flex m-0 p-0 align-items-stretch" style="border:0;">
+                                                    <button type="submit" class="btn btn-sm btn-{{ 'secondary' if cat.is_active else 'success' }}" style="border-left:none; border-radius:0;" 
+                                                        onclick="return confirm('Are you sure you want to {{ 'deactivate' if cat.is_active else 'activate' }} this category?');">
+                                                        <i class="fas fa-{{ 'ban' if cat.is_active else 'check' }}"></i>
+                                                    </button>
+                                                </form>
+                                                <form method="POST" action="{{ url_for('school.delete_fee_category', tenant_slug=school.slug, category_id=cat.id) }}" class="d-inline-flex m-0 p-0 align-items-stretch" style="border:0;" onsubmit="return confirm('Are you sure you want to delete this category? This cannot be undone.');">
+                                                    <button type="submit" class="btn btn-sm btn-danger" style="border-left:none; border-radius:0 .25rem .25rem 0;">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% else %}
+                                    <tr>
+                                        <td colspan="8" class="text-center text-muted">
+                                            <i class="fas fa-inbox fa-3x mb-3"></i>
+                                            <p>No fee categories found. Click "Add New Category" to create one.</p>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<!--**********************************
+    Content body end
+***********************************-->
+
+<!-- Add Category Modal -->
+<div class="modal fade" id="addCategoryModal" tabindex="-1" aria-labelledby="addCategoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{{ url_for('school.add_fee_category', tenant_slug=school.slug) }}">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addCategoryModalLabel">
+                        <i class="fas fa-plus-circle me-2"></i>Add New Fee Category
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="category_name" class="form-label">Category Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="category_name" name="category_name" required placeholder="e.g., Tuition Fee">
+                    </div>
+                    <div class="mb-3">
+                        <label for="category_code" class="form-label">Category Code <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="category_code" name="category_code" required 
+                            placeholder="e.g., TUITION" style="text-transform: uppercase;">
+                        <small class="form-text text-muted">Unique code for this category (will be converted to uppercase)</small>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3" 
+                            placeholder="Brief description of this fee category"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="is_mandatory" name="is_mandatory" checked>
+                            <label class="form-check-label" for="is_mandatory">
+                                Mandatory Fee
+                            </label>
+                            <small class="form-text text-muted d-block">Check if this fee is mandatory for all students</small>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="display_order" class="form-label">Display Order</label>
+                        <input type="number" class="form-control" id="display_order" name="display_order" value="0" min="0">
+                        <small class="form-text text-muted">Order in which to display this category (0 = first)</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i>Add Category
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Category Modal -->
+<div class="modal fade" id="editCategoryModal" tabindex="-1" aria-labelledby="editCategoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" id="editCategoryForm">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editCategoryModalLabel">
+                        <i class="fas fa-edit me-2"></i>Edit Fee Category
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="edit_category_name" class="form-label">Category Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="edit_category_name" name="category_name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_category_code" class="form-label">Category Code <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="edit_category_code" name="category_code" required 
+                            style="text-transform: uppercase;">
+                        <small class="form-text text-muted">Unique code for this category</small>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_description" class="form-label">Description</label>
+                        <textarea class="form-control" id="edit_description" name="description" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="edit_is_mandatory" name="is_mandatory">
+                            <label class="form-check-label" for="edit_is_mandatory">
+                                Mandatory Fee
+                            </label>
+                            <small class="form-text text-muted d-block">Check if this fee is mandatory for all students</small>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_display_order" class="form-label">Display Order</label>
+                        <input type="number" class="form-control" id="edit_display_order" name="display_order" value="0" min="0">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i>Update Category
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block additional_js %}
+<script src="{{ url_for('static', filename='akademi/vendor/datatables/js/jquery.dataTables.min.js') }}"></script>
+<script src="{{ url_for('static', filename='akademi/vendor/sweetalert2/dist/sweetalert2.min.js') }}"></script>
+<script src="{{ url_for('static', filename='akademi/vendor/toastr/js/toastr.min.js') }}"></script>
+
+<script>
+$(document).ready(function() {
+    // Initialize DataTable
+    $('#categoriesTable').DataTable({
+        "order": [[ 5, "asc" ]], // Order by display_order
+        "pageLength": 25,
+        "language": {
+            "search": "Search categories:",
+            "lengthMenu": "Show _MENU_ categories per page",
+            "info": "Showing _START_ to _END_ of _TOTAL_ categories",
+            "infoEmpty": "No categories available",
+            "emptyTable": "No fee categories found",
+            "zeroRecords": "No matching categories found"
+        }
+    });
+
+    // Auto-dismiss alerts after 5 seconds
+    setTimeout(function() {
+        $('.alert').fadeOut('slow');
+    }, 5000);
+});
+
+// Edit category function
+function editCategory(id, name, code, description, isMandatory, displayOrder) {
+    // Set form action
+    var editUrl = "{{ url_for('school.edit_fee_category', tenant_slug=school.slug, category_id=0) }}".replace('0', id);
+    $('#editCategoryForm').attr('action', editUrl);
+    
+    // Populate form fields
+    $('#edit_category_name').val(name);
+    $('#edit_category_code').val(code);
+    $('#edit_description').val(description);
+    $('#edit_is_mandatory').prop('checked', isMandatory);
+    $('#edit_display_order').val(displayOrder);
+    
+    // Show modal
+    $('#editCategoryModal').modal('show');
+}
+
+// Uppercase category code on input
+$('#category_code, #edit_category_code').on('input', function() {
+    this.value = this.value.toUpperCase();
+});
+</script>
+{% endblock %}

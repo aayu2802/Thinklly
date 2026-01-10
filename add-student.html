@@ -1,0 +1,828 @@
+{% extends 'akademi/elements/layouts/admin.html' %}
+		
+{% block additional_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename=  'akademi/vendor/jquery-smartwizard/dist/css/smart_wizard.min.css')}}">
+<link rel="stylesheet" href="{{ url_for('static', filename=  'akademi/vendor/bootstrap-datepicker-master/css/bootstrap-datepicker.min.css')}}">
+<link rel="stylesheet" href="{{ url_for('static', filename=  'akademi/vendor/datatables/css/jquery.dataTables.min.css')}}">
+<link rel="stylesheet" href="{{ url_for('static', filename=  'akademi/vendor/jquery-nice-select/css/nice-select.css')}}">
+<link rel="stylesheet" href="{{ url_for('static', filename=  'akademi/vendor/dropzone/dist/dropzone.css')}}">
+{% endblock %}
+
+{% block content %}
+<!--**********************************
+    Content body start
+***********************************-->
+<div class="content-body">
+    <div class="container-fluid">
+        <!-- row -->
+        <div class="row">
+            <div class="col-xl-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title">Student Registration</h4>
+                        <p class="mb-0">Complete all required information to register a new student</p>
+                    </div>
+                    <div class="card-body">
+                        <div id="smartwizard" class="form-wizard order-create">
+                            <ul class="nav nav-wizard">
+                                <li><a class="nav-link" href="#wizard_basic"> 
+                                    <span>1</span> 
+                                    <p class="mt-2 mb-0">Basic Info</p>
+                                </a></li>
+                                <li><a class="nav-link" href="#wizard_academic">
+                                    <span>2</span>
+                                    <p class="mt-2 mb-0">Academic Info</p>
+                                </a></li>
+                                <li><a class="nav-link" href="#wizard_address">
+                                    <span>3</span>
+                                    <p class="mt-2 mb-0">Address</p>
+                                </a></li>
+                                <li><a class="nav-link" href="#wizard_parent">
+                                    <span>4</span>
+                                    <p class="mt-2 mb-0">Parent/Guardian</p>
+                                </a></li>
+                                <li><a class="nav-link" href="#wizard_documents">
+                                    <span>5</span>
+                                    <p class="mt-2 mb-0">Documents</p>
+                                </a></li>
+                                <li><a class="nav-link" href="#wizard_review">
+                                    <span>6</span>
+                                    <p class="mt-2 mb-0">Review</p>
+                                </a></li>
+                            </ul>
+                            <div class="tab-content">
+                                <!-- TAB 1: Basic Student Info -->
+                                <div id="wizard_basic" class="tab-pane" role="tabpanel">
+                                    <div class="row">
+                                        <div class="col-lg-6 mb-2">
+                                            <div class="mb-3">
+                                                <label class="text-label form-label">First Name<span class="required">*</span></label>
+                                                <input type="text" name="firstName" class="form-control" placeholder="Enter first name" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6 mb-2">
+                                            <div class="mb-3">
+                                                <label class="text-label form-label">Last Name<span class="required">*</span></label>
+                                                <input type="text" name="lastName" class="form-control" placeholder="Enter last name" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6 mb-2">
+                                            <div class="mb-3">
+                                                <label class="text-label form-label">Aadhaar Number<span class="required">*</span></label>
+                                                <input type="text" name="aadhaarNumber" class="form-control" placeholder="Enter 12-digit Aadhaar number" maxlength="12" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6 mb-2">
+                                            <div class="mb-3">
+                                                <label class="text-label form-label">Gender<span class="required">*</span></label>
+                                                <select name="gender" class="default-select form-control wide" required>
+                                                    <option value="">Select Gender</option>
+                                                    <option value="Male">Male</option>
+                                                    <option value="Female">Female</option>
+                                                    <option value="Other">Other</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6 mb-2">
+                                            <div class="mb-3">
+                                                <label class="text-label form-label">Date of Birth<span class="required">*</span></label>
+                                                <input type="text" name="dateOfBirth" class="form-control" id="datepicker1" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6 mb-2">
+                                            <div class="mb-3">
+                                                <label class="text-label form-label">Religion<span class="required">*</span></label>
+                                                <select name="religion" class="default-select form-control wide" required>
+                                                    <option value="">Select Religion</option>
+                                                    <option value="Hindu">Hindu</option>
+                                                    <option value="Muslim">Muslim</option>
+                                                    <option value="Christian">Christian</option>
+                                                    <option value="Sikh">Sikh</option>
+                                                    <option value="Buddhist">Buddhist</option>
+                                                    <option value="Jain">Jain</option>
+                                                    <option value="Other">Other</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6 mb-2">
+                                            <div class="mb-3">
+                                                <label class="text-label form-label">Category<span class="required">*</span></label>
+                                                <select name="category" class="default-select form-control wide" required>
+                                                    <option value="">Select Category</option>
+                                                    <option value="General">General</option>
+                                                    <option value="OBC">OBC</option>
+                                                    <option value="SC">SC</option>
+                                                    <option value="ST">ST</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- TAB 2: Academic & Admission Info -->
+                                <div id="wizard_academic" class="tab-pane" role="tabpanel">
+                                    <div class="row">
+                                        <div class="col-lg-6 mb-2">
+                                            <div class="mb-3">
+                                                <label class="text-label form-label">Admission Number<span class="required">*</span></label>
+                                                <input type="text" name="admissionNumber" class="form-control" placeholder="Unique admission number" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6 mb-2">
+                                            <div class="mb-3">
+                                                <label class="text-label form-label">Roll Number<span class="required">*</span></label>
+                                                <input type="text" name="rollNumber" class="form-control" placeholder="Student roll number" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6 mb-2">
+                                            <div class="mb-3">
+                                                <label class="text-label form-label">Admission Date<span class="required">*</span></label>
+                                                <input type="text" name="admissionDate" class="form-control" id="datepicker2" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6 mb-2">
+                                            <div class="mb-3">
+                                                <label class="text-label form-label">Academic Session<span class="required">*</span></label>
+                                                <select name="academicSession" class="default-select form-control wide" required>
+                                                    <option value="">Select Academic Session</option>
+                                                    <option value="2024-25">2024-25</option>
+                                                    <option value="2025-26">2025-26</option>
+                                                    <option value="2026-27">2026-27</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6 mb-2">
+                                            <div class="mb-3">
+                                                <label class="text-label form-label">Class<span class="required">*</span></label>
+                                                <select name="class" class="default-select form-control wide" required>
+                                                    <option value="">Select Class</option>
+                                                    <option value="1">Class 1</option>
+                                                    <option value="2">Class 2</option>
+                                                    <option value="3">Class 3</option>
+                                                    <option value="4">Class 4</option>
+                                                    <option value="5">Class 5</option>
+                                                    <option value="6">Class 6</option>
+                                                    <option value="7">Class 7</option>
+                                                    <option value="8">Class 8</option>
+                                                    <option value="9">Class 9</option>
+                                                    <option value="10">Class 10</option>
+                                                    <option value="11">Class 11</option>
+                                                    <option value="12">Class 12</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6 mb-2">
+                                            <div class="mb-3">
+                                                <label class="text-label form-label">Section<span class="required">*</span></label>
+                                                <select name="section" class="default-select form-control wide" required>
+                                                    <option value="">Select Section</option>
+                                                    <option value="A">Section A</option>
+                                                    <option value="B">Section B</option>
+                                                    <option value="C">Section C</option>
+                                                    <option value="D">Section D</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6 mb-2">
+                                            <div class="mb-3">
+                                                <label class="text-label form-label">Previous School Name</label>
+                                                <input type="text" name="previousSchool" class="form-control" placeholder="Previous school name (optional)">
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6 mb-2">
+                                            <div class="mb-3">
+                                                <label class="text-label form-label">Transfer Certificate No</label>
+                                                <input type="text" name="tcNumber" class="form-control" placeholder="TC number (optional)">
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6 mb-2">
+                                            <div class="mb-3">
+                                                <label class="text-label form-label">Student Status<span class="required">*</span></label>
+                                                <select name="studentStatus" class="default-select form-control wide" required>
+                                                    <option value="">Select Status</option>
+                                                    <option value="Active">Active</option>
+                                                    <option value="Transferred">Transferred</option>
+                                                    <option value="Left">Left</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- TAB 3: Address Details -->
+                                <div id="wizard_address" class="tab-pane" role="tabpanel">
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <h5 class="text-primary mb-3">Permanent Address</h5>
+                                        </div>
+                                        <div class="col-lg-6 mb-2">
+                                            <div class="mb-3">
+                                                <label class="text-label form-label">Address Line 1<span class="required">*</span></label>
+                                                <textarea name="permanentAddress1" class="form-control" rows="2" placeholder="Enter address line 1" required></textarea>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6 mb-2">
+                                            <div class="mb-3">
+                                                <label class="text-label form-label">Address Line 2</label>
+                                                <textarea name="permanentAddress2" class="form-control" rows="2" placeholder="Enter address line 2"></textarea>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6 mb-2">
+                                            <div class="mb-3">
+                                                <label class="text-label form-label">City<span class="required">*</span></label>
+                                                <input type="text" name="permanentCity" class="form-control" placeholder="Enter city" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6 mb-2">
+                                            <div class="mb-3">
+                                                <label class="text-label form-label">District<span class="required">*</span></label>
+                                                <input type="text" name="permanentDistrict" class="form-control" placeholder="Enter district" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6 mb-2">
+                                            <div class="mb-3">
+                                                <label class="text-label form-label">State<span class="required">*</span></label>
+                                                <input type="text" name="permanentState" class="form-control" placeholder="Enter state" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6 mb-2">
+                                            <div class="mb-3">
+                                                <label class="text-label form-label">Pincode<span class="required">*</span></label>
+                                                <input type="number" name="permanentPincode" class="form-control" placeholder="Enter pincode" required>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-12 mb-3">
+                                            <hr>
+                                            <div class="form-check custom-checkbox">
+                                                <input type="checkbox" class="form-check-input" id="sameAsPermanent">
+                                                <label class="form-check-label" for="sameAsPermanent">Present address same as permanent address</label>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-12" id="presentAddressSection">
+                                            <h5 class="text-primary mb-3">Present Address</h5>
+                                            <div class="row">
+                                                <div class="col-lg-6 mb-2">
+                                                    <div class="mb-3">
+                                                        <label class="text-label form-label">Address Line 1<span class="required">*</span></label>
+                                                        <textarea name="presentAddress1" class="form-control" rows="2" placeholder="Enter address line 1" required></textarea>
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-6 mb-2">
+                                                    <div class="mb-3">
+                                                        <label class="text-label form-label">Address Line 2</label>
+                                                        <textarea name="presentAddress2" class="form-control" rows="2" placeholder="Enter address line 2"></textarea>
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-6 mb-2">
+                                                    <div class="mb-3">
+                                                        <label class="text-label form-label">City<span class="required">*</span></label>
+                                                        <input type="text" name="presentCity" class="form-control" placeholder="Enter city" required>
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-6 mb-2">
+                                                    <div class="mb-3">
+                                                        <label class="text-label form-label">District<span class="required">*</span></label>
+                                                        <input type="text" name="presentDistrict" class="form-control" placeholder="Enter district" required>
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-6 mb-2">
+                                                    <div class="mb-3">
+                                                        <label class="text-label form-label">State<span class="required">*</span></label>
+                                                        <input type="text" name="presentState" class="form-control" placeholder="Enter state" required>
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-6 mb-2">
+                                                    <div class="mb-3">
+                                                        <label class="text-label form-label">Pincode<span class="required">*</span></label>
+                                                        <input type="number" name="presentPincode" class="form-control" placeholder="Enter pincode" required>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- TAB 4: Parent/Guardian Info -->
+                                <div id="wizard_parent" class="tab-pane" role="tabpanel">
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <h5 class="text-primary mb-3">Father Information</h5>
+                                        </div>
+                                        <div class="col-lg-6 mb-2">
+                                            <div class="mb-3">
+                                                <label class="text-label form-label">Father's Name<span class="required">*</span></label>
+                                                <input type="text" name="fatherName" class="form-control" placeholder="Enter father's name" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6 mb-2">
+                                            <div class="mb-3">
+                                                <label class="text-label form-label">Father's Phone<span class="required">*</span></label>
+                                                <input type="tel" name="fatherPhone" class="form-control" placeholder="Enter phone number" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6 mb-2">
+                                            <div class="mb-3">
+                                                <label class="text-label form-label">Father's Email</label>
+                                                <input type="email" name="fatherEmail" class="form-control" placeholder="Enter email address">
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6 mb-2">
+                                            <div class="mb-3">
+                                                <label class="text-label form-label">Father's Occupation<span class="required">*</span></label>
+                                                <input type="text" name="fatherOccupation" class="form-control" placeholder="Enter occupation" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6 mb-2">
+                                            <div class="mb-3">
+                                                <label class="text-label form-label">Annual Income ₹<span class="required">*</span></label>
+                                                <input type="number" name="fatherIncome" class="form-control" placeholder="Enter annual income" required>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-12 mt-4">
+                                            <h5 class="text-primary mb-3">Mother Information</h5>
+                                        </div>
+                                        <div class="col-lg-6 mb-2">
+                                            <div class="mb-3">
+                                                <label class="text-label form-label">Mother's Name<span class="required">*</span></label>
+                                                <input type="text" name="motherName" class="form-control" placeholder="Enter mother's name" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6 mb-2">
+                                            <div class="mb-3">
+                                                <label class="text-label form-label">Mother's Phone</label>
+                                                <input type="tel" name="motherPhone" class="form-control" placeholder="Enter phone number">
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-12 mt-4">
+                                            <h5 class="text-primary mb-3">Guardian Information (Optional)</h5>
+                                        </div>
+                                        <div class="col-lg-6 mb-2">
+                                            <div class="mb-3">
+                                                <label class="text-label form-label">Guardian Name</label>
+                                                <input type="text" name="guardianName" class="form-control" placeholder="Enter guardian name">
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6 mb-2">
+                                            <div class="mb-3">
+                                                <label class="text-label form-label">Relation</label>
+                                                <select name="guardianRelation" class="default-select form-control wide">
+                                                    <option value="">Select Relation</option>
+                                                    <option value="Father">Father</option>
+                                                    <option value="Mother">Mother</option>
+                                                    <option value="Uncle">Uncle</option>
+                                                    <option value="Aunt">Aunt</option>
+                                                    <option value="Grandfather">Grandfather</option>
+                                                    <option value="Grandmother">Grandmother</option>
+                                                    <option value="Other">Other</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6 mb-2">
+                                            <div class="mb-3">
+                                                <label class="text-label form-label">Guardian Contact</label>
+                                                <input type="tel" name="guardianPhone" class="form-control" placeholder="Enter contact number">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- TAB 5: Documents & Emergency Info -->
+                                <div id="wizard_documents" class="tab-pane" role="tabpanel">
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <h5 class="text-primary mb-3">Documents Upload</h5>
+                                        </div>
+                                        <div class="col-lg-6 mb-3">
+                                            <label class="text-label form-label">Birth Certificate<span class="required">*</span></label>
+                                            <div class="form-file">
+                                                <input type="file" name="birthCertificate" class="form-control" accept=".pdf,.jpg,.jpeg,.png" required>
+                                                <small class="form-text text-muted">Upload PDF, JPG, JPEG, or PNG files only</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6 mb-3">
+                                            <label class="text-label form-label">Student Aadhaar Card<span class="required">*</span></label>
+                                            <div class="form-file">
+                                                <input type="file" name="studentAadhaar" class="form-control" accept=".pdf,.jpg,.jpeg,.png" required>
+                                                <small class="form-text text-muted">Upload PDF, JPG, JPEG, or PNG files only</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6 mb-3">
+                                            <label class="text-label form-label">Parent Aadhaar Card</label>
+                                            <div class="form-file">
+                                                <input type="file" name="parentAadhaar" class="form-control" accept=".pdf,.jpg,.jpeg,.png">
+                                                <small class="form-text text-muted">Optional - Upload PDF, JPG, JPEG, or PNG files only</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6 mb-3">
+                                            <label class="text-label form-label">Transfer Certificate</label>
+                                            <div class="form-file">
+                                                <input type="file" name="transferCertificate" class="form-control" accept=".pdf,.jpg,.jpeg,.png">
+                                                <small class="form-text text-muted">Optional - Upload PDF, JPG, JPEG, or PNG files only</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6 mb-3">
+                                            <label class="text-label form-label">Student Photo</label>
+                                            <div class="avatar-upload">
+                                                <div class="avatar-preview">
+                                                    <div id="imagePreview" style="background-image: url({{ url_for('static', filename='akademi/images/no-img-avatar.png') }})"> 			
+                                                    </div>
+                                                </div>
+                                                <div class="change-btn mt-1">
+                                                    <input type='file' class="form-control d-none" id="imageUpload" name="studentPhoto" accept=".png, .jpg, .jpeg">
+                                                    <label for="imageUpload" class="dlab-upload mb-0 btn btn-primary btn-sm">Choose Photo</label>
+                                                    <a href="javascript:void(0);" class="btn btn-danger light remove-img ms-2 btn-sm">Remove</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-12 mt-4">
+                                            <h5 class="text-primary mb-3">Medical & Emergency Information</h5>
+                                        </div>
+                                        <div class="col-lg-6 mb-2">
+                                            <div class="mb-3">
+                                                <label class="text-label form-label">Known Allergies</label>
+                                                <textarea name="allergies" class="form-control" rows="3" placeholder="List any known allergies"></textarea>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6 mb-2">
+                                            <div class="mb-3">
+                                                <label class="text-label form-label">Chronic Illness</label>
+                                                <textarea name="chronicIllness" class="form-control" rows="3" placeholder="List any chronic illness"></textarea>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6 mb-2">
+                                            <div class="mb-3">
+                                                <label class="text-label form-label">Emergency Contact Name<span class="required">*</span></label>
+                                                <input type="text" name="emergencyContactName" class="form-control" placeholder="Enter emergency contact name" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6 mb-2">
+                                            <div class="mb-3">
+                                                <label class="text-label form-label">Emergency Phone Number<span class="required">*</span></label>
+                                                <input type="tel" name="emergencyPhone" class="form-control" placeholder="Enter emergency phone number" required>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- TAB 6: Review & Submit -->
+                                <div id="wizard_review" class="tab-pane" role="tabpanel">
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <h5 class="text-primary mb-4">Review Student Information</h5>
+                                            <div class="card">
+                                                <div class="card-body">
+                                                    <div id="reviewContent">
+                                                        <!-- Review content will be populated by JavaScript -->
+                                                        <p class="text-center text-muted">Please complete all previous tabs to see the review</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="text-center mt-4">
+                                                <button type="button" class="btn btn-outline-primary me-3" onclick="generateAdmissionReceipt()">
+                                                    <i class="fas fa-file-pdf me-2"></i>Generate Admission Receipt
+                                                </button>
+                                                <button type="button" class="btn btn-primary" onclick="saveStudent(); return false;">
+                                                    <i class="fas fa-save me-2"></i>Save Student
+                                                </button>
+                                            </div>
+                                            
+                                            <div class="mt-3 text-center">
+                                                <div class="form-check custom-checkbox d-inline-block">
+                                                    <input type="checkbox" class="form-check-input" id="activateLogin">
+                                                    <label class="form-check-label" for="activateLogin">Activate student login credentials</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!--**********************************
+    Content body end
+***********************************-->
+{% endblock %}
+{% block additional_js %}
+<script src="{{ url_for('static', filename='akademi/vendor/bootstrap-datepicker-master/js/bootstrap-datepicker.min.js')}}"></script>
+<script src="{{ url_for('static', filename='akademi/vendor/jquery-steps/build/jquery.steps.min.js')}}"></script>
+<script src="{{ url_for('static', filename='akademi/vendor/jquery-validation/jquery.validate.min.js')}}"></script>
+<script src="{{ url_for('static', filename='akademi/js/plugins-init/jquery.validate-init.js')}}"></script>
+<script src="{{ url_for('static', filename='akademi/vendor/jquery-smartwizard/dist/js/jquery.smartWizard.js')}}"></script>
+<script src="{{ url_for('static', filename='akademi/vendor/jquery-nice-select/js/jquery.nice-select.min.js')}}"></script>
+<script src="{{ url_for('static', filename='akademi/vendor/dropzone/dist/dropzone.js')}}"></script>
+<script>
+    $(document).ready(function(){
+        // Initialize SmartWizard
+        $('#smartwizard').smartWizard({
+            selected: 0,
+            theme: 'default',
+            transition: {
+                animation: 'slide-horizontal', 
+            },
+            toolbarSettings: {
+                toolbarPosition: 'bottom',
+                toolbarButtonPosition: 'right',
+                showNextButton: true,
+                showPreviousButton: true,
+                toolbarExtraButtons: []
+            }
+        });
+        
+        // Initialize date pickers
+        $("#datepicker1, #datepicker2").datepicker({ 
+            autoclose: true, 
+            todayHighlight: true,
+            format: 'dd/mm/yyyy'
+        });
+        
+        // Handle same address checkbox
+        $('#sameAsPermanent').change(function() {
+            if (this.checked) {
+                // Copy permanent address to present address
+                $('input[name="presentAddress1"]').val($('textarea[name="permanentAddress1"]').val());
+                $('input[name="presentAddress2"]').val($('textarea[name="permanentAddress2"]').val());
+                $('input[name="presentCity"]').val($('input[name="permanentCity"]').val());
+                $('input[name="presentDistrict"]').val($('input[name="permanentDistrict"]').val());
+                $('input[name="presentState"]').val($('input[name="permanentState"]').val());
+                $('input[name="presentPincode"]').val($('input[name="permanentPincode"]').val());
+                
+                // Hide present address section
+                $('#presentAddressSection').hide();
+            } else {
+                // Show present address section
+                $('#presentAddressSection').show();
+                // Clear present address fields
+                $('textarea[name="presentAddress1"], textarea[name="presentAddress2"]').val('');
+                $('input[name="presentCity"], input[name="presentDistrict"], input[name="presentState"], input[name="presentPincode"]').val('');
+            }
+        });
+        
+        // Update review content when moving to review tab
+        $('#smartwizard').on("showStep", function(e, anchorObject, stepNumber, stepDirection, stepPosition) {
+            if (stepNumber === 5) { // Review tab (0-indexed)
+                updateReviewContent();
+            }
+        });
+    });
+    
+    // Function to update review content
+    function updateReviewContent() {
+        var reviewHtml = '<div class="row">';
+        
+        // Basic Info Section
+        reviewHtml += '<div class="col-md-6 mb-4">';
+        reviewHtml += '<h6 class="text-primary mb-3">Basic Information</h6>';
+        reviewHtml += '<p><strong>Name:</strong> ' + ($('input[name="firstName"]').val() + ' ' + $('input[name="lastName"]').val()) + '</p>';
+        reviewHtml += '<p><strong>Aadhaar:</strong> ' + $('input[name="aadhaarNumber"]').val() + '</p>';
+        reviewHtml += '<p><strong>Gender:</strong> ' + $('select[name="gender"]').val() + '</p>';
+        reviewHtml += '<p><strong>Date of Birth:</strong> ' + $('input[name="dateOfBirth"]').val() + '</p>';
+        reviewHtml += '<p><strong>Religion:</strong> ' + $('select[name="religion"]').val() + '</p>';
+        reviewHtml += '<p><strong>Category:</strong> ' + $('select[name="category"]').val() + '</p>';
+        reviewHtml += '</div>';
+        
+        // Academic Info Section
+        reviewHtml += '<div class="col-md-6 mb-4">';
+        reviewHtml += '<h6 class="text-primary mb-3">Academic Information</h6>';
+        reviewHtml += '<p><strong>Admission No:</strong> ' + $('input[name="admissionNumber"]').val() + '</p>';
+        reviewHtml += '<p><strong>Roll No:</strong> ' + $('input[name="rollNumber"]').val() + '</p>';
+        reviewHtml += '<p><strong>Admission Date:</strong> ' + $('input[name="admissionDate"]').val() + '</p>';
+        reviewHtml += '<p><strong>Academic Session:</strong> ' + $('select[name="academicSession"]').val() + '</p>';
+        reviewHtml += '<p><strong>Class:</strong> ' + $('select[name="class"]').val() + '</p>';
+        reviewHtml += '<p><strong>Section:</strong> ' + $('select[name="section"]').val() + '</p>';
+        reviewHtml += '<p><strong>Status:</strong> ' + $('select[name="studentStatus"]').val() + '</p>';
+        reviewHtml += '</div>';
+        
+        // Address Info Section
+        reviewHtml += '<div class="col-md-6 mb-4">';
+        reviewHtml += '<h6 class="text-primary mb-3">Address Information</h6>';
+        reviewHtml += '<p><strong>Permanent Address:</strong><br>' + 
+                      $('textarea[name="permanentAddress1"]').val() + '<br>' +
+                      $('input[name="permanentCity"]').val() + ', ' + 
+                      $('input[name="permanentDistrict"]').val() + '<br>' +
+                      $('input[name="permanentState"]').val() + ' - ' + 
+                      $('input[name="permanentPincode"]').val() + '</p>';
+        reviewHtml += '</div>';
+        
+        // Parent Info Section
+        reviewHtml += '<div class="col-md-6 mb-4">';
+        reviewHtml += '<h6 class="text-primary mb-3">Parent Information</h6>';
+        reviewHtml += '<p><strong>Father:</strong> ' + $('input[name="fatherName"]').val() + '</p>';
+        reviewHtml += '<p><strong>Father Phone:</strong> ' + $('input[name="fatherPhone"]').val() + '</p>';
+        reviewHtml += '<p><strong>Father Occupation:</strong> ' + $('input[name="fatherOccupation"]').val() + '</p>';
+        reviewHtml += '<p><strong>Mother:</strong> ' + $('input[name="motherName"]').val() + '</p>';
+        reviewHtml += '<p><strong>Emergency Contact:</strong> ' + $('input[name="emergencyContactName"]').val() + '</p>';
+        reviewHtml += '<p><strong>Emergency Phone:</strong> ' + $('input[name="emergencyPhone"]').val() + '</p>';
+        reviewHtml += '</div>';
+        
+        reviewHtml += '</div>';
+        
+        // Add submit buttons to review content
+        reviewHtml += '<div class="text-center mt-4 pt-4 border-top">';
+        reviewHtml += '<button type="button" class="btn btn-outline-primary me-3" onclick="generateAdmissionReceipt()">';
+        reviewHtml += '<i class="fas fa-file-pdf me-2"></i>Generate Admission Receipt';
+        reviewHtml += '</button>';
+        reviewHtml += '<button type="button" class="btn btn-primary btn-lg" onclick="saveStudent(); return false;">';
+        reviewHtml += '<i class="fas fa-save me-2"></i>Save Student';
+        reviewHtml += '</button>';
+        reviewHtml += '</div>';
+        
+        $('#reviewContent').html(reviewHtml);
+    }
+    
+    
+    // Function to validate current tab
+    function validateCurrentTab() {
+        var valid = true;
+        var errors = [];
+        
+        // Simplified validation for only essential fields
+        var requiredFields = [
+            {name: 'firstName', label: 'First Name'},
+            {name: 'lastName', label: 'Last Name'}
+        ];
+        
+        requiredFields.forEach(function(field) {
+            var element = document.querySelector('[name="' + field.name + '"]');
+            if (element && (!element.value || element.value.trim() === '')) {
+                errors.push(field.label + ' is required');
+                element.style.borderColor = '#dc3545';
+                valid = false;
+            } else if (element) {
+                element.style.borderColor = '';
+            }
+        });
+        
+        // Optional email validation (only if email is provided)
+        var emailField = document.querySelector('input[name="email"]');
+        if (emailField && emailField.value && emailField.value.trim() !== '') {
+            var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(emailField.value)) {
+                errors.push('Please enter a valid email address');
+                emailField.style.borderColor = '#dc3545';
+                valid = false;
+            } else {
+                emailField.style.borderColor = '';
+            }
+        }
+        
+        if (!valid) {
+            alert('Please fix the following errors:\n' + errors.join('\n'));
+        }
+        
+        return valid;
+    }
+    
+    // Function to save student data
+    function saveStudent() {
+        // Skip validation to allow submission with minimal data
+        // if (!validateCurrentTab()) {
+        //     return;
+        // }
+        
+        // Collect form data with proper field mapping
+        var formData = new FormData();
+        
+        // Personal Information - Map frontend fields to backend expected fields
+        const firstName = document.querySelector('input[name="firstName"]')?.value || '';
+        const lastName = document.querySelector('input[name="lastName"]')?.value || '';
+        const fullName = (firstName + ' ' + lastName).trim();
+        
+        if (fullName) formData.append('name', fullName);
+        if (document.querySelector('input[name="email"]')?.value) formData.append('email', document.querySelector('input[name="email"]').value);
+        if (document.querySelector('input[name="phone"]')?.value) formData.append('phone', document.querySelector('input[name="phone"]').value);
+        if (document.querySelector('input[name="dateOfBirth"]')?.value) formData.append('date_of_birth', document.querySelector('input[name="dateOfBirth"]').value);
+        if (document.querySelector('select[name="gender"]')?.value) formData.append('gender', document.querySelector('select[name="gender"]').value);
+        if (document.querySelector('textarea[name="address"]')?.value) formData.append('address', document.querySelector('textarea[name="address"]').value);
+        
+        // Academic Information
+        if (document.querySelector('input[name="admissionNumber"]')?.value) formData.append('admission_number', document.querySelector('input[name="admissionNumber"]').value);
+        if (document.querySelector('select[name="class"]')?.value) formData.append('class_id', document.querySelector('select[name="class"]').value);
+        if (document.querySelector('select[name="section"]')?.value) formData.append('section_id', document.querySelector('select[name="section"]').value);
+        if (document.querySelector('input[name="rollNumber"]')?.value) formData.append('roll_number', document.querySelector('input[name="rollNumber"]').value);
+        if (document.querySelector('input[name="admissionDate"]')?.value) formData.append('admission_date', document.querySelector('input[name="admissionDate"]').value);
+        
+        // Parent Information
+        if (document.querySelector('input[name="fatherName"]')?.value) formData.append('father_name', document.querySelector('input[name="fatherName"]').value);
+        if (document.querySelector('input[name="motherName"]')?.value) formData.append('mother_name', document.querySelector('input[name="motherName"]').value);
+        if (document.querySelector('input[name="guardianPhone"]')?.value) formData.append('guardian_phone', document.querySelector('input[name="guardianPhone"]').value);
+        
+        // Additional Information
+        if (document.querySelector('select[name="category"]')?.value) formData.append('category', document.querySelector('select[name="category"]').value);
+        if (document.querySelector('select[name="bloodGroup"]')?.value) formData.append('blood_group', document.querySelector('select[name="bloodGroup"]').value);
+        formData.append('status', 'Active'); // Default status
+        
+        // Handle photo upload
+        const photoInput = document.querySelector('input[name="studentPhoto"]');
+        if (photoInput && photoInput.files.length > 0) {
+            formData.append('photo', photoInput.files[0]);
+        }
+        
+        // Show loading state
+        const submitButton = document.querySelector('button[onclick="saveStudent()"]');
+        const originalText = submitButton?.textContent;
+        if (submitButton) {
+            submitButton.disabled = true;
+            submitButton.textContent = 'Saving...';
+        }
+        
+        // Submit to server
+        fetch('/add-student', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Student registered successfully!');
+                // Redirect to student list
+                window.location.href = '/student';
+            } else {
+                alert('Error: ' + (data.message || 'Failed to register student'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while saving the student data. Please try again.');
+        })
+        .finally(() => {
+            // Restore button state
+            if (submitButton) {
+                submitButton.disabled = false;
+                submitButton.textContent = originalText;
+            }
+        });
+    }
+    
+    // Function to generate admission receipt
+    function generateAdmissionReceipt() {
+        alert('Admission receipt generated! (This is a demo - implement actual PDF generation)');
+    }
+    
+    // Image upload functionality
+    function readURL(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                $('#imagePreview').css('background-image', 'url('+e.target.result +')');
+                $('#imagePreview').hide();
+                $('#imagePreview').fadeIn(650);
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+    
+    $("#imageUpload").change(function() {
+        readURL(this);
+    });
+    
+    $('.remove-img').on('click', function() {
+        var imageUrl = "{{ url_for('static', filename='akademi/images/no-img-avatar.png')}}";
+        $('.avatar-preview, #imagePreview').removeAttr('style');
+        $('#imagePreview').css('background-image', 'url(' + imageUrl + ')');
+        $('#imageUpload').val('');
+    });
+    
+    // Form validation
+    $('form').validate({
+        rules: {
+            firstName: { required: true },
+            lastName: { required: true },
+            aadhaarNumber: { required: false, minlength: 12, maxlength: 12 },
+            gender: { required: false },
+            dateOfBirth: { required: false },
+            religion: { required: false },
+            category: { required: false },
+            admissionNumber: { required: false },
+            rollNumber: { required: false },
+            admissionDate: { required: false },
+            academicSession: { required: false },
+            class: { required: false }, 
+            section: { required: false },
+            studentStatus: { required: false },
+            fatherName: { required: false },
+            fatherPhone: { required: false },
+            motherName: { required: false },
+            emergencyContactName: { required: false },
+            emergencyPhone: { required: false }
+        },
+        messages: {
+            aadhaarNumber: {
+                minlength: "Aadhaar number must be exactly 12 digits",
+                maxlength: "Aadhaar number must be exactly 12 digits"
+            }
+        }
+    });
+</script>
+{% endblock %}
+

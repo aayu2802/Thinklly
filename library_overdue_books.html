@@ -1,0 +1,96 @@
+{% extends 'akademi/elements/layouts/admin.html' %}
+
+{% block title %}Overdue Books - Library{% endblock %}
+
+{% block content %}
+<!--**********************************
+    Content body start
+***********************************-->
+<div class="content-body">
+    <div class="container-fluid">
+        <div class="row page-titles">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('school.dashboard', tenant_slug=tenant_slug) }}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('school.library_dashboard', tenant_slug=tenant_slug) }}">Library</a></li>
+                <li class="breadcrumb-item active">Overdue Books</li>
+            </ol>
+        </div>
+
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title">Overdue Books ({{ overdue|length }})</h4>
+                    </div>
+                    <div class="card-body">
+                        {% if overdue %}
+                        <div class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle"></i>
+                            <strong>{{ overdue|length }} book(s) are overdue!</strong> Please follow up with students.
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Issue #</th>
+                                        <th>Book</th>
+                                        <th>Student</th>
+                                        <th>Issue Date</th>
+                                        <th>Due Date</th>
+                                        <th>Days Overdue</th>
+                                        <th>Expected Fine</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for issue in overdue %}
+                                    <tr class="table-danger">
+                                        <td><strong>{{ issue.issue_number }}</strong></td>
+                                        <td>{{ issue.book.title }}</td>
+                                        <td>
+                                            <a href="{{ url_for('school.student_library_history', tenant_slug=tenant_slug, student_id=issue.student.id) }}">
+                                                {{ issue.student.full_name }}
+                                            </a>
+                                            <br><small class="text-muted">{{ issue.student.admission_number }}</small>
+                                        </td>
+                                        <td><small>{{ issue.issue_date.strftime('%d-%m-%Y') }}</small></td>
+                                        <td><small>{{ issue.due_date.strftime('%d-%m-%Y') }}</small></td>
+                                        <td>
+                                            <span class="badge badge-danger">{{ issue.days_overdue }} days</span>
+                                        </td>
+                                        <td>
+                                            {% if issue.fine_amount > 0 %}
+                                            <strong>₹{{ "%.2f"|format(issue.fine_amount) }}</strong>
+                                            {% else %}
+                                            <span class="text-muted">Not calculated</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <a href="{{ url_for('school.return_library_book', tenant_slug=tenant_slug, issue_id=issue.id) }}" 
+                                               class="btn btn-primary btn-sm">
+                                                <i class="bi bi-arrow-return-left"></i> Return
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="text-center py-5">
+                            <i class="bi bi-check-circle" style="font-size: 72px; color: #28a745;"></i>
+                            <p class="lead text-success mt-3">No overdue books!</p>
+                            <p class="text-muted">All books are returned on time or still within due date.</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!--**********************************
+    Content body end
+***********************************-->
+{% endblock %}

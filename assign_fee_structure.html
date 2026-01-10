@@ -1,0 +1,357 @@
+{% extends 'akademi/elements/layouts/admin.html' %}
+	
+{% block additional_css %}
+<style>
+.student-card {
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+.student-card:hover {
+    background-color: #f8f9fa;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+.student-card.selected {
+    background-color: #e7f3ff;
+    border-color: #007bff;
+}
+.student-card.assigned {
+    background-color: #f0f0f0;
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!--**********************************
+    Content body start
+***********************************-->
+<div class="content-body">
+    <div class="container-fluid">   
+        <!-- Page Header -->
+        <div class="row">
+            <div class="col-xl-12">
+                <div class="page-title flex-wrap justify-content-between align-items-center">
+                    <div>
+                        <h4 class="mb-1">Assign Fee Structure to Students</h4>
+                        <p class="mb-0">{{ structure.structure_name }}</p>
+                    </div>
+                    <div>
+                        <a href="{{ url_for('school.view_fee_structure', tenant_slug=school.slug, structure_id=structure.id) }}" 
+                            class="btn btn-info">
+                            <i class="fas fa-eye me-2"></i>View Structure
+                        </a>
+                        <a href="{{ url_for('school.fee_structures', tenant_slug=school.slug) }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Back to List
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <!-- Structure Summary Card -->
+        <div class="row mb-3">
+            <div class="col-xl-12">
+                <div class="card border-primary">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <strong>Session:</strong>
+                                <p class="mb-0">{{ structure.session.session_name }}</p>
+                            </div>
+                            <div class="col-md-3">
+                                <strong>Class:</strong>
+                                <p class="mb-0">{{ structure.student_class.class_name }}-{{ structure.student_class.section }}</p>
+                            </div>
+                            <div class="col-md-3">
+                                <strong>Valid Period:</strong>
+                                <p class="mb-0">{{ structure.valid_from.strftime('%d-%b-%Y') }} 
+                                    {% if structure.valid_to %}to {{ structure.valid_to.strftime('%d-%b-%Y') }}{% endif %}</p>
+                            </div>
+                            <div class="col-md-3">
+                                <strong>Total Students:</strong>
+                                <p class="mb-0 text-primary"><strong>{{ students|length }}</strong></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Assignment Form Card -->
+        <div class="row">
+            <div class="col-xl-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title">
+                            <i class="fas fa-users me-2"></i>Select Assignment Type
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" id="assignmentForm">
+                            <div class="mb-4">
+                                <label class="form-label"><strong>How would you like to assign this fee structure?</strong></label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="assignment_type" id="assignClass" 
+                                        value="class" checked onchange="toggleAssignmentType()">
+                                    <label class="form-check-label" for="assignClass">
+                                        <strong>Assign to Entire Class</strong>
+                                        <br><small class="text-muted">All {{ students|length }} students in {{ structure.student_class.class_name }}-{{ structure.student_class.section }} will be assigned this fee structure</small>
+                                    </label>
+                                </div>
+                                <div class="form-check mt-2">
+                                    <input class="form-check-input" type="radio" name="assignment_type" id="assignIndividual" 
+                                        value="individual" onchange="toggleAssignmentType()">
+                                    <label class="form-check-label" for="assignIndividual">
+                                        <strong>Assign to Selected Students Only</strong>
+                                        <br><small class="text-muted">Choose specific students from the list below</small>
+                                    </label>
+                                </div>
+                                <div class="form-check mt-2">
+                                    <input class="form-check-input" type="radio" name="assignment_type" id="assignClasses" 
+                                        value="classes" onchange="toggleAssignmentType()">
+                                    <label class="form-check-label" for="assignClasses">
+                                        <strong>Assign to Multiple Classes / Range</strong>
+                                        <br><small class="text-muted">Select specific classes or a contiguous class range</small>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div id="studentSelectionContainer" style="display: none;">
+                                <hr>
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h6 class="mb-0">Select Students</h6>
+                                    <div>
+                                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="selectAllStudents()">
+                                            <i class="fas fa-check me-1"></i>Select All
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="deselectAllStudents()">
+                                            <i class="fas fa-times me-1"></i>Deselect All
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    {% for student in students %}
+                                    <div class="col-md-6 col-lg-4">
+                                        <div class="student-card {% if student.id in assigned_ids %}assigned{% endif %}" 
+                                            data-student-id="{{ student.id }}"
+                                            onclick="toggleStudentSelection({{ student.id }})">
+                                            <div class="form-check">
+                                                <input class="form-check-input student-checkbox" type="checkbox" 
+                                                    name="student_ids[]" value="{{ student.id }}" 
+                                                    id="student_{{ student.id }}"
+                                                    {% if student.id in assigned_ids %}disabled{% endif %}>
+                                                <label class="form-check-label" for="student_{{ student.id }}">
+                                                    <strong>{{ student.full_name }}</strong>
+                                                    <br>
+                                                    <small class="text-muted">
+                                                        Admission: {{ student.admission_number }}
+                                                        {% if student.roll_number %}| Roll: {{ student.roll_number }}{% endif %}
+                                                    </small>
+                                                    {% if student.id in assigned_ids %}
+                                                    <br><span class="badge bg-success badge-sm">Already Assigned</span>
+                                                    {% endif %}
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                
+                                <div class="alert alert-info mt-3">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    <strong>Selected:</strong> <span id="selectedCount">0</span> student(s)
+                                </div>
+                            </div>
+
+                            <div id="classSelectionContainer" style="display: none;">
+                                <hr>
+                                <h6>Assign To Classes</h6>
+                                <p class="text-muted">You can either select specific classes, or choose a <strong>From</strong> and <strong>To</strong> class to assign across a contiguous range.</p>
+
+                                <div class="mb-3">
+                                    <label class="form-label"><strong>Select Classes</strong></label>
+                                    <div class="row">
+                                        {% for c in classes %}
+                                        <div class="col-md-3">
+                                            <div class="form-check">
+                                                <input class="form-check-input class-checkbox" type="checkbox" name="class_ids[]" 
+                                                    id="class_{{ c.id }}" value="{{ c.id }}">
+                                                <label class="form-check-label" for="class_{{ c.id }}">
+                                                    {{ c.class_name }}{% if c.section %}-{{ c.section }}{% endif %}
+                                                </label>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label"><strong>From Class</strong></label>
+                                        <select class="form-select" name="from_class_id" id="fromClassSelect">
+                                            <option value="">-- From --</option>
+                                            {% for c in classes %}
+                                                <option value="{{ c.id }}">{{ c.class_name }}{% if c.section %}-{{ c.section }}{% endif %}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label"><strong>To Class</strong></label>
+                                        <select class="form-select" name="to_class_id" id="toClassSelect">
+                                            <option value="">-- To --</option>
+                                            {% for c in classes %}
+                                                <option value="{{ c.id }}">{{ c.class_name }}{% if c.section %}-{{ c.section }}{% endif %}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="selectAllClasses()">Select All</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="deselectAllClasses()">Deselect All</button>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-4">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-check me-2"></i>Assign Fee Structure
+                                </button>
+                                <a href="{{ url_for('school.fee_structures', tenant_slug=school.slug) }}" class="btn btn-secondary btn-lg">
+                                    <i class="fas fa-times me-2"></i>Cancel
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<!--**********************************
+    Content body end
+***********************************-->
+{% endblock %}
+
+{% block additional_js %}
+<script>
+function toggleAssignmentType() {
+    const assignType = $('input[name="assignment_type"]:checked').val();
+    const studentContainer = $('#studentSelectionContainer');
+    const classContainer = $('#classSelectionContainer');
+
+    if (assignType === 'individual') {
+        studentContainer.slideDown();
+        classContainer.slideUp();
+    } else if (assignType === 'classes') {
+        classContainer.slideDown();
+        studentContainer.slideUp();
+        // Deselect student selections when switching to classes
+        $('.student-checkbox:not(:disabled)').prop('checked', false);
+        $('.student-card').removeClass('selected');
+        updateSelectedCount();
+    } else {
+        // default - entire class
+        studentContainer.slideUp();
+        classContainer.slideUp();
+        $('.student-checkbox:not(:disabled)').prop('checked', false);
+        $('.student-card').removeClass('selected');
+        updateSelectedCount();
+    }
+}
+
+function selectAllClasses() {
+    $('.class-checkbox').prop('checked', true);
+}
+
+function deselectAllClasses() {
+    $('.class-checkbox').prop('checked', false);
+}
+
+function toggleStudentSelection(studentId) {
+    const card = $(`.student-card[data-student-id="${studentId}"]`);
+    const checkbox = $(`#student_${studentId}`);
+    
+    if (checkbox.prop('disabled')) {
+        return; // Already assigned
+    }
+    
+    checkbox.prop('checked', !checkbox.prop('checked'));
+    
+    if (checkbox.prop('checked')) {
+        card.addClass('selected');
+    } else {
+        card.removeClass('selected');
+    }
+    
+    updateSelectedCount();
+}
+
+function selectAllStudents() {
+    $('.student-checkbox:not(:disabled)').prop('checked', true);
+    $('.student-card:not(.assigned)').addClass('selected');
+    updateSelectedCount();
+}
+
+function deselectAllStudents() {
+    $('.student-checkbox:not(:disabled)').prop('checked', false);
+    $('.student-card').removeClass('selected');
+    updateSelectedCount();
+}
+
+function updateSelectedCount() {
+    const count = $('.student-checkbox:checked').length;
+    $('#selectedCount').text(count);
+}
+
+// Form validation
+$('#assignmentForm').on('submit', function(e) {
+    const assignType = $('input[name="assignment_type"]:checked').val();
+    
+    if (assignType === 'individual') {
+        const selectedCount = $('.student-checkbox:checked').length;
+        if (selectedCount === 0) {
+            e.preventDefault();
+            alert('Please select at least one student to assign the fee structure.');
+            return false;
+        }
+    }
+
+    if (assignType === 'classes') {
+        const selectedClasses = $('.class-checkbox:checked').length;
+        const fromVal = $('#fromClassSelect').val();
+        const toVal = $('#toClassSelect').val();
+        if (selectedClasses === 0 && !(fromVal && toVal)) {
+            e.preventDefault();
+            alert('Please select at least one class or specify a From and To class for range assignment.');
+            return false;
+        }
+    }
+
+    return confirm('Are you sure you want to assign this fee structure to the selected students/classes?');
+});
+
+// Initialize
+$(document).ready(function() {
+    updateSelectedCount();
+});
+</script>
+{% endblock %}

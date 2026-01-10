@@ -1,0 +1,165 @@
+{% extends 'akademi/elements/layouts/admin.html' %}
+	
+{% block additional_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename=  'akademi/vendor/lightgallery/css/lightgallery.min.css')}}">
+<link rel="stylesheet" href="{{ url_for('static', filename=  'akademi/vendor/chartist/css/chartist.min.css')}}">
+<link rel="stylesheet" href="{{ url_for('static', filename=  'akademi/vendor/wow-master/css/libs/animate.css')}}">
+{% endblock %}
+
+{% block content %}
+<!--**********************************
+    Content body start
+***********************************-->
+<div class="content-body">
+    <!-- row -->
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-xl-12">
+                <div class="">
+                    <div class="card activity">
+                        <div class="card-body pt-0">
+                            <div id="DZ_W_TimeLine11" class="widget-timeline style-3 ">
+                                <h4 class="mt-3">Today</h4>
+                                <ul class="timeline-active style-1">
+                                    <li class="d-flex align-items-baseline timeline-list">
+                                        <div class="dz-media">
+                                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <rect x="2" y="2" width="12" height="12" rx="6" fill="white" stroke="#4D44B5" stroke-width="4"/>
+                                            </svg>
+                                        </div>
+                                        <div class="panel">
+                                            <p class="time">Monday, June 31 2023</p>	
+                                            <a class="timeline-panel text-muted d-flex align-items-center" href="#">
+                                                <span><strong class="text-primary">Karen Hope</strong> has created new task at <strong class="text-secondary font-w500">HIstory Lesson</strong> </span>
+                                                    
+                                            </a>
+                                        </div>
+                                        
+                                    </li>
+                                    <li class="d-flex align-items-baseline timeline-list">
+                                        <div class="dz-media">
+                                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <rect x="2" y="2" width="12" height="12" rx="6" fill="white" stroke="#4D44B5" stroke-width="4"/>
+                                            </svg>
+                                        </div>
+                                        <div class="panel">
+                                            <p class="time">Monday, June 31 2023</p>
+                                            <a class="timeline-panel text-muted d-flex align-items-center" href="#">
+                                                <span><strong class="text-secondary font-w500">[REMINDER] </strong> Due date of <strong class="text-secondary font-w500">Science Homework task will be coming</strong></span>
+                                                
+                                            </a>
+                                        </div>	
+                                        
+                                    </li>
+                                    <li class="d-flex align-items-baseline timeline-list">
+                                        <div class="dz-media">
+                                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <rect x="2" y="2" width="12" height="12" rx="6" fill="white" stroke="#4D44B5" stroke-width="4"/>
+                                            </svg>
+                                        </div>
+                                        <div class="panel">
+                                            <p class="time">Monday, June 31 2023</p>	
+                                            <a class="timeline-panel text-muted d-flex align-items-center" href="#">
+                                                <span ><strong class="text-primary">Tony Soap </strong> commented at <strong class="text-secondary font-w500"> Science Homework </strong></span>
+                                            </a>
+                                        </div>
+                                        
+                                    </li>
+                                    <li class="d-flex align-items-baseline timeline-list">
+                                        <div class="dz-media">
+                                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <rect x="2" y="2" width="12" height="12" rx="6" fill="white" stroke="#4D44B5" stroke-width="4"/>
+                                            </svg>
+                                        </div>
+                                        <div class="panel">
+                                            <p class="time">Monday, June 31 2020</p>	
+                                            <a class="timeline-panel text-muted d-flex align-items-center" href="#">
+                                                <span class="mb-2 d-block"><strong class="text-primary">Samantha William </strong> add 4 files on  <strong class="text-primary font-w500"> Art Class </strong></span>
+                                            </a>
+                                            <div class="modulel flex-wrap" id="lightgallery">
+                                                <a href="{{ url_for('static', filename=  'akademi/images/activity-img/pic1.jpg')}}" data-exthumbimage="{{ url_for('static', filename=  'akademi/images/activity-img/pic1.jpg')}}" data-src="{{ url_for('static', filename=  'akademi/images/activity-img/pic1.jpg')}}">
+                                                    <img src="{{ url_for('static', filename=  'akademi/images/activity-img/pic1.jpg')}}" alt="" style="width:100%;">
+                                                </a>
+                                                <a href="{{ url_for('static', filename=  'akademi/images/activity-img/pic2.jpg')}}" data-exthumbimage="{{ url_for('static', filename=  'akademi/images/activity-img/pic2.jpg')}}" data-src="{{ url_for('static', filename=  'akademi/images/activity-img/pic2.jpg')}}">
+                                                    <img src="{{ url_for('static', filename=  'akademi/images/activity-img/pic2.jpg')}}" alt="" style="width:100%;">
+                                                </a>
+                                                <a href="{{ url_for('static', filename=  'akademi/images/activity-img/pic3.jpg')}}" data-exthumbimage="{{ url_for('static', filename=  'akademi/images/activity-img/pic3.jpg')}}" data-src="{{ url_for('static', filename=  'akademi/images/activity-img/pic3.jpg')}}">
+                                                    <img src="{{ url_for('static', filename=  'akademi/images/activity-img/pic3.jpg')}}" alt="" style="width:100%;">
+                                                </a>
+                                                <a href="{{ url_for('static', filename=  'akademi/images/activity-img/pic4.jpg')}}" data-exthumbimage="{{ url_for('static', filename=  'akademi/images/activity-img/pic4.jpg')}}" data-src="{{ url_for('static', filename=  'akademi/images/activity-img/pic4.jpg')}}">
+                                                    <img src="{{ url_for('static', filename=  'akademi/images/activity-img/pic4.jpg')}}" alt="" style="width:100%;">
+                                                </a>
+                                                
+                                            </div> 
+                                        </div>
+                                        
+                                    </li>
+                                    <li class="d-flex align-items-baseline last-timeline">
+                                        <div class="dz-media">
+                                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <rect x="2" y="2" width="12" height="12" rx="6" fill="white" stroke="#4D44B5" stroke-width="4"/>
+                                            </svg>
+                                        </div>
+                                        <div class="panel">
+                                            <p class="time">Monday, June 31 2023</p>	
+                                            <a class="timeline-panel text-muted d-flex align-items-center" href="#">
+                                                <span ><strong class="text-primary">You</strong> has moved <strong class="text-success font-w500">“Biology Homework” </strong> task to Done</span>
+                                            </a>
+                                                
+                                        </div>
+                                        
+                                    </li>
+                                </ul>
+                                <h4 class="mt-3">Yesterday</h4>
+                                <ul class="timeline-active style-1">
+                                    <li class="d-flex align-items-baseline timeline-list">
+                                        <div class="dz-media">
+                                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <rect x="2" y="2" width="12" height="12" rx="6" fill="white" stroke="#4D44B5" stroke-width="4"/>
+                                            </svg>
+                                        </div>
+                                        <div class="panel">
+                                            <p class="time">Monday, June 31 2020</p>	
+                                            <a class="timeline-panel text-muted d-flex align-items-center" href="#">
+                                                <span ><strong class="text-primary">Johnny Ahmad </strong>  mentioned you at <strong class="text-warning font-w500"> Art Class  Homework</strong></span>
+                                            </a>
+                                        </div>
+                                        
+                                    </li>
+                                    <li class="d-flex align-items-baseline last-timeline">
+                                        <div class="dz-media">
+                                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <rect x="2" y="2" width="12" height="12" rx="6" fill="white" stroke="#4D44B5" stroke-width="4"/>
+                                            </svg>
+                                        </div>
+                                        <div class="panel">
+                                            <p class="time">Monday, June 31 2020</p>
+                                            <a class="timeline-panel text-muted d-flex align-items-center" href="#">
+                                                <span><strong class="text-primary">Nadila Adja  </strong> mentioned you at <strong class="text-primary font-w600">Programming Homework</strong> </span>
+                                            </a>
+                                        </div>
+                                            
+                                    </li>
+                                </ul>
+                                
+                            </div>	
+                        </div>
+                    </div>	
+                </div>
+                
+            </div>
+        </div>
+        
+    </div>
+</div>	
+<!--**********************************
+    Content body end
+***********************************-->
+{% endblock %}
+{% block additional_js %}
+<script src="{{ url_for('static', filename='akademi/vendor/lightgallery/js/lightgallery-all.min.js')}}"></script>
+<script src="{{ url_for('static', filename='akademi/vendor/peity/jquery.peity.min.js')}}"></script>
+<script src="{{ url_for('static', filename='akademi/vendor/jquery-nice-select/js/jquery.nice-select.min.js')}}"></script>
+<script src="{{ url_for('static', filename='akademi/vendor/wow-master/dist/wow.min.js')}}"></script>
+{% endblock %}
+

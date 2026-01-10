@@ -1,0 +1,670 @@
+{% extends 'akademi/elements/layouts/admin.html' %}
+	
+{% block additional_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='akademi/vendor/wow-master/css/libs/animate.css')}}">
+<link rel="stylesheet" href="{{ url_for('static', filename='akademi/vendor/datatables/css/jquery.dataTables.min.css')}}">
+<link rel="stylesheet" href="{{ url_for('static', filename='akademi/vendor/apexchart/apexchart.css')}}">
+<style>
+    /* Prevent navbar shift by forcing scrollbar to always show */
+    html {
+        overflow-y: scroll;
+    }
+    
+    .stat-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin-bottom: 1rem;
+    }
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    .stat-card .card-body {
+        padding: 0.75rem;
+    }
+    .stat-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        flex-shrink: 0;
+    }
+    .stat-number {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin: 0.25rem 0;
+        color: #000;
+        line-height: 1.2;
+    }
+    .stat-label {
+        font-size: 0.7rem;
+        color: #6c757d;
+        margin-bottom: 0;
+        white-space: nowrap;
+    }
+    @media (min-width: 768px) {
+        .stat-card .card-body {
+            padding: 1rem;
+        }
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            font-size: 22px;
+        }
+        .stat-number {
+            font-size: 1.75rem;
+        }
+        .stat-label {
+            font-size: 0.8rem;
+        }
+    }
+    @media (min-width: 1200px) {
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            font-size: 24px;
+        }
+    }
+    .calendar-event {
+        padding: 0.75rem;
+        margin-bottom: 0.75rem;
+        border-left: 4px solid;
+        border-radius: 6px;
+        background: #f8f9fa;
+        transition: all 0.3s ease;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+    .calendar-event:hover {
+        transform: translateX(5px);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .calendar-event.exam {
+        border-left-color: #FF6A59;
+        background: #fff5f5;
+    }
+    .calendar-event.holiday {
+        border-left-color: #3B4CB8;
+        background: #f0f2ff;
+    }
+    .calendar-event h6 {
+        font-size: 0.8rem;
+        margin-bottom: 0.25rem;
+        word-break: break-word;
+    }
+    .calendar-event small {
+        font-size: 0.7rem;
+    }
+    .attendance-stat-box {
+        text-align: center;
+        padding: 15px;
+        border-radius: 8px;
+        background: #f8f9fa;
+        margin-bottom: 10px;
+    }
+    .attendance-stat-number {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 5px;
+    }
+    .attendance-stat-label {
+        font-size: 0.875rem;
+        color: #6c757d;
+    }
+    .recent-item {
+        padding: 12px;
+        border-bottom: 1px solid #f0f0f0;
+        transition: background 0.2s ease;
+    }
+    .recent-item:hover {
+        background: #f8f9fa;
+    }
+    .recent-item:last-child {
+        border-bottom: none;
+    }
+    .page-title-area {
+        background:  #0D9488;
+        padding: 1rem;
+        border-radius: 8px;
+        color: white;
+        margin-bottom: 1rem;
+    }
+    .page-title-area h4 {
+        color: white;
+        margin-bottom: 0.25rem;
+        font-size: 1rem;
+    }
+    .page-title-area p {
+        font-size: 0.7rem;
+        margin-bottom: 0;
+    }
+    @media (min-width: 768px) {
+        .page-title-area {
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .page-title-area h4 {
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+        }
+        .page-title-area p {
+            font-size: 0.85rem;
+        }
+    }
+    .chart-container {
+        min-height: 180px;
+    }
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!--**********************************
+    Content body start
+***********************************-->
+<div class="content-body">
+    <div class="container-fluid">
+
+<!--****
+Main Content
+****-->
+<div class="row">
+	<div class="col-xl-12">
+		<!-- Page Title -->
+		<div class="page-title-area">
+			<h4 class="text-white">Welcome to {{ school.name }}</h4>
+			<p class="mb-0 text-white-50">
+				{% if current_session %}
+				Academic Year: {{ current_session.session_name }} | 
+				{% endif %}
+				Today: {{ today.strftime('%B %d, %Y') }}
+			</p>
+		</div>
+		
+		<!-- Statistics Cards -->
+		<div class="row">
+			<div class="col-xl-3 col-sm-6 col-6">
+				<div class="card stat-card">
+					<div class="card-body">
+						<div class="d-flex align-items-center justify-content-between">
+							<div class="flex-grow-1 me-2">
+								<p class="stat-label mb-1">Total Students</p>
+								<h3 class="stat-number mb-1">{{ total_students }}</h3>
+								<span class="badge badge-success badge-xs">Active</span>
+							</div>
+							<div class="stat-icon" style="background: rgba(59, 76, 184, 0.1); color: #3B4CB8;">
+								<i class="fa fa-graduation-cap"></i>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			
+			<div class="col-xl-3 col-sm-6 col-6">
+				<div class="card stat-card">
+					<div class="card-body">
+						<div class="d-flex align-items-center justify-content-between">
+							<div class="flex-grow-1 me-2">
+								<p class="stat-label mb-1">Total Teachers</p>
+								<h3 class="stat-number mb-1">{{ total_teachers }}</h3>
+								<span class="badge badge-info badge-xs">Active</span>
+							</div>
+							<div class="stat-icon" style="background: rgba(23, 162, 184, 0.1); color: #17a2b8;">
+								<i class="fa fa-chalkboard-teacher"></i>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			
+			<div class="col-xl-3 col-sm-6 col-6">
+				<div class="card stat-card">
+					<div class="card-body">
+						<div class="d-flex align-items-center justify-content-between">
+							<div class="flex-grow-1 me-2">
+								<p class="stat-label mb-1">Total Classes</p>
+								<h3 class="stat-number mb-1">{{ total_classes }}</h3>
+								<span class="badge badge-primary badge-xs">Active</span>
+							</div>
+							<div class="stat-icon" style="background: rgba(40, 167, 69, 0.1); color: #28a745;">
+								<i class="fa fa-users"></i>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			
+			<div class="col-xl-3 col-sm-6 col-6">
+				<div class="card stat-card">
+					<div class="card-body">
+						<div class="d-flex align-items-center justify-content-between">
+							<div class="flex-grow-1 me-2">
+								<p class="stat-label mb-1">Upcoming Exams</p>
+								<h3 class="stat-number mb-1">{{ upcoming_exams_count }}</h3>
+								<span class="badge badge-warning badge-xs">Scheduled</span>
+							</div>
+							<div class="stat-icon" style="background: rgba(255, 193, 7, 0.1); color: #ffc107;">
+								<i class="fa fa-file-alt"></i>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<!-- Attendance Overview -->
+	<div class="col-xl-8">
+		<div class="card" style="margin-bottom: 1rem;">
+			<div class="card-header border-0 pb-0" style="padding: 1rem;">
+				<h5 class="heading mb-0 fs-15">Today's Attendance Overview</h5>
+				<p class="text-muted mb-0 fs-12">Real-time attendance statistics</p>
+			</div>
+			<div class="card-body" style="padding: 1rem;">
+				<div class="row">
+					<div class="col-md-6" style="margin-bottom: 1rem;">
+						<h6 class="mb-2 font-w600 fs-14">Student Attendance</h6>
+						<div class="row">
+							<div class="col-6" style="margin-bottom: 0.75rem;">
+								<div class="attendance-stat-box" style="background: #d4edda; padding: 0.5rem; border-radius: 4px; text-align: center;">
+									<div class="attendance-stat-number text-success fs-18 fw-bold">{{ student_attendance.present }}</div>
+									<div class="attendance-stat-label fs-11">Present</div>
+								</div>
+							</div>
+							<div class="col-6" style="margin-bottom: 0.75rem;">
+								<div class="attendance-stat-box" style="background: #f8d7da; padding: 0.5rem; border-radius: 4px; text-align: center;">
+									<div class="attendance-stat-number text-danger fs-18 fw-bold">{{ student_attendance.absent }}</div>
+									<div class="attendance-stat-label fs-11">Absent</div>
+								</div>
+							</div>
+							<div class="col-6">
+								<div class="attendance-stat-box" style="background: #fff3cd; padding: 0.5rem; border-radius: 4px; text-align: center;">
+									<div class="attendance-stat-number text-warning fs-18 fw-bold">{{ student_attendance.on_leave }}</div>
+									<div class="attendance-stat-label fs-11">On Leave</div>
+								</div>
+							</div>
+							<div class="col-6">
+								<div class="attendance-stat-box" style="background: #d1ecf1; padding: 0.5rem; border-radius: 4px; text-align: center;">
+									<div class="attendance-stat-number text-info fs-18 fw-bold">{{ student_attendance.half_day }}</div>
+									<div class="attendance-stat-label fs-11">Half Day</div>
+								</div>
+							</div>
+						</div>
+						<div style="margin-top: 0.75rem;">
+							<div class="d-flex justify-content-between mb-1">
+								<span class="fs-12">Overall Attendance</span>
+								<span class="fs-12 font-w600">{{ student_attendance.percentage }}%</span>
+							</div>
+							<div class="progress" style="height: 6px;">
+								<div class="progress-bar bg-success" role="progressbar" 
+									 style="width: {{ student_attendance.percentage }}%"></div>
+							</div>
+						</div>
+						<div class="chart-container" style="margin-top: 0.75rem;">
+							<div id="studentAttendanceChart" style="height: 160px;"></div>
+						</div>
+					</div>
+					<div class="col-md-6" style="margin-bottom: 1rem;">
+						<h6 class="mb-2 font-w600 fs-14">Teacher Attendance</h6>
+						<div class="row">
+							<div class="col-6" style="margin-bottom: 0.75rem;">
+								<div class="attendance-stat-box" style="background: #d4edda; padding: 0.5rem; border-radius: 4px; text-align: center;">
+									<div class="attendance-stat-number text-success fs-18 fw-bold">{{ teacher_attendance.present }}</div>
+									<div class="attendance-stat-label fs-11">Present</div>
+								</div>
+							</div>
+							<div class="col-6" style="margin-bottom: 0.75rem;">
+								<div class="attendance-stat-box" style="background: #f8d7da; padding: 0.5rem; border-radius: 4px; text-align: center;">
+									<div class="attendance-stat-number text-danger fs-18 fw-bold">{{ teacher_attendance.absent }}</div>
+									<div class="attendance-stat-label fs-11">Absent</div>
+								</div>
+							</div>
+							<div class="col-6">
+								<div class="attendance-stat-box" style="background: #fff3cd; padding: 0.5rem; border-radius: 4px; text-align: center;">
+									<div class="attendance-stat-number text-warning fs-18 fw-bold">{{ teacher_attendance.on_leave }}</div>
+									<div class="attendance-stat-label fs-11">On Leave</div>
+								</div>
+							</div>
+							<div class="col-6">
+								<div class="attendance-stat-box" style="background: #d1ecf1; padding: 0.5rem; border-radius: 4px; text-align: center;">
+									<div class="attendance-stat-number text-info fs-18 fw-bold">{{ teacher_attendance.half_day }}</div>
+									<div class="attendance-stat-label fs-11">Half Day</div>
+								</div>
+							</div>
+						</div>
+						<div style="margin-top: 0.75rem;">
+							<div class="d-flex justify-content-between mb-1">
+								<span class="fs-12">Overall Attendance</span>
+								<span class="fs-12 font-w600">{{ teacher_attendance.percentage }}%</span>
+							</div>
+							<div class="progress" style="height: 6px;">
+								<div class="progress-bar bg-info" role="progressbar" 
+									 style="width: {{ teacher_attendance.percentage }}%"></div>
+							</div>
+						</div>
+						<div class="chart-container" style="margin-top: 0.75rem;">
+							<div id="teacherAttendanceChart" style="height: 160px;"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<!-- Calendar Events -->
+	<div class="col-xl-4 col-lg-12 col-md-12">
+		<div class="card" style="margin-bottom: 1.5rem;">
+			<div class="card-header border-0 pb-0">
+				<h5 class="heading mb-0">Upcoming Events</h5>
+				<p class="text-muted mb-0">Exams & Holidays</p>
+			</div>
+			<div class="card-body" style="max-height: 420px; overflow-y: auto; overflow-x: hidden;">
+				{% if upcoming_exams or upcoming_holidays %}
+					<!-- Exams -->
+					{% for exam in upcoming_exams %}
+					<div class="calendar-event exam" style="word-break: break-word;">
+						<div class="d-flex justify-content-between align-items-start flex-wrap">
+							<div class="flex-grow-1 me-2" style="min-width: 0;">
+								<h6 class="mb-1 font-w600" style="overflow-wrap: break-word;">{{ exam.exam_name }}</h6>
+								<small class="text-muted">
+									<i class="fa fa-calendar me-1"></i>
+									{{ exam.start_date.strftime('%b %d, %Y') }}
+									{% if exam.start_date != exam.end_date %}
+									- {{ exam.end_date.strftime('%b %d, %Y') }}
+									{% endif %}
+								</small>
+							</div>
+							<span class="badge badge-danger badge-xs mt-1">Exam</span>
+						</div>
+					</div>
+					{% endfor %}
+					
+					<!-- Holidays -->
+					{% for holiday in upcoming_holidays %}
+					<div class="calendar-event holiday" style="word-break: break-word;">
+						<div class="d-flex justify-content-between align-items-start flex-wrap">
+							<div class="flex-grow-1 me-2" style="min-width: 0;">
+								<h6 class="mb-1 font-w600" style="overflow-wrap: break-word;">{{ holiday.holiday_name }}</h6>
+								<small class="text-muted">
+									<i class="fa fa-calendar me-1"></i>
+									{{ holiday.start_date.strftime('%b %d, %Y') }}
+									{% if not holiday.is_single_day %}
+									- {{ holiday.end_date.strftime('%b %d, %Y') }}
+									{% endif %}
+								</small>
+							</div>
+							<span class="badge badge-primary badge-xs mt-1">Holiday</span>
+						</div>
+					</div>
+					{% endfor %}
+				{% else %}
+					<div class="text-center py-4">
+						<i class="fa fa-calendar-times" style="font-size: 2.5rem; color: #ccc;"></i>
+						<p class="text-muted mt-2 mb-0">No upcoming events</p>
+					</div>
+				{% endif %}
+			</div>
+		</div>
+	</div>
+	
+	<!-- Recent Teachers -->
+	<div class="col-xl-6">
+		<div class="card" style="margin-bottom: 1rem;">
+			<div class="card-header border-0 pb-0 flex-wrap" style="padding: 1rem;">
+				<div>
+					<h5 class="heading mb-0 fs-15">Recent Teachers</h5>
+					<p class="text-muted mb-0 fs-12">Latest teacher registrations</p>
+				</div>
+				<a href="{{ url_for('school.teachers', tenant_slug=school.slug) }}" class="btn btn-primary btn-xs">
+					<i class="fa fa-eye me-1"></i> View All
+				</a>
+			</div>
+			<div class="card-body" style="padding: 1rem;">
+				<div class="table-responsive">
+					<table class="table table-hover table-borderless">
+						<thead>
+							<tr>
+								<th class="bg-light fs-12" style="padding: 0.5rem;">Name</th>
+								<th class="bg-light fs-12" style="padding: 0.5rem;">Email</th>
+								<th class="bg-light fs-12" style="padding: 0.5rem;">Phone</th>
+								<th class="bg-light fs-12" style="padding: 0.5rem;">Status</th>
+							</tr>
+						</thead>
+						<tbody>
+							{% for teacher in recent_teachers %}
+							<tr>
+								<td style="padding: 0.5rem;">
+									<div class="d-flex align-items-center">
+										<div class="bg-info text-white rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 me-2" style="width: 28px; height: 28px; font-size: 10px; font-weight: 600;">
+											{{ teacher.first_name[0] }}{{ teacher.last_name[0] if teacher.last_name else '' }}
+										</div>
+										<span class="font-w600 fs-12">{{ teacher.full_name }}</span>
+									</div>
+								</td>
+								<td style="padding: 0.5rem;" class="fs-12">{{ teacher.email }}</td>
+								<td style="padding: 0.5rem;" class="fs-12">{{ teacher.phone_primary }}</td>
+								<td style="padding: 0.5rem;">
+									<span class="badge badge-xs 
+										{% if teacher.employee_status.value == 'Active' %}badge-success
+										{% elif teacher.employee_status.value == 'On Leave' %}badge-warning
+										{% else %}badge-secondary{% endif %}">
+										{{ teacher.employee_status.value }}
+									</span>
+								</td>
+							</tr>
+							{% else %}
+							<tr>
+								<td colspan="4" class="text-center text-muted" style="padding: 2rem 0.5rem;">
+									<i class="fa fa-user-slash" style="font-size: 30px; color: #ccc;"></i>
+									<p class="mt-2 mb-0 fs-12">No teachers registered yet</p>
+								</td>
+							</tr>
+							{% endfor %}
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<!-- Recent Students -->
+	<div class="col-xl-6">
+		<div class="card" style="margin-bottom: 1rem;">
+			<div class="card-header border-0 pb-0 flex-wrap" style="padding: 1rem;">
+				<div>
+					<h5 class="heading mb-0 fs-15">Recent Students</h5>
+					<p class="text-muted mb-0 fs-12">Latest student registrations</p>
+				</div>
+				<a href="{{ url_for('school.students', tenant_slug=school.slug) }}" class="btn btn-primary btn-xs">
+					<i class="fa fa-eye me-1"></i> View All
+				</a>
+			</div>
+			<div class="card-body" style="padding: 1rem;">
+				<div class="table-responsive">
+					<table class="table table-hover table-borderless">
+						<thead>
+							<tr>
+								<th class="bg-light fs-12" style="padding: 0.5rem;">Name</th>
+								<th class="bg-light fs-12" style="padding: 0.5rem;">Admission No.</th>
+								<th class="bg-light fs-12" style="padding: 0.5rem;">Class</th>
+								<th class="bg-light fs-12" style="padding: 0.5rem;">Status</th>
+							</tr>
+						</thead>
+						<tbody>
+							{% for student in recent_students %}
+							<tr>
+								<td style="padding: 0.5rem;">
+									<div class="d-flex align-items-center">
+										<div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 me-2" style="width: 28px; height: 28px; font-size: 10px; font-weight: 600;">
+											{{ student.first_name[0] }}{{ student.last_name[0] if student.last_name else '' }}
+										</div>
+										<span class="font-w600 fs-12">{{ student.full_name }}</span>
+									</div>
+								</td>
+								<td style="padding: 0.5rem;" class="fs-12">{{ student.admission_number }}</td>
+								<td style="padding: 0.5rem;" class="fs-12">{{ student.student_class.class_name }}-{{ student.student_class.section }}</td>
+								<td style="padding: 0.5rem;">
+									<span class="badge badge-xs badge-success">{{ student.status.value }}</span>
+								</td>
+							</tr>
+							{% else %}
+							<tr>
+								<td colspan="4" class="text-center text-muted" style="padding: 2rem 0.5rem;">
+									<i class="fa fa-graduation-cap" style="font-size: 30px; color: #ccc;"></i>
+									<p class="mt-2 mb-0 fs-12">No students registered yet</p>
+								</td>
+							</tr>
+							{% endfor %}
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+	</div>
+</div>
+<!--**********************************
+    Content body end
+***********************************-->
+{% endblock %}
+
+{% block additional_js %}
+<script src="{{ url_for('static', filename='akademi/vendor/apexchart/apexchart.js')}}"></script>
+<script>
+	// Student Attendance Donut Chart
+	var studentAttendanceOptions = {
+		series: [{{ student_attendance.present }}, {{ student_attendance.absent }}, {{ student_attendance.on_leave }}, {{ student_attendance.half_day }}],
+		chart: {
+			type: 'donut',
+			height: 160
+		},
+		labels: ['Present', 'Absent', 'On Leave', 'Half Day'],
+		colors: ['#28a745', '#dc3545', '#ffc107', '#17a2b8'],
+		legend: {
+			position: 'bottom',
+			horizontalAlign: 'center',
+			fontSize: '11px'
+		},
+		dataLabels: {
+			enabled: true,
+			style: {
+				fontSize: '11px'
+			},
+			formatter: function (val) {
+				return val.toFixed(0) + "%"
+			}
+		},
+		plotOptions: {
+			pie: {
+				donut: {
+					size: '65%',
+					labels: {
+						show: true,
+						total: {
+							show: true,
+							label: 'Total',
+							fontSize: '13px',
+							formatter: function (w) {
+								return w.globals.seriesTotals.reduce((a, b) => a + b, 0)
+							}
+						}
+					}
+				}
+			}
+		}
+	};
+	
+	if (document.querySelector("#studentAttendanceChart")) {
+		var studentAttendanceChart = new ApexCharts(document.querySelector("#studentAttendanceChart"), studentAttendanceOptions);
+		studentAttendanceChart.render();
+	}
+	
+	// Teacher Attendance Donut Chart
+	var teacherAttendanceOptions = {
+		series: [{{ teacher_attendance.present }}, {{ teacher_attendance.absent }}, {{ teacher_attendance.on_leave }}, {{ teacher_attendance.half_day }}],
+		chart: {
+			type: 'donut',
+			height: 160
+		},
+		labels: ['Present', 'Absent', 'On Leave', 'Half Day'],
+		colors: ['#28a745', '#dc3545', '#ffc107', '#17a2b8'],
+		legend: {
+			position: 'bottom',
+			horizontalAlign: 'center',
+			fontSize: '11px'
+		},
+		dataLabels: {
+			enabled: true,
+			style: {
+				fontSize: '11px'
+			},
+			formatter: function (val) {
+				return val.toFixed(0) + "%"
+			}
+		},
+		plotOptions: {
+			pie: {
+				donut: {
+					size: '65%',
+					labels: {
+						show: true,
+						total: {
+							show: true,
+							label: 'Total',
+							fontSize: '13px',
+							formatter: function (w) {
+								return w.globals.seriesTotals.reduce((a, b) => a + b, 0)
+							}
+						}
+					}
+				}
+			}
+		}
+	};
+	
+	if (document.querySelector("#teacherAttendanceChart")) {
+		var teacherAttendanceChart = new ApexCharts(document.querySelector("#teacherAttendanceChart"), teacherAttendanceOptions);
+		teacherAttendanceChart.render();
+	}
+
+	// Trigger chart resize when sidebar is toggled
+	document.addEventListener('DOMContentLoaded', function() {
+		// Watch for sidebar changes
+		const observer = new ResizeObserver(entries => {
+			window.dispatchEvent(new Event('resize'));
+		});
+		
+		const contentBody = document.querySelector('.content-body');
+		if (contentBody) {
+			observer.observe(contentBody);
+		}
+		
+		// Bind to left sidebar toggle
+		const toggleBtn = document.querySelector('.nav-control');
+		if (toggleBtn) {
+			toggleBtn.addEventListener('click', function() {
+				setTimeout(function() {
+					window.dispatchEvent(new Event('resize'));
+				}, 300);
+			});
+		}
+
+		// Bind to right sidebar (wallet) toggle
+		const walletBtn = document.querySelector('.menu-wallet');
+		if (walletBtn) {
+			walletBtn.addEventListener('click', function() {
+				setTimeout(function() {
+					window.dispatchEvent(new Event('resize'));
+				}, 300);
+			});
+		}
+	});
+</script>
+{% endblock %}

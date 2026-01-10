@@ -1,0 +1,828 @@
+{% extends 'akademi/elements/layouts/admin.html' %}
+	
+{% block additional_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename=  'akademi/vendor/wow-master/css/libs/animate.css')}}">
+<link rel="stylesheet" href="{{ url_for('static', filename=  'akademi/vendor/datatables/css/jquery.dataTables.min.css')}}">
+<link rel="stylesheet" href="{{ url_for('static', filename=  'akademi/vendor/jquery-nice-select/css/nice-select.css')}}">
+{% endblock %}
+
+{% block content %}
+<!--**********************************
+    Content body start
+***********************************-->
+<div class="content-body">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-xl-9">
+                <div class="card">
+                    <div class="card-body">
+                        <ul class="d-sm-flex d-block align-items-start justify-content-between mb-5">
+                            <li class="food-media">
+                                <img src="{{ url_for('static', filename=  'akademi/images/food/pic6.jpg')}}" class="rounded" alt="">
+                            </li>
+                            <li class="ms-sm-3 ms-0">
+                                <h4 class="heading">Beef Steak with Fried Potato</h4>
+                                <span class="badge badge-primary badge-sm mb-3">Lunch</span>
+                                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. </p>
+                            </li>
+                            <li>
+                                <div class="dropdown custom-dropdown">
+                                    <div class="btn sharp btn-light " data-bs-toggle="dropdown">
+                                        <svg width="24" height="6" viewBox="0 0 24 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M12.0012 0.359985C11.6543 0.359985 11.3109 0.428302 10.9904 0.561035C10.67 0.693767 10.3788 0.888317 10.1335 1.13358C9.88829 1.37883 9.69374 1.67 9.56101 1.99044C9.42828 2.31089 9.35996 2.65434 9.35996 3.00119C9.35996 3.34803 9.42828 3.69148 9.56101 4.01193C9.69374 4.33237 9.88829 4.62354 10.1335 4.8688C10.3788 5.11405 10.67 5.3086 10.9904 5.44134C11.3109 5.57407 11.6543 5.64239 12.0012 5.64239C12.7017 5.64223 13.3734 5.36381 13.8686 4.86837C14.3638 4.37294 14.6419 3.70108 14.6418 3.00059C14.6416 2.3001 14.3632 1.62836 13.8677 1.13315C13.3723 0.637942 12.7004 0.359826 12 0.359985H12.0012ZM3.60116 0.359985C3.25431 0.359985 2.91086 0.428302 2.59042 0.561035C2.26997 0.693767 1.97881 0.888317 1.73355 1.13358C1.48829 1.37883 1.29374 1.67 1.16101 1.99044C1.02828 2.31089 0.959961 2.65434 0.959961 3.00119C0.959961 3.34803 1.02828 3.69148 1.16101 4.01193C1.29374 4.33237 1.48829 4.62354 1.73355 4.8688C1.97881 5.11405 2.26997 5.3086 2.59042 5.44134C2.91086 5.57407 3.25431 5.64239 3.60116 5.64239C4.30165 5.64223 4.97339 5.36381 5.4686 4.86837C5.9638 4.37294 6.24192 3.70108 6.24176 3.00059C6.2416 2.3001 5.96318 1.62836 5.46775 1.13315C4.97231 0.637942 4.30045 0.359826 3.59996 0.359985H3.60116ZM20.4012 0.359985C20.0543 0.359985 19.7109 0.428302 19.3904 0.561035C19.07 0.693767 18.7788 0.888317 18.5336 1.13358C18.2883 1.37883 18.0937 1.67 17.961 1.99044C17.8283 2.31089 17.76 2.65434 17.76 3.00119C17.76 3.34803 17.8283 3.69148 17.961 4.01193C18.0937 4.33237 18.2883 4.62354 18.5336 4.8688C18.7788 5.11405 19.07 5.3086 19.3904 5.44134C19.7109 5.57407 20.0543 5.64239 20.4012 5.64239C21.1017 5.64223 21.7734 5.36381 22.2686 4.86837C22.7638 4.37294 23.0419 3.70108 23.0418 3.00059C23.0416 2.3001 22.7632 1.62836 22.2677 1.13315C21.7723 0.637942 21.1005 0.359826 20.4 0.359985H20.4012Z" fill="#A098AE"></path>
+                                        </svg>
+                                    </div>
+                                    <div class="dropdown-menu dropdown-menu-end">
+                                        <a class="dropdown-item" href="javascript:void(0);">Option 1</a>
+                                        <a class="dropdown-item" href="javascript:void(0);">Option 2</a>
+                                        <a class="dropdown-item" href="javascript:void(0);">Option 3</a>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                        <div class="row">
+                            <div class="col-xl-2 col-lg-3 col-md-2 col-6 mb-md-0 mb-3">
+                                <ul>
+                                    <li>Rating</li>
+                                    <li><i class="fa fa-star text-warning fs-20 me-2"></i><a class="heading m-0 text-primary">4.9</a></li>
+                                </ul>
+                                
+                            </div>
+                            <div class="col-xl-3 col-lg-3 col-md-4 col-6 mb-md-0 mb-3">
+                                <ul class="d-flex align-items-center">
+                                    <li>
+                                        <svg class="me-3" width="62" height="53" viewBox="0 0 62 53" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M8 31.7387C8 30.1102 6.20914 28.7901 4 28.7901C1.79086 28.7901 0 30.1102 0 31.7387V50.0515C0 51.6799 1.79086 53 4 53C6.20914 53 8 51.6799 8 50.0515V31.7387Z" fill="var(--primary)"/>
+                                        <path d="M26 21.2318C26 19.6242 24.2091 18.321 22 18.321C19.7909 18.321 18 19.6242 18 21.2318V50.0892C18 51.6968 19.7909 53 22 53C24.2091 53 26 51.6968 26 50.0892V21.2318Z" fill="var(--primary)"/>
+                                        <path d="M44 2.96576C44 1.32781 42.2091 0 40 0C37.7909 0 36 1.32782 36 2.96576V50.0342C36 51.6722 37.7909 53 40 53C42.2091 53 44 51.6722 44 50.0342V2.96576Z" fill="var(--primary)"/>
+                                        <path d="M62 26.5054C62 24.8762 60.2091 23.5556 58 23.5556C55.7909 23.5556 54 24.8762 54 26.5054V50.0502C54 51.6793 55.7909 53 58 53C60.2091 53 62 51.6793 62 50.0502V26.5054Z" fill="var(--primary)"/>
+                                        </svg>
+                                        </li>
+                                    <li>
+                                        <h4>1.456</h4>
+                                        <span>Total Order</span>
+                                    </li>
+                                    
+                                </ul>
+                            </div>
+                            <div class="col-xl-2 col-md-3 col-6">
+                                <ul class="d-flex align-items-center">
+                                    <li>
+                                        <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M39.9411 3.05888C39.9411 1.40202 38.598 0.0588751 36.9411 0.0588751H9.94113C8.28427 0.0588751 6.94113 1.40202 6.94113 3.05888C6.94113 4.71573 8.28427 6.05888 9.94113 6.05888H33.9411V30.0589C33.9411 31.7157 35.2843 33.0589 36.9411 33.0589C38.598 33.0589 39.9411 31.7157 39.9411 30.0589V3.05888ZM5.12132 39.1213L39.0624 5.1802L34.8198 0.937555L0.87868 34.8787L5.12132 39.1213Z" fill="var(--primary)"/>
+                                        </svg>
+                                    </li>
+                                    <li class="ms-3">
+                                        <h4>26%</h4>
+                                        <span>Interest</span>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="col-xl-2 col-md-3 col-6">
+                                <ul>
+                                    <li><svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M60 30C60 46.5685 46.5685 60 30 60C13.4315 60 0 46.5685 0 30C0 13.4315 13.4315 0 30 0C46.5685 0 60 13.4315 60 30ZM6 30C6 43.2548 16.7452 54 30 54C43.2548 54 54 43.2548 54 30C54 16.7452 43.2548 6 30 6C16.7452 6 6 16.7452 6 30Z" fill="#C1BBEB"/>
+                                        <path d="M30 60C22.0435 60 14.4129 56.8393 8.7868 51.2132C3.1607 45.5871 -2.21335e-07 37.9565 0 30C2.21335e-07 22.0435 3.16071 14.4129 8.7868 8.7868C14.4129 3.1607 22.0435 -9.48802e-08 30 0V6C23.6348 6 17.5303 8.52856 13.0294 13.0294C8.52856 17.5303 6 23.6348 6 30C6 36.3652 8.52856 42.4697 13.0294 46.9706C17.5303 51.4714 23.6348 54 30 54V60Z" fill="var(--primary)"/>
+                                        <path d="M22.602 25.488H18.066V27.882C18.262 27.6393 18.542 27.4433 18.906 27.294C19.27 27.1353 19.6573 27.056 20.068 27.056C20.8147 27.056 21.426 27.2193 21.902 27.546C22.378 27.8727 22.7233 28.2927 22.938 28.806C23.1527 29.31 23.26 29.8513 23.26 30.43C23.26 31.5033 22.952 32.3667 22.336 33.02C21.7293 33.6733 20.8613 34 19.732 34C18.668 34 17.8187 33.734 17.184 33.202C16.5493 32.67 16.19 31.9747 16.106 31.116H18.01C18.094 31.4893 18.2807 31.788 18.57 32.012C18.8687 32.236 19.2467 32.348 19.704 32.348C20.2547 32.348 20.67 32.1753 20.95 31.83C21.23 31.4847 21.37 31.0273 21.37 30.458C21.37 29.8793 21.2253 29.4407 20.936 29.142C20.656 28.834 20.2407 28.68 19.69 28.68C19.298 28.68 18.9713 28.778 18.71 28.974C18.4487 29.17 18.262 29.4313 18.15 29.758H16.274V23.766H22.602V25.488ZM24.7518 28.764C24.7518 27.1493 25.0411 25.8847 25.6198 24.97C26.2078 24.0553 27.1784 23.598 28.5318 23.598C29.8851 23.598 30.8511 24.0553 31.4298 24.97C32.0178 25.8847 32.3118 27.1493 32.3118 28.764C32.3118 30.388 32.0178 31.662 31.4298 32.586C30.8511 33.51 29.8851 33.972 28.5318 33.972C27.1784 33.972 26.2078 33.51 25.6198 32.586C25.0411 31.662 24.7518 30.388 24.7518 28.764ZM30.3798 28.764C30.3798 28.0733 30.3331 27.4947 30.2398 27.028C30.1558 26.552 29.9784 26.1647 29.7078 25.866C29.4464 25.5673 29.0544 25.418 28.5318 25.418C28.0091 25.418 27.6124 25.5673 27.3418 25.866C27.0804 26.1647 26.9031 26.552 26.8098 27.028C26.7258 27.4947 26.6838 28.0733 26.6838 28.764C26.6838 29.4733 26.7258 30.0707 26.8098 30.556C26.8938 31.032 27.0711 31.4193 27.3418 31.718C27.6124 32.0073 28.0091 32.152 28.5318 32.152C29.0544 32.152 29.4511 32.0073 29.7218 31.718C29.9924 31.4193 30.1698 31.032 30.2538 30.556C30.3378 30.0707 30.3798 29.4733 30.3798 28.764ZM33.5785 26.3C33.5785 25.5907 33.7839 25.0353 34.1945 24.634C34.6145 24.2327 35.1512 24.032 35.8045 24.032C36.4579 24.032 36.9899 24.2327 37.4005 24.634C37.8205 25.0353 38.0305 25.5907 38.0305 26.3C38.0305 27.0187 37.8205 27.5787 37.4005 27.98C36.9899 28.3813 36.4579 28.582 35.8045 28.582C35.1512 28.582 34.6145 28.3813 34.1945 27.98C33.7839 27.5787 33.5785 27.0187 33.5785 26.3ZM42.5665 24.2L37.0645 34H35.1605L40.6485 24.2H42.5665ZM35.7905 25.208C35.2772 25.208 35.0205 25.572 35.0205 26.3C35.0205 27.0373 35.2772 27.406 35.7905 27.406C36.0425 27.406 36.2385 27.3173 36.3785 27.14C36.5185 26.9533 36.5885 26.6733 36.5885 26.3C36.5885 25.572 36.3225 25.208 35.7905 25.208ZM39.7245 31.886C39.7245 31.1673 39.9299 30.612 40.3405 30.22C40.7605 29.8187 41.2972 29.618 41.9505 29.618C42.6039 29.618 43.1312 29.8187 43.5325 30.22C43.9432 30.612 44.1485 31.1673 44.1485 31.886C44.1485 32.6047 43.9432 33.1647 43.5325 33.566C43.1312 33.9673 42.6039 34.168 41.9505 34.168C41.2879 34.168 40.7512 33.9673 40.3405 33.566C39.9299 33.1647 39.7245 32.6047 39.7245 31.886ZM41.9365 30.794C41.4045 30.794 41.1385 31.158 41.1385 31.886C41.1385 32.6233 41.4045 32.992 41.9365 32.992C42.4592 32.992 42.7205 32.6233 42.7205 31.886C42.7205 31.158 42.4592 30.794 41.9365 30.794Z" fill="#303972"/>
+                                        </svg>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="col-xl-3"></div>
+                        </div>
+                        <div class="row mt-4">
+                            <div class="col-xl-6 col-md-6">
+                                <h5>Ingredients</h5>
+                                <ul class="food-recipe">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault1">
+                                        <label class="form-check-label font-w400" for="flexCheckDefault1">
+                                        2 tablespoons butter, softened, divided
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault2">
+                                        <label class="form-check-label font-w400" for="flexCheckDefault2">
+                                        1 teaspoon minced fresh parsley
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault3">
+                                        <label class="form-check-label font-w400" for="flexCheckDefault3">
+                                        1/2 teaspoon minced garlic
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault4">
+                                        <label class="form-check-label font-w400" for="flexCheckDefault4">
+                                        1/4 teaspoon reduced-sodium soy sauce
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault5">
+                                        <label class="form-check-label font-w400" for="flexCheckDefault5">
+                                        1 beef flat iron steak or boneless top sirloin steak (3/4 pound)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault6">
+                                        <label class="form-check-label font-w400" for="flexCheckDefault6">
+                                        1/8 teaspoon salt
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault7">
+                                        <label class="form-check-label font-w400" for="flexCheckDefault7">
+                                        1/8 teaspoon pepper
+                                        </label>
+                                    </div>
+                                </ul>
+                            </div>
+                            <div class="col-xl-4 col-md-6">
+                                <h5>Nutrition:</h5>
+                                <ul class="food-recipe">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault8">
+                                        <label class="form-check-label font-w400" for="flexCheckDefault8">
+                                        Calories: 217.
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault9">
+                                        <label class="form-check-label font-w400" for="flexCheckDefault9">
+                                        Water: 61%
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault10">
+                                        <label class="form-check-label font-w400" for="flexCheckDefault10">
+                                        Protein: 26.1 grams.
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault11">
+                                        <label class="form-check-label font-w400" for="flexCheckDefault11">
+                                        Carbs: 0 grams.
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault12">
+                                        <label class="form-check-label font-w400" for="flexCheckDefault12">
+                                        Sugar: 0 grams.
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault13">
+                                        <label class="form-check-label font-w400" for="flexCheckDefault13">
+                                        Fiber: 0 grams.
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault14">
+                                        <label class="form-check-label font-w400" for="flexCheckDefault14">
+                                        Fiber: 0 grams.
+                                        </label>
+                                    </div>	
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3">
+                <h4 class="heading">Student Comment</h4>
+                <div class="card h-auto">
+                    <div class="card-body">
+                        <div class="stud-comment">
+                            <img src="{{ url_for('static', filename=  'akademi/images/quotes.svg')}}" alt="">
+                            <div>
+                                <span class="d-block mt-2 mb-3">
+                                    Sed eligendi facere repellendus. Ipsam ipsam incidunt minima harum tenetur.	
+                                </span>
+                            </div>
+                            <ul class="d-flex align-items-center">
+                                <li><img src="{{ url_for('static', filename=  'akademi/images/avatar/1.png')}}" class="avatar" alt=""></li>
+                                <li class="ms-3">
+                                    <h5 class="mb-0">Samantha W.</h5>
+                                    <p class="mb-0">5 days ago</p>
+                                </li>
+                            </ul>
+
+                        </div>
+                    </div>
+                </div>
+                <div class="card h-auto">
+                    <div class="card-body">
+                        <div class="stud-comment">
+                            <img src="{{ url_for('static', filename=  'akademi/images/quotes.svg')}}" alt="">
+                            <div>
+                                <span class="d-block mt-2 mb-3">
+                                    Sed eligendi facere repellendus. Ipsam ipsam incidunt minima harum tenetur.	
+                                </span>
+                            </div>
+                            <ul class="d-flex align-items-center">
+                                <li><img src="{{ url_for('static', filename=  'akademi/images/avatar/2.png')}}" class="avatar" alt=""></li>
+                                <li class="ms-3">
+                                    <h5 class="mb-0">Karen Hope.</h5>
+                                    <p class="mb-0">5 days ago</p>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="card h-auto">
+                    <div class="card-body">
+                        <div class="stud-comment">
+                            <img src="{{ url_for('static', filename=  'akademi/images/quotes.svg')}}" alt="">
+                            <div>
+                                <span class="d-block mt-2 mb-3">
+                                    Sed eligendi facere repellendus. Ipsam ipsam incidunt minima harum tenetur.	
+                                </span>
+                            </div>
+                            <ul class="d-flex align-items-center">
+                                <li><img src="{{ url_for('static', filename=  'akademi/images/avatar/3.png')}}" class="avatar" alt=""></li>
+                                <li class="ms-3">
+                                    <h5 class="mb-0">Tony Soap</h5>
+                                    <p class="mb-0">5 days ago</p>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-12">
+                <div class="card">
+                    <div class="card-header border-0 pb-0 flex-wrap">
+                        <h4 class="mb-0">Food Menu</h4>
+                        <ul class="nav nav-tabs food-tabs" id="myTab" role="tablist">
+                            <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#home-tab-pane" type="button" role="tab" aria-controls="home-tab-pane" aria-selected="true">All Means</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile-tab-pane" type="button" role="tab" aria-controls="profile-tab-pane" aria-selected="false">Breakefast</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="contact-tab" data-bs-toggle="tab" data-bs-target="#contact-tab-pane" type="button" role="tab" aria-controls="contact-tab-pane" aria-selected="false">Lunch</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="sanck-tab" data-bs-toggle="tab" data-bs-target="#sanck-tab-pane" type="button" role="tab" aria-controls="sanck-tab-pane" aria-selected="false">Snack</button>
+                            </li>
+                            
+                        </ul>
+                    </div>
+                    <div class="card-body">
+                        <div class="tab-content" id="myTabContent">
+                            <div class="tab-pane fade show active" id="home-tab-pane" role="tabpanel" aria-labelledby="home-tab" tabindex="0">
+                            <div class="table-responsive">
+                                <table class="table table-details">
+                                    <tbody>
+                                        
+                                        <tr>
+                                    <td Style="width:100px;">
+                                        <div class="food-menu">
+                                            <img class="me-3 rounded avatar avatar-xl"  src="{{ url_for('static', filename=  'akademi/images/food/pic1.jpg')}}" alt="DexignZone">
+                                            <div class="food-info">
+                                                <span class=" badge badge-sm badge-primary mb-2">Lunch</span>
+                                                <h5><a href="javascript:void(0);">Beef Steak with Fried Potato</a></h5>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <ul class="food-review">
+                                            <li><i class="fa fa-star"></i></li>
+                                            <li><h5 class="font-w700">4.9</h5></li>
+                                        </ul>
+                                        
+                                    </td>
+                                    <td>
+                                        <ul class="d-flex">
+                                            <li><svg class="me-3" width="62" height="53" viewBox="0 0 62 53" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M8 31.7387C8 30.1102 6.20914 28.7901 4 28.7901C1.79086 28.7901 0 30.1102 0 31.7387V50.0515C0 51.6799 1.79086 53 4 53C6.20914 53 8 51.6799 8 50.0515V31.7387Z" fill="var(--primary)"/>
+                                                <path d="M26 21.2318C26 19.6242 24.2091 18.321 22 18.321C19.7909 18.321 18 19.6242 18 21.2318V50.0892C18 51.6968 19.7909 53 22 53C24.2091 53 26 51.6968 26 50.0892V21.2318Z" fill="var(--primary)"/>
+                                                <path d="M44 2.96576C44 1.32781 42.2091 0 40 0C37.7909 0 36 1.32782 36 2.96576V50.0342C36 51.6722 37.7909 53 40 53C42.2091 53 44 51.6722 44 50.0342V2.96576Z" fill="var(--primary)"/>
+                                                <path d="M62 26.5054C62 24.8762 60.2091 23.5556 58 23.5556C55.7909 23.5556 54 24.8762 54 26.5054V50.0502C54 51.6793 55.7909 53 58 53C60.2091 53 62 51.6793 62 50.0502V26.5054Z" fill="var(--primary)"/>
+                                                </svg>
+                                            </li>
+                                            <li>
+                                                <h3 class="mb-0 font-w500 fs-22">1.456</h3>
+                                                <span>Total Sales</span>
+                                            </li>
+                                        </ul>
+                                    </td>
+                                    <td>
+                                        <ul class="d-flex align-items-center">
+                                            <li><svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M39.9411 3.05888C39.9411 1.40202 38.598 0.0588751 36.9411 0.0588751H9.94113C8.28427 0.0588751 6.94113 1.40202 6.94113 3.05888C6.94113 4.71573 8.28427 6.05888 9.94113 6.05888H33.9411V30.0589C33.9411 31.7157 35.2843 33.0589 36.9411 33.0589C38.598 33.0589 39.9411 31.7157 39.9411 30.0589V3.05888ZM5.12132 39.1213L39.0624 5.1802L34.8198 0.937555L0.87868 34.8787L5.12132 39.1213Z" fill="var(--primary)"/>
+                                                </svg>
+                                            </li>
+                                            <li class="ms-3">
+                                                <h3 class="mb-0 font-w500 fs-22">26%</h3>
+                                                <span>Interest</span>
+                                            </li>
+                                        </ul>
+                                    </td>
+                                    <td>
+                                        <img src="{{ url_for('static', filename=  'akademi/images/circle.svg')}}" alt="">
+                                    </td>
+                                    <td class="text-end">
+                                        <div class="dropdown custom-dropdown">
+                                            <div class="btn sharp btn-light " data-bs-toggle="dropdown">
+                                                <svg width="24" height="6" viewBox="0 0 24 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                    <path d="M12.0012 0.359985C11.6543 0.359985 11.3109 0.428302 10.9904 0.561035C10.67 0.693767 10.3788 0.888317 10.1335 1.13358C9.88829 1.37883 9.69374 1.67 9.56101 1.99044C9.42828 2.31089 9.35996 2.65434 9.35996 3.00119C9.35996 3.34803 9.42828 3.69148 9.56101 4.01193C9.69374 4.33237 9.88829 4.62354 10.1335 4.8688C10.3788 5.11405 10.67 5.3086 10.9904 5.44134C11.3109 5.57407 11.6543 5.64239 12.0012 5.64239C12.7017 5.64223 13.3734 5.36381 13.8686 4.86837C14.3638 4.37294 14.6419 3.70108 14.6418 3.00059C14.6416 2.3001 14.3632 1.62836 13.8677 1.13315C13.3723 0.637942 12.7004 0.359826 12 0.359985H12.0012ZM3.60116 0.359985C3.25431 0.359985 2.91086 0.428302 2.59042 0.561035C2.26997 0.693767 1.97881 0.888317 1.73355 1.13358C1.48829 1.37883 1.29374 1.67 1.16101 1.99044C1.02828 2.31089 0.959961 2.65434 0.959961 3.00119C0.959961 3.34803 1.02828 3.69148 1.16101 4.01193C1.29374 4.33237 1.48829 4.62354 1.73355 4.8688C1.97881 5.11405 2.26997 5.3086 2.59042 5.44134C2.91086 5.57407 3.25431 5.64239 3.60116 5.64239C4.30165 5.64223 4.97339 5.36381 5.4686 4.86837C5.9638 4.37294 6.24192 3.70108 6.24176 3.00059C6.2416 2.3001 5.96318 1.62836 5.46775 1.13315C4.97231 0.637942 4.30045 0.359826 3.59996 0.359985H3.60116ZM20.4012 0.359985C20.0543 0.359985 19.7109 0.428302 19.3904 0.561035C19.07 0.693767 18.7788 0.888317 18.5336 1.13358C18.2883 1.37883 18.0937 1.67 17.961 1.99044C17.8283 2.31089 17.76 2.65434 17.76 3.00119C17.76 3.34803 17.8283 3.69148 17.961 4.01193C18.0937 4.33237 18.2883 4.62354 18.5336 4.8688C18.7788 5.11405 19.07 5.3086 19.3904 5.44134C19.7109 5.57407 20.0543 5.64239 20.4012 5.64239C21.1017 5.64223 21.7734 5.36381 22.2686 4.86837C22.7638 4.37294 23.0419 3.70108 23.0418 3.00059C23.0416 2.3001 22.7632 1.62836 22.2677 1.13315C21.7723 0.637942 21.1005 0.359826 20.4 0.359985H20.4012Z" fill="#A098AE"/>
+                                                </svg>
+                                            </div>
+                                            <div class="dropdown-menu dropdown-menu-end">
+                                                <a class="dropdown-item" href="javascript:void(0);">Option 1</a>
+                                                <a class="dropdown-item" href="javascript:void(0);">Option 2</a>
+                                                <a class="dropdown-item" href="javascript:void(0);">Option 3</a>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td Style="width:100px;">
+                                        <div class="food-menu">
+                                            <img class="me-3 rounded avatar avatar-xl"  src="{{ url_for('static', filename=  'akademi/images/food/pic2.jpg')}}" alt="DexignZone">
+                                            <div class="food-info">
+                                                <span class="badge badge-sm badge-primary mb-2">Breakfast</span>
+                                                <h5><a href="javascript:void(0);">Pancake with Honey</a></h5>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <ul class="food-review">
+                                            <li><i class="fa fa-star"></i></li>
+                                            <li><h5 class="font-w700">4.0</h5></li>
+                                        </ul>
+                                        
+                                    </td>
+                                    <td>
+                                        <ul class="d-flex">
+                                            <li><svg class="me-3" width="62" height="53" viewBox="0 0 62 53" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M8 31.7387C8 30.1102 6.20914 28.7901 4 28.7901C1.79086 28.7901 0 30.1102 0 31.7387V50.0515C0 51.6799 1.79086 53 4 53C6.20914 53 8 51.6799 8 50.0515V31.7387Z" fill="var(--primary)"/>
+                                                <path d="M26 21.2318C26 19.6242 24.2091 18.321 22 18.321C19.7909 18.321 18 19.6242 18 21.2318V50.0892C18 51.6968 19.7909 53 22 53C24.2091 53 26 51.6968 26 50.0892V21.2318Z" fill="var(--primary)"/>
+                                                <path d="M44 2.96576C44 1.32781 42.2091 0 40 0C37.7909 0 36 1.32782 36 2.96576V50.0342C36 51.6722 37.7909 53 40 53C42.2091 53 44 51.6722 44 50.0342V2.96576Z" fill="var(--primary)"/>
+                                                <path d="M62 26.5054C62 24.8762 60.2091 23.5556 58 23.5556C55.7909 23.5556 54 24.8762 54 26.5054V50.0502C54 51.6793 55.7909 53 58 53C60.2091 53 62 51.6793 62 50.0502V26.5054Z" fill="var(--primary)"/>
+                                                </svg>
+                                            </li>
+                                            <li>
+                                                <h3 class="mb-0 font-w500 fs-22">1.400</h3>
+                                                <span>Total Sales</span>
+                                            </li>
+                                        </ul>
+                                    </td>
+                                    <td>
+                                        <ul class="d-flex align-items-center">
+                                            <li><svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M39.9411 3.05888C39.9411 1.40202 38.598 0.0588751 36.9411 0.0588751H9.94113C8.28427 0.0588751 6.94113 1.40202 6.94113 3.05888C6.94113 4.71573 8.28427 6.05888 9.94113 6.05888H33.9411V30.0589C33.9411 31.7157 35.2843 33.0589 36.9411 33.0589C38.598 33.0589 39.9411 31.7157 39.9411 30.0589V3.05888ZM5.12132 39.1213L39.0624 5.1802L34.8198 0.937555L0.87868 34.8787L5.12132 39.1213Z" fill="var(--primary)"/>
+                                                </svg>
+                                            </li>
+                                            <li class="ms-3">
+                                                <h3 class="mb-0 font-w500 fs-22">36%</h3>
+                                                <span>Interest</span>
+                                            </li>
+                                        </ul>
+                                    </td>
+                                    <td>
+                                        <img src="{{ url_for('static', filename=  'akademi/images/circle.svg')}}" alt="">
+                                    </td>
+                                    <td class="text-end">
+                                        <div class="dropdown custom-dropdown">
+                                            <div class="btn sharp btn-light " data-bs-toggle="dropdown">
+                                                <svg width="24" height="6" viewBox="0 0 24 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                    <path d="M12.0012 0.359985C11.6543 0.359985 11.3109 0.428302 10.9904 0.561035C10.67 0.693767 10.3788 0.888317 10.1335 1.13358C9.88829 1.37883 9.69374 1.67 9.56101 1.99044C9.42828 2.31089 9.35996 2.65434 9.35996 3.00119C9.35996 3.34803 9.42828 3.69148 9.56101 4.01193C9.69374 4.33237 9.88829 4.62354 10.1335 4.8688C10.3788 5.11405 10.67 5.3086 10.9904 5.44134C11.3109 5.57407 11.6543 5.64239 12.0012 5.64239C12.7017 5.64223 13.3734 5.36381 13.8686 4.86837C14.3638 4.37294 14.6419 3.70108 14.6418 3.00059C14.6416 2.3001 14.3632 1.62836 13.8677 1.13315C13.3723 0.637942 12.7004 0.359826 12 0.359985H12.0012ZM3.60116 0.359985C3.25431 0.359985 2.91086 0.428302 2.59042 0.561035C2.26997 0.693767 1.97881 0.888317 1.73355 1.13358C1.48829 1.37883 1.29374 1.67 1.16101 1.99044C1.02828 2.31089 0.959961 2.65434 0.959961 3.00119C0.959961 3.34803 1.02828 3.69148 1.16101 4.01193C1.29374 4.33237 1.48829 4.62354 1.73355 4.8688C1.97881 5.11405 2.26997 5.3086 2.59042 5.44134C2.91086 5.57407 3.25431 5.64239 3.60116 5.64239C4.30165 5.64223 4.97339 5.36381 5.4686 4.86837C5.9638 4.37294 6.24192 3.70108 6.24176 3.00059C6.2416 2.3001 5.96318 1.62836 5.46775 1.13315C4.97231 0.637942 4.30045 0.359826 3.59996 0.359985H3.60116ZM20.4012 0.359985C20.0543 0.359985 19.7109 0.428302 19.3904 0.561035C19.07 0.693767 18.7788 0.888317 18.5336 1.13358C18.2883 1.37883 18.0937 1.67 17.961 1.99044C17.8283 2.31089 17.76 2.65434 17.76 3.00119C17.76 3.34803 17.8283 3.69148 17.961 4.01193C18.0937 4.33237 18.2883 4.62354 18.5336 4.8688C18.7788 5.11405 19.07 5.3086 19.3904 5.44134C19.7109 5.57407 20.0543 5.64239 20.4012 5.64239C21.1017 5.64223 21.7734 5.36381 22.2686 4.86837C22.7638 4.37294 23.0419 3.70108 23.0418 3.00059C23.0416 2.3001 22.7632 1.62836 22.2677 1.13315C21.7723 0.637942 21.1005 0.359826 20.4 0.359985H20.4012Z" fill="#A098AE"/>
+                                                </svg>
+                                            </div>
+                                            <div class="dropdown-menu dropdown-menu-end">
+                                                <a class="dropdown-item" href="javascript:void(0);">Option 1</a>
+                                                <a class="dropdown-item" href="javascript:void(0);">Option 2</a>
+                                                <a class="dropdown-item" href="javascript:void(0);">Option 3</a>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                        
+                                    
+                                    </tbody>
+                                </table>
+                            </div>
+                            </div>
+                            <div class="tab-pane fade" id="profile-tab-pane" role="tabpanel" aria-labelledby="profile-tab" tabindex="0">
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <tbody>
+                                        <tr>
+                                            <td Style="width:100px;">
+                                                <div class="food-menu">
+                                                    <img class="me-3 rounded avatar avatar-xl"  src="{{ url_for('static', filename=  'akademi/images/food/pic1.jpg')}}" alt="DexignZone">
+                                                    <div class="food-info">
+                                                        <span class="badge badge-sm badge-primary mb-2">Breakfast</span>
+                                                        </button>
+                                                        <h5><a href="javascript:void(0);">Beef Steak with Fried Potato</a></h5>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <ul class="food-review">
+                                                    <li><i class="fa fa-star"></i></li>
+                                                    <li><h5 class="font-w700">4.9</h5></li>
+                                                </ul>
+                                                
+                                            </td>
+                                            <td>
+                                                <ul class="d-flex">
+                                                    <li><svg class="me-3" width="62" height="53" viewBox="0 0 62 53" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                        <path d="M8 31.7387C8 30.1102 6.20914 28.7901 4 28.7901C1.79086 28.7901 0 30.1102 0 31.7387V50.0515C0 51.6799 1.79086 53 4 53C6.20914 53 8 51.6799 8 50.0515V31.7387Z" fill="var(--primary)"/>
+                                                        <path d="M26 21.2318C26 19.6242 24.2091 18.321 22 18.321C19.7909 18.321 18 19.6242 18 21.2318V50.0892C18 51.6968 19.7909 53 22 53C24.2091 53 26 51.6968 26 50.0892V21.2318Z" fill="var(--primary)"/>
+                                                        <path d="M44 2.96576C44 1.32781 42.2091 0 40 0C37.7909 0 36 1.32782 36 2.96576V50.0342C36 51.6722 37.7909 53 40 53C42.2091 53 44 51.6722 44 50.0342V2.96576Z" fill="var(--primary)"/>
+                                                        <path d="M62 26.5054C62 24.8762 60.2091 23.5556 58 23.5556C55.7909 23.5556 54 24.8762 54 26.5054V50.0502C54 51.6793 55.7909 53 58 53C60.2091 53 62 51.6793 62 50.0502V26.5054Z" fill="var(--primary)"/>
+                                                        </svg>
+                                                    </li>
+                                                    <li>
+                                                        <h3 class="mb-0 font-w500 fs-22">1.456</h3>
+                                                        <span>Total Sales</span>
+                                                    </li>
+                                                </ul>
+                                            </td>
+                                            <td>
+                                                <ul class="d-flex align-items-center">
+                                                    <li><svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                        <path d="M39.9411 3.05888C39.9411 1.40202 38.598 0.0588751 36.9411 0.0588751H9.94113C8.28427 0.0588751 6.94113 1.40202 6.94113 3.05888C6.94113 4.71573 8.28427 6.05888 9.94113 6.05888H33.9411V30.0589C33.9411 31.7157 35.2843 33.0589 36.9411 33.0589C38.598 33.0589 39.9411 31.7157 39.9411 30.0589V3.05888ZM5.12132 39.1213L39.0624 5.1802L34.8198 0.937555L0.87868 34.8787L5.12132 39.1213Z" fill="var(--primary)"/>
+                                                        </svg>
+                                                    </li>
+                                                    <li class="ms-3">
+                                                        <h3 class="mb-0 font-w500 fs-22">26%</h3>
+                                                        <span>Interest</span>
+                                                    </li>
+                                                </ul>
+                                            </td>
+                                            <td>
+                                                <img src="{{ url_for('static', filename=  'akademi/images/circle.svg')}}" alt="">
+                                            </td>
+                                            <td class="text-end">
+                                                <div class="dropdown custom-dropdown">
+                                                    <div class="btn sharp btn-light " data-bs-toggle="dropdown">
+                                                        <svg width="24" height="6" viewBox="0 0 24 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                            <path d="M12.0012 0.359985C11.6543 0.359985 11.3109 0.428302 10.9904 0.561035C10.67 0.693767 10.3788 0.888317 10.1335 1.13358C9.88829 1.37883 9.69374 1.67 9.56101 1.99044C9.42828 2.31089 9.35996 2.65434 9.35996 3.00119C9.35996 3.34803 9.42828 3.69148 9.56101 4.01193C9.69374 4.33237 9.88829 4.62354 10.1335 4.8688C10.3788 5.11405 10.67 5.3086 10.9904 5.44134C11.3109 5.57407 11.6543 5.64239 12.0012 5.64239C12.7017 5.64223 13.3734 5.36381 13.8686 4.86837C14.3638 4.37294 14.6419 3.70108 14.6418 3.00059C14.6416 2.3001 14.3632 1.62836 13.8677 1.13315C13.3723 0.637942 12.7004 0.359826 12 0.359985H12.0012ZM3.60116 0.359985C3.25431 0.359985 2.91086 0.428302 2.59042 0.561035C2.26997 0.693767 1.97881 0.888317 1.73355 1.13358C1.48829 1.37883 1.29374 1.67 1.16101 1.99044C1.02828 2.31089 0.959961 2.65434 0.959961 3.00119C0.959961 3.34803 1.02828 3.69148 1.16101 4.01193C1.29374 4.33237 1.48829 4.62354 1.73355 4.8688C1.97881 5.11405 2.26997 5.3086 2.59042 5.44134C2.91086 5.57407 3.25431 5.64239 3.60116 5.64239C4.30165 5.64223 4.97339 5.36381 5.4686 4.86837C5.9638 4.37294 6.24192 3.70108 6.24176 3.00059C6.2416 2.3001 5.96318 1.62836 5.46775 1.13315C4.97231 0.637942 4.30045 0.359826 3.59996 0.359985H3.60116ZM20.4012 0.359985C20.0543 0.359985 19.7109 0.428302 19.3904 0.561035C19.07 0.693767 18.7788 0.888317 18.5336 1.13358C18.2883 1.37883 18.0937 1.67 17.961 1.99044C17.8283 2.31089 17.76 2.65434 17.76 3.00119C17.76 3.34803 17.8283 3.69148 17.961 4.01193C18.0937 4.33237 18.2883 4.62354 18.5336 4.8688C18.7788 5.11405 19.07 5.3086 19.3904 5.44134C19.7109 5.57407 20.0543 5.64239 20.4012 5.64239C21.1017 5.64223 21.7734 5.36381 22.2686 4.86837C22.7638 4.37294 23.0419 3.70108 23.0418 3.00059C23.0416 2.3001 22.7632 1.62836 22.2677 1.13315C21.7723 0.637942 21.1005 0.359826 20.4 0.359985H20.4012Z" fill="#A098AE"/>
+                                                        </svg>
+                                                    </div>
+                                                    <div class="dropdown-menu dropdown-menu-end">
+                                                        <a class="dropdown-item" href="javascript:void(0);">Option 1</a>
+                                                        <a class="dropdown-item" href="javascript:void(0);">Option 2</a>
+                                                        <a class="dropdown-item" href="javascript:void(0);">Option 3</a>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                    <td Style="width:100px;">
+                                        <div class="food-menu">
+                                            <img class="me-3 rounded avatar avatar-xl"  src="{{ url_for('static', filename=  'akademi/images/food/pic2.jpg')}}" alt="DexignZone">
+                                            <div class="food-info">
+                                                <span class="badge badge-sm badge-primary mb-2">Breakfast</span>
+                                                <h5><a href="javascript:void(0);">Pancake with Honey</a></h5>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <ul class="food-review">
+                                            <li><i class="fa fa-star"></i></li>
+                                            <li><h5 class="font-w700">4.0</h5></li>
+                                        </ul>
+                                        
+                                    </td>
+                                    <td>
+                                        <ul class="d-flex">
+                                            <li><svg class="me-3" width="62" height="53" viewBox="0 0 62 53" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M8 31.7387C8 30.1102 6.20914 28.7901 4 28.7901C1.79086 28.7901 0 30.1102 0 31.7387V50.0515C0 51.6799 1.79086 53 4 53C6.20914 53 8 51.6799 8 50.0515V31.7387Z" fill="var(--primary)"/>
+                                                <path d="M26 21.2318C26 19.6242 24.2091 18.321 22 18.321C19.7909 18.321 18 19.6242 18 21.2318V50.0892C18 51.6968 19.7909 53 22 53C24.2091 53 26 51.6968 26 50.0892V21.2318Z" fill="var(--primary)"/>
+                                                <path d="M44 2.96576C44 1.32781 42.2091 0 40 0C37.7909 0 36 1.32782 36 2.96576V50.0342C36 51.6722 37.7909 53 40 53C42.2091 53 44 51.6722 44 50.0342V2.96576Z" fill="var(--primary)"/>
+                                                <path d="M62 26.5054C62 24.8762 60.2091 23.5556 58 23.5556C55.7909 23.5556 54 24.8762 54 26.5054V50.0502C54 51.6793 55.7909 53 58 53C60.2091 53 62 51.6793 62 50.0502V26.5054Z" fill="var(--primary)"/>
+                                                </svg>
+                                            </li>
+                                            <li>
+                                                <h3 class="mb-0 font-w500 fs-22">1.400</h3>
+                                                <span>Total Sales</span>
+                                            </li>
+                                        </ul>
+                                    </td>
+                                    <td>
+                                        <ul class="d-flex align-items-center">
+                                            <li><svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M39.9411 3.05888C39.9411 1.40202 38.598 0.0588751 36.9411 0.0588751H9.94113C8.28427 0.0588751 6.94113 1.40202 6.94113 3.05888C6.94113 4.71573 8.28427 6.05888 9.94113 6.05888H33.9411V30.0589C33.9411 31.7157 35.2843 33.0589 36.9411 33.0589C38.598 33.0589 39.9411 31.7157 39.9411 30.0589V3.05888ZM5.12132 39.1213L39.0624 5.1802L34.8198 0.937555L0.87868 34.8787L5.12132 39.1213Z" fill="var(--primary)"/>
+                                                </svg>
+                                            </li>
+                                            <li class="ms-3">
+                                                <h3 class="mb-0 font-w500 fs-22">36%</h3>
+                                                <span>Interest</span>
+                                            </li>
+                                        </ul>
+                                    </td>
+                                    <td>
+                                        <img src="{{ url_for('static', filename=  'akademi/images/circle.svg')}}" alt="">
+                                    </td>
+                                    <td class="text-end">
+                                        <div class="dropdown custom-dropdown">
+                                            <div class="btn sharp btn-light " data-bs-toggle="dropdown">
+                                                <svg width="24" height="6" viewBox="0 0 24 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                    <path d="M12.0012 0.359985C11.6543 0.359985 11.3109 0.428302 10.9904 0.561035C10.67 0.693767 10.3788 0.888317 10.1335 1.13358C9.88829 1.37883 9.69374 1.67 9.56101 1.99044C9.42828 2.31089 9.35996 2.65434 9.35996 3.00119C9.35996 3.34803 9.42828 3.69148 9.56101 4.01193C9.69374 4.33237 9.88829 4.62354 10.1335 4.8688C10.3788 5.11405 10.67 5.3086 10.9904 5.44134C11.3109 5.57407 11.6543 5.64239 12.0012 5.64239C12.7017 5.64223 13.3734 5.36381 13.8686 4.86837C14.3638 4.37294 14.6419 3.70108 14.6418 3.00059C14.6416 2.3001 14.3632 1.62836 13.8677 1.13315C13.3723 0.637942 12.7004 0.359826 12 0.359985H12.0012ZM3.60116 0.359985C3.25431 0.359985 2.91086 0.428302 2.59042 0.561035C2.26997 0.693767 1.97881 0.888317 1.73355 1.13358C1.48829 1.37883 1.29374 1.67 1.16101 1.99044C1.02828 2.31089 0.959961 2.65434 0.959961 3.00119C0.959961 3.34803 1.02828 3.69148 1.16101 4.01193C1.29374 4.33237 1.48829 4.62354 1.73355 4.8688C1.97881 5.11405 2.26997 5.3086 2.59042 5.44134C2.91086 5.57407 3.25431 5.64239 3.60116 5.64239C4.30165 5.64223 4.97339 5.36381 5.4686 4.86837C5.9638 4.37294 6.24192 3.70108 6.24176 3.00059C6.2416 2.3001 5.96318 1.62836 5.46775 1.13315C4.97231 0.637942 4.30045 0.359826 3.59996 0.359985H3.60116ZM20.4012 0.359985C20.0543 0.359985 19.7109 0.428302 19.3904 0.561035C19.07 0.693767 18.7788 0.888317 18.5336 1.13358C18.2883 1.37883 18.0937 1.67 17.961 1.99044C17.8283 2.31089 17.76 2.65434 17.76 3.00119C17.76 3.34803 17.8283 3.69148 17.961 4.01193C18.0937 4.33237 18.2883 4.62354 18.5336 4.8688C18.7788 5.11405 19.07 5.3086 19.3904 5.44134C19.7109 5.57407 20.0543 5.64239 20.4012 5.64239C21.1017 5.64223 21.7734 5.36381 22.2686 4.86837C22.7638 4.37294 23.0419 3.70108 23.0418 3.00059C23.0416 2.3001 22.7632 1.62836 22.2677 1.13315C21.7723 0.637942 21.1005 0.359826 20.4 0.359985H20.4012Z" fill="#A098AE"/>
+                                                </svg>
+                                            </div>
+                                            <div class="dropdown-menu dropdown-menu-end">
+                                                <a class="dropdown-item" href="javascript:void(0);">Option 1</a>
+                                                <a class="dropdown-item" href="javascript:void(0);">Option 2</a>
+                                                <a class="dropdown-item" href="javascript:void(0);">Option 3</a>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>		
+                                    </tbody>
+                                </table>
+                            </div>
+                            </div>
+                            <div class="tab-pane fade" id="contact-tab-pane" role="tabpanel" aria-labelledby="contact-tab" tabindex="0">
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <tbody>
+                                        <tr>
+                                    <td Style="width:100px;">
+                                        <div class="food-menu">
+                                            <img class="me-3 rounded avatar avatar-xl"  src="{{ url_for('static', filename=  'akademi/images/food/pic1.jpg')}}" alt="DexignZone">
+                                            <div class="food-info">
+                                                <span class="badge badge-sm badge-primary mb-3">Lunch
+                                                </span>
+                                                <h5><a href="javascript:void(0);"> Beef Steak with Fried Potato</a></h5>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <ul class="food-review">
+                                            <li><i class="fa fa-star"></i></li>
+                                            <li><h5 class="font-w700">4.9</h5></li>
+                                        </ul>
+                                        
+                                    </td>
+                                    <td>
+                                        <ul class="d-flex">
+                                            <li><svg class="me-3" width="62" height="53" viewBox="0 0 62 53" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M8 31.7387C8 30.1102 6.20914 28.7901 4 28.7901C1.79086 28.7901 0 30.1102 0 31.7387V50.0515C0 51.6799 1.79086 53 4 53C6.20914 53 8 51.6799 8 50.0515V31.7387Z" fill="var(--primary)"/>
+                                                <path d="M26 21.2318C26 19.6242 24.2091 18.321 22 18.321C19.7909 18.321 18 19.6242 18 21.2318V50.0892C18 51.6968 19.7909 53 22 53C24.2091 53 26 51.6968 26 50.0892V21.2318Z" fill="var(--primary)"/>
+                                                <path d="M44 2.96576C44 1.32781 42.2091 0 40 0C37.7909 0 36 1.32782 36 2.96576V50.0342C36 51.6722 37.7909 53 40 53C42.2091 53 44 51.6722 44 50.0342V2.96576Z" fill="var(--primary)"/>
+                                                <path d="M62 26.5054C62 24.8762 60.2091 23.5556 58 23.5556C55.7909 23.5556 54 24.8762 54 26.5054V50.0502C54 51.6793 55.7909 53 58 53C60.2091 53 62 51.6793 62 50.0502V26.5054Z" fill="var(--primary)"/>
+                                                </svg>
+                                            </li>
+                                            <li>
+                                                <h3 class="mb-0 font-w500 fs-22">1.456</h3>
+                                                <span>Total Sales</span>
+                                            </li>
+                                        </ul>
+                                    </td>
+                                    <td>
+                                        <ul class="d-flex align-items-center">
+                                            <li><svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M39.9411 3.05888C39.9411 1.40202 38.598 0.0588751 36.9411 0.0588751H9.94113C8.28427 0.0588751 6.94113 1.40202 6.94113 3.05888C6.94113 4.71573 8.28427 6.05888 9.94113 6.05888H33.9411V30.0589C33.9411 31.7157 35.2843 33.0589 36.9411 33.0589C38.598 33.0589 39.9411 31.7157 39.9411 30.0589V3.05888ZM5.12132 39.1213L39.0624 5.1802L34.8198 0.937555L0.87868 34.8787L5.12132 39.1213Z" fill="var(--primary)"/>
+                                                </svg>
+                                            </li>
+                                            <li class="ms-3">
+                                                <h3 class="mb-0 font-w500 fs-22">26%</h3>
+                                                <span>Interest</span>
+                                            </li>
+                                        </ul>
+                                    </td>
+                                    <td>
+                                        <img src="{{ url_for('static', filename=  'akademi/images/circle.svg')}}" alt="">
+                                    </td>
+                                    <td class="text-end">
+                                        <div class="dropdown custom-dropdown">
+                                            <div class="btn sharp btn-light " data-bs-toggle="dropdown">
+                                                <svg width="24" height="6" viewBox="0 0 24 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                    <path d="M12.0012 0.359985C11.6543 0.359985 11.3109 0.428302 10.9904 0.561035C10.67 0.693767 10.3788 0.888317 10.1335 1.13358C9.88829 1.37883 9.69374 1.67 9.56101 1.99044C9.42828 2.31089 9.35996 2.65434 9.35996 3.00119C9.35996 3.34803 9.42828 3.69148 9.56101 4.01193C9.69374 4.33237 9.88829 4.62354 10.1335 4.8688C10.3788 5.11405 10.67 5.3086 10.9904 5.44134C11.3109 5.57407 11.6543 5.64239 12.0012 5.64239C12.7017 5.64223 13.3734 5.36381 13.8686 4.86837C14.3638 4.37294 14.6419 3.70108 14.6418 3.00059C14.6416 2.3001 14.3632 1.62836 13.8677 1.13315C13.3723 0.637942 12.7004 0.359826 12 0.359985H12.0012ZM3.60116 0.359985C3.25431 0.359985 2.91086 0.428302 2.59042 0.561035C2.26997 0.693767 1.97881 0.888317 1.73355 1.13358C1.48829 1.37883 1.29374 1.67 1.16101 1.99044C1.02828 2.31089 0.959961 2.65434 0.959961 3.00119C0.959961 3.34803 1.02828 3.69148 1.16101 4.01193C1.29374 4.33237 1.48829 4.62354 1.73355 4.8688C1.97881 5.11405 2.26997 5.3086 2.59042 5.44134C2.91086 5.57407 3.25431 5.64239 3.60116 5.64239C4.30165 5.64223 4.97339 5.36381 5.4686 4.86837C5.9638 4.37294 6.24192 3.70108 6.24176 3.00059C6.2416 2.3001 5.96318 1.62836 5.46775 1.13315C4.97231 0.637942 4.30045 0.359826 3.59996 0.359985H3.60116ZM20.4012 0.359985C20.0543 0.359985 19.7109 0.428302 19.3904 0.561035C19.07 0.693767 18.7788 0.888317 18.5336 1.13358C18.2883 1.37883 18.0937 1.67 17.961 1.99044C17.8283 2.31089 17.76 2.65434 17.76 3.00119C17.76 3.34803 17.8283 3.69148 17.961 4.01193C18.0937 4.33237 18.2883 4.62354 18.5336 4.8688C18.7788 5.11405 19.07 5.3086 19.3904 5.44134C19.7109 5.57407 20.0543 5.64239 20.4012 5.64239C21.1017 5.64223 21.7734 5.36381 22.2686 4.86837C22.7638 4.37294 23.0419 3.70108 23.0418 3.00059C23.0416 2.3001 22.7632 1.62836 22.2677 1.13315C21.7723 0.637942 21.1005 0.359826 20.4 0.359985H20.4012Z" fill="#A098AE"/>
+                                                </svg>
+                                            </div>
+                                            <div class="dropdown-menu dropdown-menu-end">
+                                                <a class="dropdown-item" href="javascript:void(0);">Option 1</a>
+                                                <a class="dropdown-item" href="javascript:void(0);">Option 2</a>
+                                                <a class="dropdown-item" href="javascript:void(0);">Option 3</a>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td Style="width:100px;">
+                                        <div class="food-menu">
+                                            <img class="me-3 rounded avatar avatar-xl"  src="{{ url_for('static', filename=  'akademi/images/food/pic2.jpg')}}" alt="DexignZone">
+                                            <div class="food-info">
+                                                <span class=" badge badge-sm badge-primary mb-2">Lunch</span>
+                                                <h5>Pancake with Honey</h5>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <ul class="food-review">
+                                            <li><i class="fa fa-star"></i></li>
+                                            <li><h5 class="font-w700">4.0</h5></li>
+                                        </ul>
+                                        
+                                    </td>
+                                    <td>
+                                        <ul class="d-flex">
+                                            <li><svg class="me-3" width="62" height="53" viewBox="0 0 62 53" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M8 31.7387C8 30.1102 6.20914 28.7901 4 28.7901C1.79086 28.7901 0 30.1102 0 31.7387V50.0515C0 51.6799 1.79086 53 4 53C6.20914 53 8 51.6799 8 50.0515V31.7387Z" fill="var(--primary)"/>
+                                                <path d="M26 21.2318C26 19.6242 24.2091 18.321 22 18.321C19.7909 18.321 18 19.6242 18 21.2318V50.0892C18 51.6968 19.7909 53 22 53C24.2091 53 26 51.6968 26 50.0892V21.2318Z" fill="var(--primary)"/>
+                                                <path d="M44 2.96576C44 1.32781 42.2091 0 40 0C37.7909 0 36 1.32782 36 2.96576V50.0342C36 51.6722 37.7909 53 40 53C42.2091 53 44 51.6722 44 50.0342V2.96576Z" fill="var(--primary)"/>
+                                                <path d="M62 26.5054C62 24.8762 60.2091 23.5556 58 23.5556C55.7909 23.5556 54 24.8762 54 26.5054V50.0502C54 51.6793 55.7909 53 58 53C60.2091 53 62 51.6793 62 50.0502V26.5054Z" fill="var(--primary)"/>
+                                                </svg>
+                                            </li>
+                                            <li>
+                                                <h3 class="mb-0 font-w500 fs-22">1.400</h3>
+                                                <span>Total Sales</span>
+                                            </li>
+                                        </ul>
+                                    </td>
+                                    <td>
+                                        <ul class="d-flex align-items-center">
+                                            <li><svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M39.9411 3.05888C39.9411 1.40202 38.598 0.0588751 36.9411 0.0588751H9.94113C8.28427 0.0588751 6.94113 1.40202 6.94113 3.05888C6.94113 4.71573 8.28427 6.05888 9.94113 6.05888H33.9411V30.0589C33.9411 31.7157 35.2843 33.0589 36.9411 33.0589C38.598 33.0589 39.9411 31.7157 39.9411 30.0589V3.05888ZM5.12132 39.1213L39.0624 5.1802L34.8198 0.937555L0.87868 34.8787L5.12132 39.1213Z" fill="var(--primary)"/>
+                                                </svg>
+                                            </li>
+                                            <li class="ms-3">
+                                                <h3 class="mb-0 font-w500 fs-22">36%</h3>
+                                                <span>Interest</span>
+                                            </li>
+                                        </ul>
+                                    </td>
+                                    <td>
+                                        <img src="{{ url_for('static', filename=  'akademi/images/circle.svg')}}" alt="">
+                                    </td>
+                                    <td class="text-end">
+                                        <div class="dropdown custom-dropdown">
+                                            <div class="btn sharp btn-light " data-bs-toggle="dropdown">
+                                                <svg width="24" height="6" viewBox="0 0 24 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                    <path d="M12.0012 0.359985C11.6543 0.359985 11.3109 0.428302 10.9904 0.561035C10.67 0.693767 10.3788 0.888317 10.1335 1.13358C9.88829 1.37883 9.69374 1.67 9.56101 1.99044C9.42828 2.31089 9.35996 2.65434 9.35996 3.00119C9.35996 3.34803 9.42828 3.69148 9.56101 4.01193C9.69374 4.33237 9.88829 4.62354 10.1335 4.8688C10.3788 5.11405 10.67 5.3086 10.9904 5.44134C11.3109 5.57407 11.6543 5.64239 12.0012 5.64239C12.7017 5.64223 13.3734 5.36381 13.8686 4.86837C14.3638 4.37294 14.6419 3.70108 14.6418 3.00059C14.6416 2.3001 14.3632 1.62836 13.8677 1.13315C13.3723 0.637942 12.7004 0.359826 12 0.359985H12.0012ZM3.60116 0.359985C3.25431 0.359985 2.91086 0.428302 2.59042 0.561035C2.26997 0.693767 1.97881 0.888317 1.73355 1.13358C1.48829 1.37883 1.29374 1.67 1.16101 1.99044C1.02828 2.31089 0.959961 2.65434 0.959961 3.00119C0.959961 3.34803 1.02828 3.69148 1.16101 4.01193C1.29374 4.33237 1.48829 4.62354 1.73355 4.8688C1.97881 5.11405 2.26997 5.3086 2.59042 5.44134C2.91086 5.57407 3.25431 5.64239 3.60116 5.64239C4.30165 5.64223 4.97339 5.36381 5.4686 4.86837C5.9638 4.37294 6.24192 3.70108 6.24176 3.00059C6.2416 2.3001 5.96318 1.62836 5.46775 1.13315C4.97231 0.637942 4.30045 0.359826 3.59996 0.359985H3.60116ZM20.4012 0.359985C20.0543 0.359985 19.7109 0.428302 19.3904 0.561035C19.07 0.693767 18.7788 0.888317 18.5336 1.13358C18.2883 1.37883 18.0937 1.67 17.961 1.99044C17.8283 2.31089 17.76 2.65434 17.76 3.00119C17.76 3.34803 17.8283 3.69148 17.961 4.01193C18.0937 4.33237 18.2883 4.62354 18.5336 4.8688C18.7788 5.11405 19.07 5.3086 19.3904 5.44134C19.7109 5.57407 20.0543 5.64239 20.4012 5.64239C21.1017 5.64223 21.7734 5.36381 22.2686 4.86837C22.7638 4.37294 23.0419 3.70108 23.0418 3.00059C23.0416 2.3001 22.7632 1.62836 22.2677 1.13315C21.7723 0.637942 21.1005 0.359826 20.4 0.359985H20.4012Z" fill="#A098AE"/>
+                                                </svg>
+                                            </div>
+                                            <div class="dropdown-menu dropdown-menu-end">
+                                                <a class="dropdown-item" href="javascript:void(0);">Option 1</a>
+                                                <a class="dropdown-item" href="javascript:void(0);">Option 2</a>
+                                                <a class="dropdown-item" href="javascript:void(0);">Option 3</a>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                        
+                                        
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            </div>
+                            <div class="tab-pane fade" id="sanck-tab-pane" role="tabpanel" aria-labelledby="sanck-tab" tabindex="0">
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <tbody>
+                                        <tr>
+                                    <td Style="width:100px;">
+                                        <div class="food-menu">
+                                            <img class="me-3 rounded avatar avatar-xl"  src="{{ url_for('static', filename=  'akademi/images/food/pic1.jpg')}}" alt="DexignZone">
+                                            <div class="food-info">
+                                                <span class="badge badge-sm badge-primary mb-2">Snack</span>
+                                                </button>
+                                                <h5><a href="javascript:void(0);">Beef Steak with Fried Potato</a></h5>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <ul class="food-review">
+                                            <li><i class="fa fa-star"></i></li>
+                                            <li><h5 class="font-w700">4.9</h5></li>
+                                        </ul>
+                                        
+                                    </td>
+                                    <td>
+                                        <ul class="d-flex">
+                                            <li><svg class="me-3" width="62" height="53" viewBox="0 0 62 53" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M8 31.7387C8 30.1102 6.20914 28.7901 4 28.7901C1.79086 28.7901 0 30.1102 0 31.7387V50.0515C0 51.6799 1.79086 53 4 53C6.20914 53 8 51.6799 8 50.0515V31.7387Z" fill="var(--primary)"/>
+                                                <path d="M26 21.2318C26 19.6242 24.2091 18.321 22 18.321C19.7909 18.321 18 19.6242 18 21.2318V50.0892C18 51.6968 19.7909 53 22 53C24.2091 53 26 51.6968 26 50.0892V21.2318Z" fill="var(--primary)"/>
+                                                <path d="M44 2.96576C44 1.32781 42.2091 0 40 0C37.7909 0 36 1.32782 36 2.96576V50.0342C36 51.6722 37.7909 53 40 53C42.2091 53 44 51.6722 44 50.0342V2.96576Z" fill="var(--primary)"/>
+                                                <path d="M62 26.5054C62 24.8762 60.2091 23.5556 58 23.5556C55.7909 23.5556 54 24.8762 54 26.5054V50.0502C54 51.6793 55.7909 53 58 53C60.2091 53 62 51.6793 62 50.0502V26.5054Z" fill="var(--primary)"/>
+                                                </svg>
+                                            </li>
+                                            <li>
+                                                <h3 class="mb-0 font-w500 fs-22">1.456</h3>
+                                                <span>Total Sales</span>
+                                            </li>
+                                        </ul>
+                                    </td>
+                                    <td>
+                                        <ul class="d-flex align-items-center">
+                                            <li><svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M39.9411 3.05888C39.9411 1.40202 38.598 0.0588751 36.9411 0.0588751H9.94113C8.28427 0.0588751 6.94113 1.40202 6.94113 3.05888C6.94113 4.71573 8.28427 6.05888 9.94113 6.05888H33.9411V30.0589C33.9411 31.7157 35.2843 33.0589 36.9411 33.0589C38.598 33.0589 39.9411 31.7157 39.9411 30.0589V3.05888ZM5.12132 39.1213L39.0624 5.1802L34.8198 0.937555L0.87868 34.8787L5.12132 39.1213Z" fill="var(--primary)"/>
+                                                </svg>
+                                            </li>
+                                            <li class="ms-3">
+                                                <h3 class="mb-0 font-w500 fs-22">26%</h3>
+                                                <span>Interest</span>
+                                            </li>
+                                        </ul>
+                                    </td>
+                                    <td>
+                                        <img src="{{ url_for('static', filename=  'akademi/images/circle.svg')}}" alt="">
+                                    </td>
+                                    <td class="text-end">
+                                        <div class="dropdown custom-dropdown">
+                                            <div class="btn sharp btn-light " data-bs-toggle="dropdown">
+                                                <svg width="24" height="6" viewBox="0 0 24 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                    <path d="M12.0012 0.359985C11.6543 0.359985 11.3109 0.428302 10.9904 0.561035C10.67 0.693767 10.3788 0.888317 10.1335 1.13358C9.88829 1.37883 9.69374 1.67 9.56101 1.99044C9.42828 2.31089 9.35996 2.65434 9.35996 3.00119C9.35996 3.34803 9.42828 3.69148 9.56101 4.01193C9.69374 4.33237 9.88829 4.62354 10.1335 4.8688C10.3788 5.11405 10.67 5.3086 10.9904 5.44134C11.3109 5.57407 11.6543 5.64239 12.0012 5.64239C12.7017 5.64223 13.3734 5.36381 13.8686 4.86837C14.3638 4.37294 14.6419 3.70108 14.6418 3.00059C14.6416 2.3001 14.3632 1.62836 13.8677 1.13315C13.3723 0.637942 12.7004 0.359826 12 0.359985H12.0012ZM3.60116 0.359985C3.25431 0.359985 2.91086 0.428302 2.59042 0.561035C2.26997 0.693767 1.97881 0.888317 1.73355 1.13358C1.48829 1.37883 1.29374 1.67 1.16101 1.99044C1.02828 2.31089 0.959961 2.65434 0.959961 3.00119C0.959961 3.34803 1.02828 3.69148 1.16101 4.01193C1.29374 4.33237 1.48829 4.62354 1.73355 4.8688C1.97881 5.11405 2.26997 5.3086 2.59042 5.44134C2.91086 5.57407 3.25431 5.64239 3.60116 5.64239C4.30165 5.64223 4.97339 5.36381 5.4686 4.86837C5.9638 4.37294 6.24192 3.70108 6.24176 3.00059C6.2416 2.3001 5.96318 1.62836 5.46775 1.13315C4.97231 0.637942 4.30045 0.359826 3.59996 0.359985H3.60116ZM20.4012 0.359985C20.0543 0.359985 19.7109 0.428302 19.3904 0.561035C19.07 0.693767 18.7788 0.888317 18.5336 1.13358C18.2883 1.37883 18.0937 1.67 17.961 1.99044C17.8283 2.31089 17.76 2.65434 17.76 3.00119C17.76 3.34803 17.8283 3.69148 17.961 4.01193C18.0937 4.33237 18.2883 4.62354 18.5336 4.8688C18.7788 5.11405 19.07 5.3086 19.3904 5.44134C19.7109 5.57407 20.0543 5.64239 20.4012 5.64239C21.1017 5.64223 21.7734 5.36381 22.2686 4.86837C22.7638 4.37294 23.0419 3.70108 23.0418 3.00059C23.0416 2.3001 22.7632 1.62836 22.2677 1.13315C21.7723 0.637942 21.1005 0.359826 20.4 0.359985H20.4012Z" fill="#A098AE"/>
+                                                </svg>
+                                            </div>
+                                            <div class="dropdown-menu dropdown-menu-end">
+                                                <a class="dropdown-item" href="javascript:void(0);">Option 1</a>
+                                                <a class="dropdown-item" href="javascript:void(0);">Option 2</a>
+                                                <a class="dropdown-item" href="javascript:void(0);">Option 3</a>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td Style="width:100px;">
+                                        <div class="food-menu">
+                                            <img class="me-3 rounded avatar avatar-xl"  src="{{ url_for('static', filename=  'akademi/images/food/pic2.jpg')}}" alt="DexignZone">
+                                            <div class="food-info">
+                                                <span class="badge badge-sm badge-primary mb-2">Snack</span></button>
+                                                <h5><a href="javascript:void(0);">Pancake with Honey</a></h5>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <ul class="food-review">
+                                            <li><i class="fa fa-star"></i></li>
+                                            <li><h5 class="font-w700">4.0</h5></li>
+                                        </ul>
+                                        
+                                    </td>
+                                    <td>
+                                        <ul class="d-flex">
+                                            <li><svg class="me-3" width="62" height="53" viewBox="0 0 62 53" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M8 31.7387C8 30.1102 6.20914 28.7901 4 28.7901C1.79086 28.7901 0 30.1102 0 31.7387V50.0515C0 51.6799 1.79086 53 4 53C6.20914 53 8 51.6799 8 50.0515V31.7387Z" fill="var(--primary)"/>
+                                                <path d="M26 21.2318C26 19.6242 24.2091 18.321 22 18.321C19.7909 18.321 18 19.6242 18 21.2318V50.0892C18 51.6968 19.7909 53 22 53C24.2091 53 26 51.6968 26 50.0892V21.2318Z" fill="var(--primary)"/>
+                                                <path d="M44 2.96576C44 1.32781 42.2091 0 40 0C37.7909 0 36 1.32782 36 2.96576V50.0342C36 51.6722 37.7909 53 40 53C42.2091 53 44 51.6722 44 50.0342V2.96576Z" fill="var(--primary)"/>
+                                                <path d="M62 26.5054C62 24.8762 60.2091 23.5556 58 23.5556C55.7909 23.5556 54 24.8762 54 26.5054V50.0502C54 51.6793 55.7909 53 58 53C60.2091 53 62 51.6793 62 50.0502V26.5054Z" fill="var(--primary)"/>
+                                                </svg>
+                                            </li>
+                                            <li>
+                                                <h3 class="mb-0 font-w500 fs-22">1.400</h3>
+                                                <span>Total Sales</span>
+                                            </li>
+                                        </ul>
+                                    </td>
+                                    <td>
+                                        <ul class="d-flex align-items-center">
+                                            <li><svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M39.9411 3.05888C39.9411 1.40202 38.598 0.0588751 36.9411 0.0588751H9.94113C8.28427 0.0588751 6.94113 1.40202 6.94113 3.05888C6.94113 4.71573 8.28427 6.05888 9.94113 6.05888H33.9411V30.0589C33.9411 31.7157 35.2843 33.0589 36.9411 33.0589C38.598 33.0589 39.9411 31.7157 39.9411 30.0589V3.05888ZM5.12132 39.1213L39.0624 5.1802L34.8198 0.937555L0.87868 34.8787L5.12132 39.1213Z" fill="var(--primary)"/>
+                                                </svg>
+                                            </li>
+                                            <li class="ms-3">
+                                                <h3 class="mb-0 font-w500 fs-22">36%</h3>
+                                                <span>Interest</span>
+                                            </li>
+                                        </ul>
+                                    </td>
+                                    <td>
+                                        <img src="{{ url_for('static', filename=  'akademi/images/circle.svg')}}" alt="">
+                                    </td>
+                                    <td class="text-end">
+                                        <div class="dropdown custom-dropdown">
+                                            <div class="btn sharp btn-light " data-bs-toggle="dropdown">
+                                                <svg width="24" height="6" viewBox="0 0 24 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                    <path d="M12.0012 0.359985C11.6543 0.359985 11.3109 0.428302 10.9904 0.561035C10.67 0.693767 10.3788 0.888317 10.1335 1.13358C9.88829 1.37883 9.69374 1.67 9.56101 1.99044C9.42828 2.31089 9.35996 2.65434 9.35996 3.00119C9.35996 3.34803 9.42828 3.69148 9.56101 4.01193C9.69374 4.33237 9.88829 4.62354 10.1335 4.8688C10.3788 5.11405 10.67 5.3086 10.9904 5.44134C11.3109 5.57407 11.6543 5.64239 12.0012 5.64239C12.7017 5.64223 13.3734 5.36381 13.8686 4.86837C14.3638 4.37294 14.6419 3.70108 14.6418 3.00059C14.6416 2.3001 14.3632 1.62836 13.8677 1.13315C13.3723 0.637942 12.7004 0.359826 12 0.359985H12.0012ZM3.60116 0.359985C3.25431 0.359985 2.91086 0.428302 2.59042 0.561035C2.26997 0.693767 1.97881 0.888317 1.73355 1.13358C1.48829 1.37883 1.29374 1.67 1.16101 1.99044C1.02828 2.31089 0.959961 2.65434 0.959961 3.00119C0.959961 3.34803 1.02828 3.69148 1.16101 4.01193C1.29374 4.33237 1.48829 4.62354 1.73355 4.8688C1.97881 5.11405 2.26997 5.3086 2.59042 5.44134C2.91086 5.57407 3.25431 5.64239 3.60116 5.64239C4.30165 5.64223 4.97339 5.36381 5.4686 4.86837C5.9638 4.37294 6.24192 3.70108 6.24176 3.00059C6.2416 2.3001 5.96318 1.62836 5.46775 1.13315C4.97231 0.637942 4.30045 0.359826 3.59996 0.359985H3.60116ZM20.4012 0.359985C20.0543 0.359985 19.7109 0.428302 19.3904 0.561035C19.07 0.693767 18.7788 0.888317 18.5336 1.13358C18.2883 1.37883 18.0937 1.67 17.961 1.99044C17.8283 2.31089 17.76 2.65434 17.76 3.00119C17.76 3.34803 17.8283 3.69148 17.961 4.01193C18.0937 4.33237 18.2883 4.62354 18.5336 4.8688C18.7788 5.11405 19.07 5.3086 19.3904 5.44134C19.7109 5.57407 20.0543 5.64239 20.4012 5.64239C21.1017 5.64223 21.7734 5.36381 22.2686 4.86837C22.7638 4.37294 23.0419 3.70108 23.0418 3.00059C23.0416 2.3001 22.7632 1.62836 22.2677 1.13315C21.7723 0.637942 21.1005 0.359826 20.4 0.359985H20.4012Z" fill="#A098AE"/>
+                                                </svg>
+                                            </div>
+                                            <div class="dropdown-menu dropdown-menu-end">
+                                                <a class="dropdown-item" href="javascript:void(0);">Option 1</a>
+                                                <a class="dropdown-item" href="javascript:void(0);">Option 2</a>
+                                                <a class="dropdown-item" href="javascript:void(0);">Option 3</a>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                        
+                                    </tbody>
+                                </table>
+                            </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--**********************************
+    Content body end
+***********************************-->
+{% endblock %}
+{% block additional_js %}
+<script src="{{ url_for('static', filename='akademi/vendor/wow-master/dist/wow.min.js')}}"></script>
+{% endblock %}
+

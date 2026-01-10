@@ -1,0 +1,509 @@
+{% extends 'akademi/elements/layouts/admin.html' %}
+	
+{% block additional_css %}
+<style>
+.student-info-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 25px;
+}
+
+.student-info-card h5 {
+    color: white;
+    margin-bottom: 15px;
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.2);
+}
+
+.info-item:last-child {
+    border-bottom: none;
+}
+
+.info-label {
+    font-weight: 500;
+    opacity: 0.9;
+}
+
+.info-value {
+    font-weight: 600;
+}
+
+.concession-type-card {
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.concession-type-card:hover {
+    border-color: #667eea;
+    background: #f8f9ff;
+}
+
+.concession-type-card.selected {
+    border-color: #667eea;
+    background: #f8f9ff;
+}
+
+.mode-radio-group {
+    display: flex;
+    gap: 20px;
+    margin-top: 10px;
+}
+
+.mode-radio-option {
+    flex: 1;
+    padding: 15px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-align: center;
+}
+
+.mode-radio-option:hover {
+    border-color: #667eea;
+    background: #f8f9ff;
+}
+
+.mode-radio-option.selected {
+    border-color: #667eea;
+    background: #667eea;
+    color: white;
+}
+
+.mode-radio-option input[type="radio"] {
+    display: none;
+}
+
+.calculated-discount-box {
+    background: #d4edda;
+    border-left: 4px solid #28a745;
+    padding: 20px;
+    border-radius: 5px;
+    margin: 20px 0;
+}
+
+.calculated-discount-box h4 {
+    color: #155724;
+    margin: 0;
+}
+
+.calculated-discount-box .amount {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #28a745;
+}
+
+.fee-summary-table {
+    margin-top: 15px;
+}
+
+.fee-summary-table td {
+    padding: 10px;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.fee-summary-table td:first-child {
+    font-weight: 600;
+    color: #6c757d;
+    width: 40%;
+}
+
+.fee-summary-table tr:last-child td {
+    border-bottom: none;
+    font-size: 1.1rem;
+    font-weight: bold;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!--**********************************
+    Content body start
+***********************************-->
+<div class="content-body">
+    <div class="container-fluid">   
+        <!-- Page Header -->
+        <div class="row">
+            <div class="col-xl-12">
+                <div class="page-title flex-wrap justify-content-between align-items-center">
+                    <div>
+                        <h4 class="mb-1">Apply Concession / Discount</h4>
+                        <p class="mb-0">Add concession or scholarship to student fee</p>
+                    </div>
+                    <div>
+                        <a href="{{ url_for('school.view_student_fee', tenant_slug=school.slug, student_fee_id=student_fee.id) }}" 
+                            class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Fee Details
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <div class="row">
+            <!-- Student Info Card -->
+            <div class="col-xl-4">
+                <div class="student-info-card">
+                    <h5><i class="fas fa-user-graduate me-2"></i>Student Information</h5>
+                    <div class="info-item">
+                        <span class="info-label">Name:</span>
+                        <span class="info-value">{{ student_fee.student.full_name }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Admission No:</span>
+                        <span class="info-value">{{ student_fee.student.admission_number }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Class:</span>
+                        <span class="info-value">
+                            {% if student_fee.student.student_class %}
+                                {{ student_fee.student.student_class.class_name }}-{{ student_fee.student.student_class.section }}
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Session:</span>
+                        <span class="info-value">{{ student_fee.session.session_name }}</span>
+                    </div>
+                </div>
+
+                <!-- Current Fee Summary -->
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0"><i class="fas fa-rupee-sign me-2"></i>Current Fee Summary</h5>
+                    </div>
+                    <div class="card-body">
+                        <table class="fee-summary-table w-100">
+                            <tr>
+                                <td>Total Fee Amount:</td>
+                                <td class="text-end"><strong>₹ {{ "%.2f"|format(student_fee.total_amount) }}</strong></td>
+                            </tr>
+                            <tr>
+                                <td>Existing Discount:</td>
+                                <td class="text-end text-success">- ₹ {{ "%.2f"|format(student_fee.discount_amount or 0) }}</td>
+                            </tr>
+                            <tr>
+                                <td>Fine Amount:</td>
+                                <td class="text-end text-danger">+ ₹ {{ "%.2f"|format(student_fee.fine_amount or 0) }}</td>
+                            </tr>
+                            <tr>
+                                <td>Paid Amount:</td>
+                                <td class="text-end text-primary">₹ {{ "%.2f"|format(student_fee.paid_amount or 0) }}</td>
+                            </tr>
+                            <tr class="border-top">
+                                <td>Balance Amount:</td>
+                                <td class="text-end text-danger">
+                                    <strong>₹ {{ "%.2f"|format(student_fee.balance_amount) }}</strong>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Concession Form -->
+            <div class="col-xl-8">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fas fa-gift me-2"></i>Apply Concession</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" action="{{ url_for('school.add_concession', tenant_slug=school.slug, student_fee_id=student_fee.id) }}" id="concessionForm">
+                            
+                            <!-- Concession Type -->
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">Concession Type <span class="text-danger">*</span></label>
+                                <div class="row">
+                                    {% for type in concession_types %}
+                                    <div class="col-md-6 mb-3">
+                                        <div class="concession-type-card" onclick="selectConcessionType('{{ type.name }}', this)">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="concession_type" 
+                                                    id="type_{{ type.name }}" value="{{ type.name }}" required>
+                                                <label class="form-check-label w-100" for="type_{{ type.name }}">
+                                                    <div class="d-flex align-items-center">
+                                                        <i class="fas fa-{% if type.name == 'SCHOLARSHIP' %}graduation-cap{% elif type.name == 'SIBLING_DISCOUNT' %}users{% elif type.name == 'MERIT_BASED' %}trophy{% elif type.name == 'STAFF_CHILD' %}user-tie{% elif type.name == 'SPORTS_QUOTA' %}football-ball{% elif type.name == 'FINANCIAL_AID' %}hand-holding-usd{% else %}gift{% endif %} fa-2x text-primary me-3"></i>
+                                                        <div>
+                                                            <strong>{{ type.value }}</strong>
+                                                        </div>
+                                                    </div>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <!-- Concession Mode -->
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">Concession Mode <span class="text-danger">*</span></label>
+                                <div class="mode-radio-group">
+                                    {% for mode in concession_modes %}
+                                    <div class="mode-radio-option" onclick="selectMode('{{ mode.name }}', this)">
+                                        <input type="radio" name="concession_mode" id="mode_{{ mode.name }}" 
+                                            value="{{ mode.name }}" required onchange="calculateDiscount()">
+                                        <label for="mode_{{ mode.name }}" class="mb-0">
+                                            <i class="fas fa-{% if mode.name == 'PERCENTAGE' %}percent{% else %}rupee-sign{% endif %} fa-2x mb-2"></i>
+                                            <div><strong>{{ mode.value }}</strong></div>
+                                        </label>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <!-- Concession Value -->
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="concession_value" class="form-label fw-bold">
+                                        Concession Value <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text" id="valuePrefix">
+                                            <i class="fas fa-rupee-sign"></i>
+                                        </span>
+                                        <input type="number" class="form-control" id="concession_value" 
+                                            name="concession_value" step="0.01" min="0" required 
+                                            placeholder="Enter value" oninput="calculateDiscount()">
+                                        <span class="input-group-text" id="valueSuffix" style="display: none;">%</span>
+                                    </div>
+                                    <small class="form-text text-muted" id="valueHelp">
+                                        Enter the concession amount or percentage
+                                    </small>
+                                </div>
+
+                                <!-- Calculated Discount Display -->
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold">Calculated Discount</label>
+                                    <div class="calculated-discount-box">
+                                        <h4 class="mb-1">Discount Amount</h4>
+                                        <div class="amount" id="calculatedDiscount">₹ 0.00</div>
+                                        <small class="text-muted" id="discountDetails"></small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Reason -->
+                            <div class="mb-3">
+                                <label for="reason" class="form-label fw-bold">Reason / Justification</label>
+                                <textarea class="form-control" id="reason" name="reason" rows="3" 
+                                    placeholder="Enter reason for applying this concession"></textarea>
+                            </div>
+
+                            <!-- Validity Period (Optional) -->
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="valid_from" class="form-label">Valid From</label>
+                                    <input type="date" class="form-control" id="valid_from" name="valid_from">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="valid_to" class="form-label">Valid To</label>
+                                    <input type="date" class="form-control" id="valid_to" name="valid_to">
+                                </div>
+                            </div>
+
+                            <!-- Final Summary (after discount) -->
+                            <div class="alert alert-info">
+                                <h6 class="mb-2"><i class="fas fa-info-circle me-2"></i>Fee Summary After Concession</h6>
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>Original Fee Amount:</span>
+                                    <strong>₹ <span id="summaryOriginal">{{ "%.2f"|format(student_fee.total_amount) }}</span></strong>
+                                </div>
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>Existing Discount:</span>
+                                    <strong class="text-success">- ₹ <span id="summaryExistingDiscount">{{ "%.2f"|format(student_fee.discount_amount or 0) }}</span></strong>
+                                </div>
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>New Discount:</span>
+                                    <strong class="text-success">- ₹ <span id="summaryNewDiscount">0.00</span></strong>
+                                </div>
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>Fine Amount:</span>
+                                    <strong class="text-danger">+ ₹ <span id="summaryFine">{{ "%.2f"|format(student_fee.fine_amount or 0) }}</span></strong>
+                                </div>
+                                <hr class="my-2">
+                                <div class="d-flex justify-content-between">
+                                    <strong>Net Payable Amount:</strong>
+                                    <strong class="text-primary fs-5">₹ <span id="summaryNetAmount">{{ "%.2f"|format(student_fee.balance_amount) }}</span></strong>
+                                </div>
+                            </div>
+
+                            <!-- Form Actions -->
+                            <div class="d-flex justify-content-end gap-2">
+                                <a href="{{ url_for('school.view_student_fee', tenant_slug=school.slug, student_fee_id=student_fee.id) }}" 
+                                    class="btn btn-secondary">
+                                    <i class="fas fa-times me-1"></i>Cancel
+                                </a>
+                                <button type="submit" class="btn btn-success" id="submitBtn" disabled>
+                                    <i class="fas fa-check me-1"></i>Apply Concession
+                                </button>
+                            </div>
+
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<!--**********************************
+    Content body end
+***********************************-->
+{% endblock %}
+
+{% block additional_js %}
+<script>
+const totalAmount = {{ student_fee.total_amount }};
+const existingDiscount = {{ student_fee.discount_amount or 0 }};
+const fineAmount = {{ student_fee.fine_amount or 0 }};
+
+// Select concession type
+function selectConcessionType(type, element) {
+    // Remove selected class from all cards
+    document.querySelectorAll('.concession-type-card').forEach(card => {
+        card.classList.remove('selected');
+    });
+    
+    // Add selected class to clicked card
+    element.classList.add('selected');
+    
+    // Check the radio button
+    document.getElementById('type_' + type).checked = true;
+    
+    validateForm();
+}
+
+// Select concession mode
+function selectMode(mode, element) {
+    // Remove selected class from all mode options
+    document.querySelectorAll('.mode-radio-option').forEach(opt => {
+        opt.classList.remove('selected');
+    });
+    
+    // Add selected class to clicked option
+    element.classList.add('selected');
+    
+    // Check the radio button
+    document.getElementById('mode_' + mode).checked = true;
+    
+    // Update input prefix/suffix
+    if (mode === 'PERCENTAGE') {
+        document.getElementById('valuePrefix').style.display = 'none';
+        document.getElementById('valueSuffix').style.display = 'block';
+        document.getElementById('valueHelp').textContent = 'Enter percentage (e.g., 10 for 10%)';
+        document.getElementById('concession_value').placeholder = 'Enter percentage';
+        document.getElementById('concession_value').max = '100';
+    } else {
+        document.getElementById('valuePrefix').style.display = 'block';
+        document.getElementById('valueSuffix').style.display = 'none';
+        document.getElementById('valueHelp').textContent = 'Enter fixed amount in rupees';
+        document.getElementById('concession_value').placeholder = 'Enter amount';
+        document.getElementById('concession_value').removeAttribute('max');
+    }
+    
+    calculateDiscount();
+}
+
+// Calculate discount on the fly
+function calculateDiscount() {
+    const modeElement = document.querySelector('input[name="concession_mode"]:checked');
+    const valueElement = document.getElementById('concession_value');
+    
+    if (!modeElement || !valueElement.value) {
+        document.getElementById('calculatedDiscount').textContent = '₹ 0.00';
+        document.getElementById('discountDetails').textContent = '';
+        document.getElementById('summaryNewDiscount').textContent = '0.00';
+        updateNetAmount(0);
+        validateForm();
+        return;
+    }
+    
+    const mode = modeElement.value;
+    const value = parseFloat(valueElement.value) || 0;
+    let discount = 0;
+    let details = '';
+    
+    if (mode === 'PERCENTAGE') {
+        if (value > 100) {
+            valueElement.value = 100;
+            return;
+        }
+        discount = (totalAmount * value) / 100;
+        details = `${value}% of ₹${totalAmount.toFixed(2)}`;
+    } else {
+        discount = Math.min(value, totalAmount);
+        if (value > totalAmount) {
+            valueElement.value = totalAmount;
+            discount = totalAmount;
+        }
+        details = 'Fixed amount';
+    }
+    
+    document.getElementById('calculatedDiscount').textContent = '₹ ' + discount.toFixed(2);
+    document.getElementById('discountDetails').textContent = details;
+    document.getElementById('summaryNewDiscount').textContent = discount.toFixed(2);
+    
+    updateNetAmount(discount);
+    validateForm();
+}
+
+// Update net amount summary
+function updateNetAmount(newDiscount) {
+    const netAmount = totalAmount - existingDiscount - newDiscount + fineAmount;
+    document.getElementById('summaryNetAmount').textContent = netAmount.toFixed(2);
+}
+
+// Validate form
+function validateForm() {
+    const typeChecked = document.querySelector('input[name="concession_type"]:checked');
+    const modeChecked = document.querySelector('input[name="concession_mode"]:checked');
+    const valueEntered = document.getElementById('concession_value').value;
+    
+    const isValid = typeChecked && modeChecked && valueEntered && parseFloat(valueEntered) > 0;
+    document.getElementById('submitBtn').disabled = !isValid;
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+    // Set min date for valid_from to today
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('valid_from').setAttribute('min', today);
+    
+    // Update valid_to min when valid_from changes
+    document.getElementById('valid_from').addEventListener('change', function() {
+        document.getElementById('valid_to').setAttribute('min', this.value);
+    });
+    
+    // Auto-dismiss alerts
+    setTimeout(function() {
+        $('.alert').fadeOut('slow');
+    }, 5000);
+});
+</script>
+{% endblock %}

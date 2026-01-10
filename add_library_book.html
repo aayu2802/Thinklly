@@ -1,0 +1,164 @@
+{% extends 'akademi/elements/layouts/admin.html' %}
+
+{% block title %}Add Book - Library{% endblock %}
+
+{% block content %}
+<!--**********************************
+    Content body start
+***********************************-->
+<div class="content-body">
+<div class="container-fluid">
+    <div class="page-header">
+        <h2><i class="bi bi-plus-circle"></i> Add New Book</h2>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('school.dashboard', tenant_slug=tenant_slug) }}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('school.library_dashboard', tenant_slug=tenant_slug) }}">Library</a></li>
+                <li class="breadcrumb-item active">Add Book</li>
+            </ol>
+        </nav>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Book Information</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('school.add_library_book', tenant_slug=tenant_slug) }}">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="accession_number" class="form-label">Accession Number <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="accession_number" name="accession_number" required>
+                                <small class="form-text text-muted">Unique library identifier</small>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="isbn" class="form-label">ISBN</label>
+                                <input type="text" class="form-control" id="isbn" name="isbn">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="title" class="form-label">Book Title <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="title" name="title" required>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="author" class="form-label">Author <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="author" name="author" required>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="publisher" class="form-label">Publisher</label>
+                                <input type="text" class="form-control" id="publisher" name="publisher">
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="publication_year" class="form-label">Publication Year</label>
+                                <input type="number" class="form-control" id="publication_year" name="publication_year" min="1900" max="2100">
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label for="edition" class="form-label">Edition</label>
+                                <input type="text" class="form-control" id="edition" name="edition">
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label for="language" class="form-label">Language</label>
+                                <input type="text" class="form-control" id="language" name="language" value="English">
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                <label for="pages" class="form-label">Pages</label>
+                                <input type="number" class="form-control" id="pages" name="pages" min="1">
+                            </div>
+
+                            <div class="col-md-3 mb-3">
+                                <label for="price" class="form-label">Price (₹)</label>
+                                <input type="number" class="form-control" id="price" name="price" step="0.01" min="0">
+                            </div>
+
+                            <div class="col-md-3 mb-3">
+                                <label for="total_copies" class="form-label">Total Copies <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="total_copies" name="total_copies" value="1" min="1" required>
+                            </div>
+
+                            <div class="col-md-3 mb-3">
+                                <label for="rack_number" class="form-label">Rack Number</label>
+                                <input type="text" class="form-control" id="rack_number" name="rack_number">
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="category_id" class="form-label">Category</label>
+                                <select class="form-select" id="category_id" name="category_id">
+                                    <option value="">Select Category</option>
+                                    {% for category in categories %}
+                                    <option value="{{ category.id }}">{{ category.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="condition" class="form-label">Condition</label>
+                                <select class="form-select" id="condition" name="condition">
+                                    <option value="New">New</option>
+                                    <option value="Good" selected>Good</option>
+                                    <option value="Fair">Fair</option>
+                                    <option value="Poor">Poor</option>
+                                    <option value="Damaged">Damaged</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save"></i> Add Book
+                            </button>
+                            <a href="{{ url_for('school.library_books', tenant_slug=tenant_slug) }}" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-info-circle"></i> Quick Guide</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Accession Number:</strong> Unique identifier for each book in your library (e.g., LIB-001, BOOK-2024-001)</p>
+                    <p><strong>ISBN:</strong> International Standard Book Number</p>
+                    <p><strong>Total Copies:</strong> Number of copies of this book available</p>
+                    <hr>
+                    <p class="mb-0">
+                        <a href="{{ url_for('school.bulk_add_library_books', tenant_slug=tenant_slug) }}" class="btn btn-sm btn-info w-100">
+                            <i class="bi bi-file-earmark-arrow-up"></i> Bulk Add via CSV
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+<!--**********************************
+    Content body end
+***********************************-->
+{% endblock %}

@@ -1,0 +1,1557 @@
+{% extends 'akademi/elements/layouts/admin.html' %}
+
+{% block additional_css %}
+<link href="{{ url_for('static', filename='akademi/vendor/datatables/css/jquery.dataTables.min.css') }}"
+    rel="stylesheet">
+<link href="{{ url_for('static', filename='akademi/vendor/sweetalert2/dist/sweetalert2.min.css') }}" rel="stylesheet">
+<link href="{{ url_for('static', filename='akademi/vendor/toastr/css/toastr.min.css') }}" rel="stylesheet">
+<style>
+    .nav-tabs .nav-link {
+        color: #6c757d;
+        font-weight: 500;
+    }
+
+    .nav-tabs .nav-link.active {
+        color: var(--primary);
+        font-weight: 600;
+    }
+
+    .badge-active {
+        background-color: #28a745;
+    }
+
+    .badge-inactive {
+        background-color: #6c757d;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!--**********************************
+    Content body start
+***********************************-->
+<div class="content-body">
+    <div class="container-fluid">
+        <!-- Page Header -->
+        <div class="row">
+            <div class="col-xl-12">
+                <div class="page-title flex-wrap justify-content-between align-items-center">
+                    <div>
+                        <h4 class="mb-1">Master Data Management</h4>
+                        <p class="mb-0">Manage Departments, Designations, and Subjects</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        <!-- Tabs Card -->
+        <div class="row">
+            <div class="col-xl-12">
+                <div class="card">
+                    <div class="card-body">
+                        <!-- Nav Tabs -->
+                        <ul class="nav nav-tabs" id="masterDataTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="departments-tab" data-bs-toggle="tab"
+                                    data-bs-target="#departments" type="button" role="tab">
+                                    <i class="fas fa-building me-2"></i>Departments
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="designations-tab" data-bs-toggle="tab"
+                                    data-bs-target="#designations" type="button" role="tab">
+                                    <i class="fas fa-user-tie me-2"></i>Designations
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="subjects-tab" data-bs-toggle="tab"
+                                    data-bs-target="#subjects" type="button" role="tab">
+                                    <i class="fas fa-book me-2"></i>Subjects
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="classes-tab" data-bs-toggle="tab" data-bs-target="#classes"
+                                    type="button" role="tab">
+                                    <i class="fas fa-chalkboard me-2"></i>Classes
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="sessions-tab" data-bs-toggle="tab"
+                                    data-bs-target="#sessions" type="button" role="tab">
+                                    <i class="fas fa-calendar-alt me-2"></i>Academic Sessions
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="whatsapp-tab" data-bs-toggle="tab"
+                                    data-bs-target="#whatsapp" type="button" role="tab">
+                                    <i class="fab fa-whatsapp me-2"></i>WhatsApp Settings
+                                </button>
+                            </li>
+                        </ul>
+
+                        <!-- Tab Content -->
+                        <div class="tab-content mt-4" id="masterDataTabsContent">
+
+                            <!-- DEPARTMENTS TAB -->
+                            <div class="tab-pane fade show active" id="departments" role="tabpanel">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h5 class="mb-0">Departments ({{ departments|length }})</h5>
+                                    <div>
+                                        <a href="{{ url_for('school.bulk_upload_departments', tenant_slug=school.slug, template=1) }}"
+                                            class="btn btn-outline-secondary btn-sm me-2">
+                                            <i class="fas fa-download me-1"></i>Template
+                                        </a>
+                                        <button type="button" class="btn btn-success btn-sm me-2" data-bs-toggle="modal"
+                                            data-bs-target="#bulkUploadDepartmentsModal">
+                                            <i class="fas fa-file-csv me-1"></i>Bulk Upload
+                                        </button>
+                                        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
+                                            data-bs-target="#addDepartmentModal">
+                                            <i class="fas fa-plus me-1"></i>Add Department
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="table-responsive">
+                                    <table class="table table-hover table-striped" id="departmentsTable">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Name</th>
+                                                <th>Code</th>
+                                                <th>Description</th>
+                                                <th>Teachers</th>
+                                                <th>Status</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for dept in departments %}
+                                            <tr>
+                                                <td>{{ loop.index }}</td>
+                                                <td><strong>{{ dept.name }}</strong></td>
+                                                <td><span class="badge badge-info">{{ dept.code or 'N/A' }}</span></td>
+                                                <td>{{ dept.description[:50] + '...' if dept.description and
+                                                    dept.description|length > 50 else dept.description or '-' }}</td>
+                                                <td><span class="badge badge-primary">{{ dept.teacher_departments|length
+                                                        }}</span></td>
+                                                <td>
+                                                    <span
+                                                        class="badge badge-{{ 'success' if dept.is_active else 'secondary' }}">
+                                                        {{ 'Active' if dept.is_active else 'Inactive' }}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <button type="button" class="btn btn-sm btn-warning"
+                                                        onclick="editDepartment({{ dept.id }}, '{{ dept.name }}', '{{ dept.code or '' }}', '{{ dept.description or '' }}', {{ dept.is_active|lower }})">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                    <button type="button" class="btn btn-sm btn-danger"
+                                                        onclick="deleteDepartment({{ dept.id }}, '{{ dept.name }}')">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- DESIGNATIONS TAB -->
+                            <div class="tab-pane fade" id="designations" role="tabpanel">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h5 class="mb-0">Designations ({{ designations|length }})</h5>
+                                    <div>
+                                        <a href="{{ url_for('school.bulk_upload_designations', tenant_slug=school.slug, template=1) }}"
+                                            class="btn btn-outline-secondary btn-sm me-2">
+                                            <i class="fas fa-download me-1"></i>Template
+                                        </a>
+                                        <button type="button" class="btn btn-success btn-sm me-2" data-bs-toggle="modal"
+                                            data-bs-target="#bulkUploadDesignationsModal">
+                                            <i class="fas fa-file-csv me-1"></i>Bulk Upload
+                                        </button>
+                                        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
+                                            data-bs-target="#addDesignationModal">
+                                            <i class="fas fa-plus me-1"></i>Add Designation
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="table-responsive">
+                                    <table class="table table-hover table-striped" id="designationsTable">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Name</th>
+                                                <th>Code</th>
+                                                <th>Hierarchy Level</th>
+                                                <th>Description</th>
+                                                <th>Teachers</th>
+                                                <th>Status</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for desig in designations %}
+                                            <tr>
+                                                <td>{{ loop.index }}</td>
+                                                <td><strong>{{ desig.name }}</strong></td>
+                                                <td><span class="badge badge-info">{{ desig.code or 'N/A' }}</span></td>
+                                                <td><span class="badge badge-secondary">Level {{ desig.hierarchy_level
+                                                        or '-' }}</span></td>
+                                                <td>{{ desig.description[:50] + '...' if desig.description and
+                                                    desig.description|length > 50 else desig.description or '-' }}</td>
+                                                <td><span class="badge badge-primary">{{
+                                                        desig.teacher_designations|length }}</span></td>
+                                                <td>
+                                                    <span
+                                                        class="badge badge-{{ 'success' if desig.is_active else 'secondary' }}">
+                                                        {{ 'Active' if desig.is_active else 'Inactive' }}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <button type="button" class="btn btn-sm btn-warning"
+                                                        onclick="editDesignation({{ desig.id }}, '{{ desig.name }}', '{{ desig.code or '' }}', {{ desig.hierarchy_level or 'null' }}, '{{ desig.description or '' }}', {{ desig.is_active|lower }})">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                    <button type="button" class="btn btn-sm btn-danger"
+                                                        onclick="deleteDesignation({{ desig.id }}, '{{ desig.name }}')">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- SUBJECTS TAB -->
+                            <div class="tab-pane fade" id="subjects" role="tabpanel">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h5 class="mb-0">Subjects ({{ subjects|length }})</h5>
+                                    <div>
+                                        <a href="{{ url_for('school.bulk_upload_subjects', tenant_slug=school.slug, template=1) }}"
+                                            class="btn btn-outline-secondary btn-sm me-2">
+                                            <i class="fas fa-download me-1"></i>Template
+                                        </a>
+                                        <button type="button" class="btn btn-success btn-sm me-2" data-bs-toggle="modal"
+                                            data-bs-target="#bulkUploadSubjectsModal">
+                                            <i class="fas fa-file-csv me-1"></i>Bulk Upload
+                                        </button>
+                                        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
+                                            data-bs-target="#addSubjectModal">
+                                            <i class="fas fa-plus me-1"></i>Add Subject
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="table-responsive">
+                                    <table class="table table-hover table-striped" id="subjectsTable">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Name</th>
+                                                <th>Code</th>
+                                                <th>Type</th>
+                                                <th>Description</th>
+                                                <th>Teachers</th>
+                                                <th>Status</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for subj in subjects %}
+                                            <tr>
+                                                <td>{{ loop.index }}</td>
+                                                <td><strong>{{ subj.name }}</strong></td>
+                                                <td><span class="badge badge-info">{{ subj.code or 'N/A' }}</span></td>
+                                                <td>
+                                                    <span
+                                                        class="badge badge-{{ 'primary' if subj.subject_type.value == 'Academic' else 'warning' if subj.subject_type.value == 'Co-curricular' else 'info' }}">
+                                                        {{ subj.subject_type.value }}
+                                                    </span>
+                                                </td>
+                                                <td>{{ subj.description[:50] + '...' if subj.description and
+                                                    subj.description|length > 50 else subj.description or '-' }}</td>
+                                                <td><span class="badge badge-primary">{{ subj.teacher_subjects|length
+                                                        }}</span></td>
+                                                <td>
+                                                    <span
+                                                        class="badge badge-{{ 'success' if subj.is_active else 'secondary' }}">
+                                                        {{ 'Active' if subj.is_active else 'Inactive' }}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <button type="button" class="btn btn-sm btn-warning"
+                                                        onclick="editSubject({{ subj.id }}, '{{ subj.name }}', '{{ subj.code or '' }}', '{{ subj.subject_type.value }}', '{{ subj.description or '' }}', {{ subj.is_active|lower }})">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                    <button type="button" class="btn btn-sm btn-danger"
+                                                        onclick="deleteSubject({{ subj.id }}, '{{ subj.name }}')">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- CLASSES TAB -->
+                            <div class="tab-pane fade" id="classes" role="tabpanel">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h5 class="mb-0">Classes ({{ classes|length }})</h5>
+                                    <div>
+                                        <a href="{{ url_for('school.bulk_upload_classes', tenant_slug=school.slug, template=1) }}"
+                                            class="btn btn-outline-secondary btn-sm me-2">
+                                            <i class="fas fa-download me-1"></i>Download Template
+                                        </a>
+                                        <button type="button" class="btn btn-success btn-sm me-2" data-bs-toggle="modal"
+                                            data-bs-target="#bulkUploadClassesModal">
+                                            <i class="fas fa-file-csv me-1"></i>Bulk Upload
+                                        </button>
+                                        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
+                                            data-bs-target="#addClassModal">
+                                            <i class="fas fa-plus me-1"></i>Add Class
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="table-responsive">
+                                    <table class="table table-hover table-striped" id="classesTable">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Class Name</th>
+                                                <th>Section</th>
+                                                <th>Description</th>
+                                                <th>Students</th>
+                                                <th>Status</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for cls in classes %}
+                                            <tr>
+                                                <td>{{ loop.index }}</td>
+                                                <td><strong>{{ cls.class_name }}</strong></td>
+                                                <td><span class="badge badge-primary">{{ cls.section or '-' }}</span>
+                                                </td>
+                                                <td>{{ cls.description[:50] + '...' if cls.description and
+                                                    cls.description|length > 50 else cls.description or '-' }}</td>
+                                                <td><span class="badge badge-info">{{ cls.students|length if
+                                                        cls.students else 0 }}</span></td>
+                                                <td>
+                                                    <span
+                                                        class="badge badge-{{ 'success' if cls.is_active else 'secondary' }}">
+                                                        {{ 'Active' if cls.is_active else 'Inactive' }}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <button type="button" class="btn btn-sm btn-warning"
+                                                        onclick="editClass({{ cls.id }}, '{{ cls.class_name }}', '{{ cls.section or '' }}', '{{ cls.description or '' }}', {{ cls.is_active|lower }})">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                    <button type="button" class="btn btn-sm btn-danger"
+                                                        onclick="deleteClass({{ cls.id }}, '{{ cls.class_name }}', '{{ cls.section or '' }}')">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- ACADEMIC SESSIONS TAB -->
+                            <div class="tab-pane fade" id="sessions" role="tabpanel">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h5 class="mb-0">Academic Sessions ({{ academic_sessions|length }})</h5>
+                                    <div>
+                                        <a href="{{ url_for('school.student_promotion', tenant_slug=school.slug) }}"
+                                            class="btn btn-success btn-sm me-2">
+                                            <i class="fas fa-user-graduate me-1"></i>Student Promotion
+                                        </a>
+                                        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
+                                            data-bs-target="#addSessionModal">
+                                            <i class="fas fa-plus me-1"></i>Add Academic Session
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="table-responsive">
+                                    <table class="table table-hover table-striped" id="sessionsTable">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Session Name</th>
+                                                <th>Start Date</th>
+                                                <th>End Date</th>
+                                                <th>Current</th>
+                                                <th>Students</th>
+                                                <th>Status</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for session in academic_sessions %}
+                                            <tr>
+                                                <td>{{ loop.index }}</td>
+                                                <td><strong>{{ session.session_name }}</strong></td>
+                                                <td>{{ session.start_date.strftime('%d %b %Y') if session.start_date
+                                                    else '-' }}</td>
+                                                <td>{{ session.end_date.strftime('%d %b %Y') if session.end_date else
+                                                    '-' }}</td>
+                                                <td>
+                                                    <span
+                                                        class="badge badge-{{ 'success' if session.is_current else 'secondary' }}">
+                                                        {{ 'Current' if session.is_current else '-' }}
+                                                    </span>
+                                                </td>
+                                                <td><span class="badge badge-info">{{ session.students|length if
+                                                        session.students else 0 }}</span></td>
+                                                <td>
+                                                    <span
+                                                        class="badge badge-{{ 'success' if session.is_active else 'secondary' }}">
+                                                        {{ 'Active' if session.is_active else 'Inactive' }}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    {% if not session.is_current %}
+                                                    <button type="button" class="btn btn-sm btn-success"
+                                                        onclick="setCurrentSession({{ session.id }}, '{{ session.session_name }}')"
+                                                        title="Set as current session">
+                                                        <i class="fas fa-check"></i>
+                                                    </button>
+                                                    {% endif %}
+                                                    <button type="button" class="btn btn-sm btn-warning"
+                                                        onclick="editSession({{ session.id }}, '{{ session.session_name }}', '{{ session.start_date.strftime('%Y-%m-%d') if session.start_date else '' }}', '{{ session.end_date.strftime('%Y-%m-%d') if session.end_date else '' }}', {{ session.is_current|lower }}, {{ session.is_active|lower }})">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                    <button type="button" class="btn btn-sm btn-danger"
+                                                        onclick="deleteSession({{ session.id }}, '{{ session.session_name }}')">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- WHATSAPP SETTINGS TAB -->
+                            <div class="tab-pane fade" id="whatsapp" role="tabpanel">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h5 class="mb-0"><i class="fab fa-whatsapp text-success me-2"></i>WhatsApp API
+                                        Configuration</h5>
+                                    {% if whatsapp_settings and whatsapp_settings.is_enabled %}
+                                    <span class="badge bg-success"><i
+                                            class="fas fa-check-circle me-1"></i>Enabled</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary"><i
+                                            class="fas fa-times-circle me-1"></i>Disabled</span>
+                                    {% endif %}
+                                </div>
+
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    Configure WhatsApp Business API to send notifications directly to parents, students,
+                                    and teachers via WhatsApp.
+                                    You can obtain API credentials from your WhatsApp Business Provider.
+                                </div>
+
+                                <form method="POST"
+                                    action="{{ url_for('school.save_whatsapp_settings', tenant_slug=school.slug) }}"
+                                    id="whatsappSettingsForm">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="card mb-3">
+                                                <div class="card-header bg-light">
+                                                    <h6 class="mb-0"><i class="fas fa-cog me-2"></i>Provider Settings
+                                                    </h6>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">WhatsApp Provider<span
+                                                                class="text-danger">*</span></label>
+                                                        <select name="provider" class="form-select" id="waProvider"
+                                                            required>
+                                                            <option value="">-- Select Provider --</option>
+                                                            <option value="Meta Cloud API" {% if whatsapp_settings and
+                                                                whatsapp_settings.provider and
+                                                                whatsapp_settings.provider.value=='Meta Cloud API'
+                                                                %}selected{% endif %}>Meta Cloud API (Official)</option>
+                                                            <option value="Twilio" {% if whatsapp_settings and
+                                                                whatsapp_settings.provider and
+                                                                whatsapp_settings.provider.value=='Twilio' %}selected{%
+                                                                endif %}>Twilio</option>
+                                                            <option value="Gupshup" {% if whatsapp_settings and
+                                                                whatsapp_settings.provider and
+                                                                whatsapp_settings.provider.value=='Gupshup' %}selected{%
+                                                                endif %}>Gupshup</option>
+                                                            <option value="WATI" {% if whatsapp_settings and
+                                                                whatsapp_settings.provider and
+                                                                whatsapp_settings.provider.value=='WATI' %}selected{%
+                                                                endif %}>WATI</option>
+                                                            <option value="Interakt" {% if whatsapp_settings and
+                                                                whatsapp_settings.provider and
+                                                                whatsapp_settings.provider.value=='Interakt'
+                                                                %}selected{% endif %}>Interakt</option>
+                                                            <option value="AiSensy" {% if whatsapp_settings and
+                                                                whatsapp_settings.provider and
+                                                                whatsapp_settings.provider.value=='AiSensy' %}selected{%
+                                                                endif %}>AiSensy</option>
+                                                            <option value="Other" {% if whatsapp_settings and
+                                                                whatsapp_settings.provider and
+                                                                whatsapp_settings.provider.value=='Other' %}selected{%
+                                                                endif %}>Other</option>
+                                                        </select>
+                                                    </div>
+
+                                                    <div class="mb-3">
+                                                        <div class="form-check form-switch">
+                                                            <input class="form-check-input" type="checkbox"
+                                                                name="is_enabled" id="waEnabled" value="1" {% if
+                                                                whatsapp_settings and whatsapp_settings.is_enabled
+                                                                %}checked{% endif %}>
+                                                            <label class="form-check-label" for="waEnabled">Enable
+                                                                WhatsApp Notifications</label>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="mb-3">
+                                                        <div class="form-check form-switch">
+                                                            <input class="form-check-input" type="checkbox"
+                                                                name="sandbox_mode" id="waSandbox" value="1" {% if not
+                                                                whatsapp_settings or whatsapp_settings.sandbox_mode
+                                                                %}checked{% endif %}>
+                                                            <label class="form-check-label" for="waSandbox">Sandbox/Test
+                                                                Mode</label>
+                                                        </div>
+                                                        <small class="text-muted">Enable this for testing. Disable for
+                                                            production use.</small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <div class="card mb-3">
+                                                <div class="card-header bg-light">
+                                                    <h6 class="mb-0"><i class="fas fa-key me-2"></i>API Credentials</h6>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">API Key / Account SID</label>
+                                                        <input type="text" name="api_key" class="form-control"
+                                                            placeholder="Enter API Key"
+                                                            value="{{ whatsapp_settings.api_key if whatsapp_settings and whatsapp_settings.api_key else '' }}">
+                                                    </div>
+
+                                                    <div class="mb-3">
+                                                        <label class="form-label">API Secret / Auth Token</label>
+                                                        <input type="password" name="api_secret" class="form-control"
+                                                            placeholder="Enter API Secret"
+                                                            value="{{ whatsapp_settings.api_secret if whatsapp_settings and whatsapp_settings.api_secret else '' }}">
+                                                    </div>
+
+                                                    <div class="mb-3" id="accessTokenField">
+                                                        <label class="form-label">Access Token (for Meta API)</label>
+                                                        <textarea name="access_token" class="form-control" rows="2"
+                                                            placeholder="Enter Access Token">{{ whatsapp_settings.access_token if whatsapp_settings and whatsapp_settings.access_token else '' }}</textarea>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="card mb-3">
+                                                <div class="card-header bg-light">
+                                                    <h6 class="mb-0"><i class="fas fa-phone me-2"></i>Phone Number
+                                                        Configuration</h6>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Phone Number ID</label>
+                                                        <input type="text" name="phone_number_id" class="form-control"
+                                                            placeholder="e.g., 1234567890"
+                                                            value="{{ whatsapp_settings.phone_number_id if whatsapp_settings and whatsapp_settings.phone_number_id else '' }}">
+                                                        <small class="text-muted">Your WhatsApp Business Phone Number
+                                                            ID</small>
+                                                    </div>
+
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Business Account ID</label>
+                                                        <input type="text" name="business_account_id"
+                                                            class="form-control" placeholder="e.g., 9876543210"
+                                                            value="{{ whatsapp_settings.business_account_id if whatsapp_settings and whatsapp_settings.business_account_id else '' }}">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <div class="card mb-3">
+                                                <div class="card-header bg-light">
+                                                    <h6 class="mb-0"><i class="fas fa-sliders-h me-2"></i>Message
+                                                        Settings</h6>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Daily Message Limit</label>
+                                                        <input type="number" name="daily_limit" class="form-control"
+                                                            min="1" max="100000"
+                                                            value="{{ whatsapp_settings.daily_limit if whatsapp_settings and whatsapp_settings.daily_limit else 1000 }}">
+                                                        <small class="text-muted">Maximum messages to send per
+                                                            day</small>
+                                                    </div>
+
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Default Template Name</label>
+                                                        <input type="text" name="default_template_name"
+                                                            class="form-control" placeholder="e.g., school_notification"
+                                                            value="{{ whatsapp_settings.default_template_name if whatsapp_settings and whatsapp_settings.default_template_name else '' }}">
+                                                        <small class="text-muted">Pre-approved WhatsApp template
+                                                            name</small>
+                                                    </div>
+
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Template Language</label>
+                                                        <select name="default_template_language" class="form-select">
+                                                            <option value="en" {% if not whatsapp_settings or
+                                                                whatsapp_settings.default_template_language=='en'
+                                                                %}selected{% endif %}>English</option>
+                                                            <option value="hi" {% if whatsapp_settings and
+                                                                whatsapp_settings.default_template_language=='hi'
+                                                                %}selected{% endif %}>Hindi</option>
+                                                            <option value="ta" {% if whatsapp_settings and
+                                                                whatsapp_settings.default_template_language=='ta'
+                                                                %}selected{% endif %}>Tamil</option>
+                                                            <option value="te" {% if whatsapp_settings and
+                                                                whatsapp_settings.default_template_language=='te'
+                                                                %}selected{% endif %}>Telugu</option>
+                                                            <option value="kn" {% if whatsapp_settings and
+                                                                whatsapp_settings.default_template_language=='kn'
+                                                                %}selected{% endif %}>Kannada</option>
+                                                            <option value="ml" {% if whatsapp_settings and
+                                                                whatsapp_settings.default_template_language=='ml'
+                                                                %}selected{% endif %}>Malayalam</option>
+                                                            <option value="mr" {% if whatsapp_settings and
+                                                                whatsapp_settings.default_template_language=='mr'
+                                                                %}selected{% endif %}>Marathi</option>
+                                                            <option value="bn" {% if whatsapp_settings and
+                                                                whatsapp_settings.default_template_language=='bn'
+                                                                %}selected{% endif %}>Bengali</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {% if whatsapp_settings %}
+                                    <div class="row mb-3">
+                                        <div class="col-md-12">
+                                            <div class="alert alert-light border">
+                                                <h6 class="alert-heading"><i class="fas fa-chart-bar me-2"></i>Usage
+                                                    Statistics</h6>
+                                                <div class="row">
+                                                    <div class="col-md-4">
+                                                        <strong>Messages Sent Today:</strong> {{
+                                                        whatsapp_settings.messages_sent_today or 0 }}
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <strong>Daily Limit:</strong> {{ whatsapp_settings.daily_limit
+                                                        or 1000 }}
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <strong>Last Updated:</strong> {{
+                                                        whatsapp_settings.updated_at.strftime('%d %b %Y %H:%M') if
+                                                        whatsapp_settings.updated_at else 'Never' }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+
+                                    <div class="d-flex justify-content-between">
+                                        <button type="button" class="btn btn-outline-primary"
+                                            onclick="testWhatsAppConnection()">
+                                            <i class="fas fa-plug me-1"></i>Test Connection
+                                        </button>
+                                        <button type="submit" class="btn btn-success">
+                                            <i class="fas fa-save me-1"></i>Save WhatsApp Settings
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- BULK UPLOAD DEPARTMENTS MODAL -->
+<div class="modal fade" id="bulkUploadDepartmentsModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-file-csv me-2"></i>Bulk Upload Departments</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('school.bulk_upload_departments', tenant_slug=school.slug) }}"
+                enctype="multipart/form-data">
+                <div class="modal-body">
+                    <div class="alert alert-info mb-3">
+                        <i class="fas fa-info-circle me-1"></i>Required column: <code>name</code>. Optional:
+                        <code>code</code>, <code>description</code>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Select CSV File<span class="text-danger">*</span></label>
+                        <input type="file" name="csv_file" class="form-control" accept=".csv" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <a href="{{ url_for('school.bulk_upload_departments', tenant_slug=school.slug, template=1) }}"
+                        class="btn btn-outline-secondary">
+                        <i class="fas fa-download me-1"></i>Template
+                    </a>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success"><i class="fas fa-upload me-1"></i>Upload</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- BULK UPLOAD DESIGNATIONS MODAL -->
+<div class="modal fade" id="bulkUploadDesignationsModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-file-csv me-2"></i>Bulk Upload Designations</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('school.bulk_upload_designations', tenant_slug=school.slug) }}"
+                enctype="multipart/form-data">
+                <div class="modal-body">
+                    <div class="alert alert-info mb-3">
+                        <i class="fas fa-info-circle me-1"></i>Required: <code>name</code>. Optional: <code>code</code>,
+                        <code>hierarchy_level</code>, <code>description</code>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Select CSV File<span class="text-danger">*</span></label>
+                        <input type="file" name="csv_file" class="form-control" accept=".csv" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <a href="{{ url_for('school.bulk_upload_designations', tenant_slug=school.slug, template=1) }}"
+                        class="btn btn-outline-secondary">
+                        <i class="fas fa-download me-1"></i>Template
+                    </a>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success"><i class="fas fa-upload me-1"></i>Upload</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- BULK UPLOAD SUBJECTS MODAL -->
+<div class="modal fade" id="bulkUploadSubjectsModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-file-csv me-2"></i>Bulk Upload Subjects</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('school.bulk_upload_subjects', tenant_slug=school.slug) }}"
+                enctype="multipart/form-data">
+                <div class="modal-body">
+                    <div class="alert alert-info mb-3">
+                        <i class="fas fa-info-circle me-1"></i>Required: <code>name</code>. Optional: <code>code</code>,
+                        <code>subject_type</code> (Academic/Co-curricular/Extra-curricular), <code>description</code>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Select CSV File<span class="text-danger">*</span></label>
+                        <input type="file" name="csv_file" class="form-control" accept=".csv" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <a href="{{ url_for('school.bulk_upload_subjects', tenant_slug=school.slug, template=1) }}"
+                        class="btn btn-outline-secondary">
+                        <i class="fas fa-download me-1"></i>Template
+                    </a>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success"><i class="fas fa-upload me-1"></i>Upload</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ADD DEPARTMENT MODAL -->
+<div class="modal fade" id="addDepartmentModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-building me-2"></i>Add Department</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('school.add_department', tenant_slug=school.slug) }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Name<span class="text-danger">*</span></label>
+                        <input type="text" name="name" class="form-control" required
+                            placeholder="e.g., Science, Arts, Commerce">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Code</label>
+                        <input type="text" name="code" class="form-control" placeholder="e.g., SCI, ART, COM"
+                            maxlength="20">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea name="description" class="form-control" rows="3"
+                            placeholder="Brief description of the department"></textarea>
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" name="is_active" class="form-check-input" id="deptActive" checked>
+                        <label class="form-check-label" for="deptActive">Active</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Department</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- EDIT DEPARTMENT MODAL -->
+<div class="modal fade" id="editDepartmentModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-edit me-2"></i>Edit Department</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" id="editDepartmentForm">
+                <div class="modal-body">
+                    <input type="hidden" name="department_id" id="edit_dept_id">
+                    <div class="mb-3">
+                        <label class="form-label">Name<span class="text-danger">*</span></label>
+                        <input type="text" name="name" id="edit_dept_name" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Code</label>
+                        <input type="text" name="code" id="edit_dept_code" class="form-control" maxlength="20">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea name="description" id="edit_dept_description" class="form-control"
+                            rows="3"></textarea>
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" name="is_active" id="edit_dept_active" class="form-check-input">
+                        <label class="form-check-label" for="edit_dept_active">Active</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Update Department</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ADD DESIGNATION MODAL -->
+<div class="modal fade" id="addDesignationModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-user-tie me-2"></i>Add Designation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('school.add_designation', tenant_slug=school.slug) }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Name<span class="text-danger">*</span></label>
+                        <input type="text" name="name" class="form-control" required
+                            placeholder="e.g., PGT, TGT, Principal">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Code</label>
+                        <input type="text" name="code" class="form-control" placeholder="e.g., PGT, TGT, HOD"
+                            maxlength="20">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Hierarchy Level</label>
+                        <input type="number" name="hierarchy_level" class="form-control"
+                            placeholder="1 (highest) - 10 (lowest)" min="1" max="10">
+                        <small class="text-muted">Lower number = Higher position (1=Principal, 2=HOD, 3=Teacher)</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea name="description" class="form-control" rows="3"
+                            placeholder="Brief description of the designation"></textarea>
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" name="is_active" class="form-check-input" id="desigActive" checked>
+                        <label class="form-check-label" for="desigActive">Active</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Designation</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- EDIT DESIGNATION MODAL -->
+<div class="modal fade" id="editDesignationModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-edit me-2"></i>Edit Designation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" id="editDesignationForm">
+                <div class="modal-body">
+                    <input type="hidden" name="designation_id" id="edit_desig_id">
+                    <div class="mb-3">
+                        <label class="form-label">Name<span class="text-danger">*</span></label>
+                        <input type="text" name="name" id="edit_desig_name" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Code</label>
+                        <input type="text" name="code" id="edit_desig_code" class="form-control" maxlength="20">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Hierarchy Level</label>
+                        <input type="number" name="hierarchy_level" id="edit_desig_hierarchy" class="form-control"
+                            min="1" max="10">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea name="description" id="edit_desig_description" class="form-control"
+                            rows="3"></textarea>
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" name="is_active" id="edit_desig_active" class="form-check-input">
+                        <label class="form-check-label" for="edit_desig_active">Active</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Update Designation</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ADD SUBJECT MODAL -->
+<div class="modal fade" id="addSubjectModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-book me-2"></i>Add Subject</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('school.add_subject_master', tenant_slug=school.slug) }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Name<span class="text-danger">*</span></label>
+                        <input type="text" name="name" class="form-control" required
+                            placeholder="e.g., Mathematics, Physics, English">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Code</label>
+                        <input type="text" name="code" class="form-control" placeholder="e.g., MATH, PHY, ENG"
+                            maxlength="20">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Subject Type<span class="text-danger">*</span></label>
+                        <select name="subject_type" class="form-control" required>
+                            <option value="Academic">Academic</option>
+                            <option value="Co-curricular">Co-curricular</option>
+                            <option value="Extra-curricular">Extra-curricular</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea name="description" class="form-control" rows="3"
+                            placeholder="Brief description of the subject"></textarea>
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" name="is_active" class="form-check-input" id="subjActive" checked>
+                        <label class="form-check-label" for="subjActive">Active</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Subject</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- EDIT SUBJECT MODAL -->
+<div class="modal fade" id="editSubjectModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-edit me-2"></i>Edit Subject</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" id="editSubjectForm">
+                <div class="modal-body">
+                    <input type="hidden" name="subject_id" id="edit_subj_id">
+                    <div class="mb-3">
+                        <label class="form-label">Name<span class="text-danger">*</span></label>
+                        <input type="text" name="name" id="edit_subj_name" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Code</label>
+                        <input type="text" name="code" id="edit_subj_code" class="form-control" maxlength="20">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Subject Type<span class="text-danger">*</span></label>
+                        <select name="subject_type" id="edit_subj_type" class="form-control" required>
+                            <option value="Academic">Academic</option>
+                            <option value="Co-curricular">Co-curricular</option>
+                            <option value="Extra-curricular">Extra-curricular</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea name="description" id="edit_subj_description" class="form-control"
+                            rows="3"></textarea>
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" name="is_active" id="edit_subj_active" class="form-check-input">
+                        <label class="form-check-label" for="edit_subj_active">Active</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Update Subject</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- BULK UPLOAD CLASSES MODAL -->
+<div class="modal fade" id="bulkUploadClassesModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-file-csv me-2"></i>Bulk Upload Classes</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('school.bulk_upload_classes', tenant_slug=school.slug) }}"
+                enctype="multipart/form-data">
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Upload a CSV file with class details. The file should have the following columns:
+                    </div>
+
+                    <div class="table-responsive mb-3">
+                        <table class="table table-sm table-bordered">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Column</th>
+                                    <th>Required</th>
+                                    <th>Example</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>class_name</code></td>
+                                    <td><span class="badge badge-danger">Yes</span></td>
+                                    <td>10, 11, 12</td>
+                                </tr>
+                                <tr>
+                                    <td><code>section</code></td>
+                                    <td><span class="badge badge-danger">Yes</span></td>
+                                    <td>A, B, C</td>
+                                </tr>
+                                <tr>
+                                    <td><code>description</code></td>
+                                    <td><span class="badge badge-secondary">No</span></td>
+                                    <td>Science Section</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Select CSV File<span class="text-danger">*</span></label>
+                        <input type="file" name="csv_file" class="form-control" accept=".csv" required>
+                        <small class="text-muted">Only .csv files are accepted</small>
+                    </div>
+
+                    <div class="alert alert-warning mb-0">
+                        <i class="fas fa-exclamation-triangle me-1"></i>
+                        <strong>Note:</strong> Duplicate classes (same class_name + section) will be skipped.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <a href="{{ url_for('school.bulk_upload_classes', tenant_slug=school.slug, template=1) }}"
+                        class="btn btn-outline-secondary">
+                        <i class="fas fa-download me-1"></i>Download Template
+                    </a>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-upload me-1"></i>Upload
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ADD CLASS MODAL -->
+<div class="modal fade" id="addClassModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-chalkboard me-2"></i>Add Class</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('school.add_class', tenant_slug=school.slug) }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Class Name<span class="text-danger">*</span></label>
+                        <input type="text" name="class_name" class="form-control" required
+                            placeholder="e.g., Class 1, Class 10, Grade 12">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Section</label>
+                        <input type="text" name="section" class="form-control" placeholder="e.g., A, B, C"
+                            maxlength="10">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea name="description" class="form-control" rows="3"
+                            placeholder="Brief description of the class"></textarea>
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" name="is_active" class="form-check-input" id="classActive" checked>
+                        <label class="form-check-label" for="classActive">Active</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Class</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- EDIT CLASS MODAL -->
+<div class="modal fade" id="editClassModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-edit me-2"></i>Edit Class</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" id="editClassForm">
+                <div class="modal-body">
+                    <input type="hidden" name="class_id" id="edit_class_id">
+                    <div class="mb-3">
+                        <label class="form-label">Class Name<span class="text-danger">*</span></label>
+                        <input type="text" name="class_name" id="edit_class_name" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Section</label>
+                        <input type="text" name="section" id="edit_class_section" class="form-control" maxlength="10">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea name="description" id="edit_class_description" class="form-control"
+                            rows="3"></textarea>
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" name="is_active" id="edit_class_active" class="form-check-input">
+                        <label class="form-check-label" for="edit_class_active">Active</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Update Class</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ADD ACADEMIC SESSION MODAL -->
+<div class="modal fade" id="addSessionModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-calendar-alt me-2"></i>Add Academic Session</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('school.add_academic_session', tenant_slug=school.slug) }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Session Name<span class="text-danger">*</span></label>
+                        <input type="text" name="session_name" class="form-control" required
+                            placeholder="e.g., 2024-25, 2025-26">
+                        <small class="text-muted">Format: YYYY-YY</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Start Date<span class="text-danger">*</span></label>
+                        <input type="date" name="start_date" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">End Date<span class="text-danger">*</span></label>
+                        <input type="date" name="end_date" class="form-control" required>
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" name="is_current" class="form-check-input" id="sessionCurrent">
+                        <label class="form-check-label" for="sessionCurrent">Set as Current Session</label>
+                        <small class="d-block text-muted">Only one session can be current at a time</small>
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" name="is_active" class="form-check-input" id="sessionActive" checked>
+                        <label class="form-check-label" for="sessionActive">Active</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Session</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- EDIT ACADEMIC SESSION MODAL -->
+<div class="modal fade" id="editSessionModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-edit me-2"></i>Edit Academic Session</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" id="editSessionForm">
+                <div class="modal-body">
+                    <input type="hidden" name="session_id" id="edit_session_id">
+                    <div class="mb-3">
+                        <label class="form-label">Session Name<span class="text-danger">*</span></label>
+                        <input type="text" name="session_name" id="edit_session_name" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Start Date<span class="text-danger">*</span></label>
+                        <input type="date" name="start_date" id="edit_session_start" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">End Date<span class="text-danger">*</span></label>
+                        <input type="date" name="end_date" id="edit_session_end" class="form-control" required>
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" name="is_current" id="edit_session_current" class="form-check-input">
+                        <label class="form-check-label" for="edit_session_current">Set as Current Session</label>
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" name="is_active" id="edit_session_active" class="form-check-input">
+                        <label class="form-check-label" for="edit_session_active">Active</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Update Session</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block additional_js %}
+<script src="{{ url_for('static', filename='akademi/vendor/datatables/js/jquery.dataTables.min.js') }}"></script>
+<script src="{{ url_for('static', filename='akademi/vendor/sweetalert2/dist/sweetalert2.min.js') }}"></script>
+<script src="{{ url_for('static', filename='akademi/vendor/toastr/js/toastr.min.js') }}"></script>
+
+<script>
+    $(document).ready(function () {
+        // Initialize DataTables
+        $('#departmentsTable, #designationsTable, #subjectsTable, #classesTable, #sessionsTable').DataTable({
+            pageLength: 10,
+            ordering: true,
+            searching: true,
+            language: {
+                search: "Search:",
+                lengthMenu: "Show _MENU_ entries",
+                info: "Showing _START_ to _END_ of _TOTAL_ entries",
+                paginate: {
+                    first: "First",
+                    last: "Last",
+                    next: "Next",
+                    previous: "Previous"
+                }
+            }
+        });
+    });
+
+    // DEPARTMENT FUNCTIONS
+    function editDepartment(id, name, code, description, isActive) {
+        $('#edit_dept_id').val(id);
+        $('#edit_dept_name').val(name);
+        $('#edit_dept_code').val(code);
+        $('#edit_dept_description').val(description);
+        $('#edit_dept_active').prop('checked', isActive);
+        $('#editDepartmentForm').attr('action', "{{ url_for('school.edit_department', tenant_slug=school.slug, id=0) }}".replace('/0', '/' + id));
+        $('#editDepartmentModal').modal('show');
+    }
+
+    function deleteDepartment(id, name) {
+        Swal.fire({
+            title: 'Delete Department?',
+            text: `Are you sure you want to delete "${name}"? This cannot be undone!`,
+            type: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, delete it!'
+        }).then((result) => {
+            if (result.value) {
+                window.location.href = "{{ url_for('school.delete_department', tenant_slug=school.slug, id=0) }}".replace('/0', '/' + id);
+            }
+        });
+    }
+
+    // DESIGNATION FUNCTIONS
+    function editDesignation(id, name, code, hierarchy, description, isActive) {
+        $('#edit_desig_id').val(id);
+        $('#edit_desig_name').val(name);
+        $('#edit_desig_code').val(code);
+        $('#edit_desig_hierarchy').val(hierarchy);
+        $('#edit_desig_description').val(description);
+        $('#edit_desig_active').prop('checked', isActive);
+        $('#editDesignationForm').attr('action', "{{ url_for('school.edit_designation', tenant_slug=school.slug, id=0) }}".replace('/0', '/' + id));
+        $('#editDesignationModal').modal('show');
+    }
+
+    function deleteDesignation(id, name) {
+        Swal.fire({
+            title: 'Delete Designation?',
+            text: `Are you sure you want to delete "${name}"? This cannot be undone!`,
+            type: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, delete it!'
+        }).then((result) => {
+            if (result.value) {
+                window.location.href = "{{ url_for('school.delete_designation', tenant_slug=school.slug, id=0) }}".replace('/0', '/' + id);
+            }
+        });
+    }
+
+    // SUBJECT FUNCTIONS
+    function editSubject(id, name, code, type, description, isActive) {
+        $('#edit_subj_id').val(id);
+        $('#edit_subj_name').val(name);
+        $('#edit_subj_code').val(code);
+        $('#edit_subj_type').val(type);
+        $('#edit_subj_description').val(description);
+        $('#edit_subj_active').prop('checked', isActive);
+        $('#editSubjectForm').attr('action', "{{ url_for('school.edit_subject_master', tenant_slug=school.slug, id=0) }}".replace('/0', '/' + id));
+        $('#editSubjectModal').modal('show');
+    }
+
+    function deleteSubject(id, name) {
+        Swal.fire({
+            title: 'Delete Subject?',
+            text: `Are you sure you want to delete "${name}"? This cannot be undone!`,
+            type: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, delete it!'
+        }).then((result) => {
+            if (result.value) {
+                window.location.href = "{{ url_for('school.delete_subject_master', tenant_slug=school.slug, id=0) }}".replace('/0', '/' + id);
+            }
+        });
+    }
+
+    // CLASS FUNCTIONS
+    function editClass(id, className, section, description, isActive) {
+        $('#edit_class_id').val(id);
+        $('#edit_class_name').val(className);
+        $('#edit_class_section').val(section);
+        $('#edit_class_description').val(description);
+        $('#edit_class_active').prop('checked', isActive);
+        $('#editClassForm').attr('action', "{{ url_for('school.update_class', tenant_slug=school.slug, id=0) }}".replace('/0', '/' + id));
+        $('#editClassModal').modal('show');
+    }
+
+    function deleteClass(id, className, section) {
+        const classFullName = section ? `${className} - ${section}` : className;
+        Swal.fire({
+            title: 'Delete Class?',
+            text: `Are you sure you want to delete "${classFullName}"?`,
+            type: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, delete it!'
+        }).then((result) => {
+            if (result.value) {
+                // Create and submit a form for POST request
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = "{{ url_for('school.delete_class', tenant_slug=school.slug, id=0) }}".replace('/0', '/' + id);
+                document.body.appendChild(form);
+                form.submit();
+            }
+        });
+    }
+
+    // ACADEMIC SESSION FUNCTIONS
+    function editSession(id, name, startDate, endDate, isCurrent, isActive) {
+        $('#edit_session_id').val(id);
+        $('#edit_session_name').val(name);
+        $('#edit_session_start').val(startDate);
+        $('#edit_session_end').val(endDate);
+        $('#edit_session_current').prop('checked', isCurrent);
+        $('#edit_session_active').prop('checked', isActive);
+        $('#editSessionForm').attr('action', "{{ url_for('school.edit_academic_session', tenant_slug=school.slug, id=0) }}".replace('/0', '/' + id));
+        $('#editSessionModal').modal('show');
+    }
+
+    function deleteSession(id, name) {
+        Swal.fire({
+            title: 'Delete Academic Session?',
+            text: `Are you sure you want to delete "${name}"? This will affect all students and exams in this session!`,
+            type: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, delete it!'
+        }).then((result) => {
+            if (result.value) {
+                window.location.href = "{{ url_for('school.delete_academic_session', tenant_slug=school.slug, id=0) }}".replace('/0', '/' + id);
+            }
+        });
+    }
+
+    function setCurrentSession(id, name) {
+        Swal.fire({
+            title: 'Set Current Session?',
+            text: `Set "${name}" as the current academic session? This will make other sessions non-current.`,
+            type: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#28a745',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, set as current!'
+        }).then((result) => {
+            if (result.value) {
+                window.location.href = "{{ url_for('school.set_current_session', tenant_slug=school.slug, id=0) }}".replace('/0', '/' + id);
+            }
+        });
+    }
+
+    // WHATSAPP SETTINGS FUNCTIONS
+    function testWhatsAppConnection() {
+        const btn = event.target;
+        const originalHtml = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Testing...';
+        btn.disabled = true;
+
+        fetch("{{ url_for('school.test_whatsapp_connection', tenant_slug=school.slug) }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                provider: document.getElementById('waProvider').value,
+                api_key: document.querySelector('[name="api_key"]').value,
+                api_secret: document.querySelector('[name="api_secret"]').value,
+                access_token: document.querySelector('[name="access_token"]').value,
+                phone_number_id: document.querySelector('[name="phone_number_id"]').value
+            })
+        })
+            .then(response => response.json())
+            .then(data => {
+                btn.innerHTML = originalHtml;
+                btn.disabled = false;
+
+                if (data.success) {
+                    Swal.fire({
+                        title: 'Connection Successful!',
+                        text: data.message || 'WhatsApp API connection is working properly.',
+                        type: 'success',
+                        confirmButtonColor: '#28a745'
+                    });
+                } else {
+                    Swal.fire({
+                        title: 'Connection Failed',
+                        text: data.message || 'Unable to connect to WhatsApp API. Please check your credentials.',
+                        type: 'error',
+                        confirmButtonColor: '#d33'
+                    });
+                }
+            })
+            .catch(error => {
+                btn.innerHTML = originalHtml;
+                btn.disabled = false;
+                Swal.fire({
+                    title: 'Error',
+                    text: 'An error occurred while testing the connection.',
+                    type: 'error',
+                    confirmButtonColor: '#d33'
+                });
+            });
+    }
+
+    // Show/hide access token field based on provider
+    document.getElementById('waProvider').addEventListener('change', function () {
+        const accessTokenField = document.getElementById('accessTokenField');
+        if (this.value === 'Meta Cloud API') {
+            accessTokenField.style.display = 'block';
+        } else {
+            accessTokenField.style.display = 'none';
+        }
+    });
+</script>
+{% endblock %}

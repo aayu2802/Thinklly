@@ -1,0 +1,333 @@
+{% extends 'akademi/elements/layouts/admin.html' %}
+		
+{% block additional_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename=  'akademi/vendor/wow-master/css/libs/animate.css')}}">
+<link rel="stylesheet" href="{{ url_for('static', filename=  'akademi/vendor/bootstrap-datepicker-master/css/bootstrap-datepicker.min.css')}}">
+<link rel="stylesheet" href="{{ url_for('static', filename=  'akademi/vendor/datatables/css/jquery.dataTables.min.css')}}">
+<link rel="stylesheet" href="{{ url_for('static', filename=  'akademi/vendor/jquery-nice-select/css/nice-select.css')}}">
+{% endblock %}
+
+{% block content %}
+<!--**********************************
+    Content body start
+***********************************-->
+<div class="content-body">
+    <div class="container-fluid">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+        
+        <!-- Bulk CSV upload: download template and upload file -->
+        <div class="row mb-3">
+            <div class="col-xl-12">
+                <div class="card">
+                    <div class="card-body d-flex align-items-center justify-content-between">
+                        <div>
+                            <h5 class="mb-0">Bulk Student Upload</h5>
+                            <small class="text-muted">Download template CSV, edit and upload to add many students at once.</small>
+                        </div>
+                        <div>
+                            <form id="bulkStudentUploadForm" action="{{ url_for('school.bulk_upload_students', tenant_slug=school.slug) }}" method="POST" enctype="multipart/form-data" class="mb-2">
+                                <input type="file" name="csv_file" accept=".csv" class="form-control form-control-sm" required>
+                            </form>
+                            <div class="d-flex align-items-center" style="gap:8px;">
+                                <a href="{{ url_for('school.download_student_template', tenant_slug=school.slug) }}" class="btn btn-outline-primary btn-sm">Download CSV Template</a>
+                                <button class="btn btn-primary btn-sm" type="button" onclick="document.getElementById('bulkStudentUploadForm').submit();">Upload CSV</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <form method="POST" enctype="multipart/form-data" id="addStudentForm">
+        <div class="row">
+            <div class="col-xl-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Student Personal Details</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-xl-6 col-sm-6">
+                                <div class="mb-3">
+                                    <label for="admission_number" class="form-label text-primary">Admission Number<span class="required">*</span></label>
+                                    <input type="text" class="form-control" id="admission_number" name="admission_number" placeholder="STU001" maxlength="20" required>
+                                    <small class="form-text text-muted">Unique admission number</small>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="first_name" class="form-label text-primary">First Name<span class="required">*</span></label>
+                                    <input type="text" class="form-control" id="first_name" name="first_name" placeholder="John" maxlength="50" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="last_name" class="form-label text-primary">Last Name<span class="required">*</span></label>
+                                    <input type="text" class="form-control" id="last_name" name="last_name" placeholder="Doe" maxlength="50" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="gender" class="form-label text-primary">Gender<span class="required">*</span></label>
+                                    <select class="form-control" id="gender" name="gender" required>
+                                        <option value="">Select Gender</option>
+                                        <option value="Male">Male</option>
+                                        <option value="Female">Female</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="date_of_birth" class="form-label text-primary">Date of Birth<span class="required">*</span></label>
+                                    <input class="form-control" type="text" id="date_of_birth" name="date_of_birth" required>
+                                    <small class="form-text text-muted">Student age should be appropriate for the class</small>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="category" class="form-label text-primary">Category</label>
+                                    <select class="form-control" id="category" name="category">
+                                        <option value="General" selected>General</option>
+                                        <option value="SC">SC</option>
+                                        <option value="ST">ST</option>
+                                        <option value="OBC">OBC</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="blood_group" class="form-label text-primary">Blood Group</label>
+                                    <select class="form-control" id="blood_group" name="blood_group">
+                                        <option value="">Select Blood Group</option>
+                                        <option value="A+">A+</option>
+                                        <option value="A-">A-</option>
+                                        <option value="B+">B+</option>
+                                        <option value="B-">B-</option>
+                                        <option value="AB+">AB+</option>
+                                        <option value="AB-">AB-</option>
+                                        <option value="O+">O+</option>
+                                        <option value="O-">O-</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="aadhar_number" class="form-label text-primary">Aadhar Number</label>
+                                    <input type="text" class="form-control" id="aadhar_number" name="aadhar_number" placeholder="1234 5678 9012" maxlength="12">
+                                    <small class="form-text text-muted">Exactly 12 digits</small>
+                                </div>
+                            </div>
+                            <div class="col-xl-6 col-sm-6">
+                                <div class="mb-3">
+                                    <label class="form-label text-primary">Photo</label>
+                                    <div class="avatar-upload">
+                                        <div class="avatar-preview">
+                                            <div id="imagePreview" style="background-image: url({{ url_for('static', filename=  'akademi/images/no-img-avatar.png')}});"> 			
+                                            </div>
+                                        </div>
+                                        <div class="change-btn mt-1">
+                                            <input type='file' class="form-control d-none" id="imageUpload" name="photo" accept=".png, .jpg, .jpeg">
+                                            <label for="imageUpload" class="dlab-upload mb-0 btn btn-primary btn-sm">Choose File</label>
+                                            <a href="javascript:void(0);" class="btn btn-danger light remove-img ms-2 btn-sm">Remove</a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="email" class="form-label text-primary">Email</label>
+                                    <input type="email" class="form-control" id="email" name="email" placeholder="student@example.com" maxlength="120">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="phone" class="form-label text-primary">Phone Number</label>
+                                    <input type="text" class="form-control" id="phone" name="phone" placeholder="9876543210" maxlength="20">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="address" class="form-label text-primary">Address</label>
+                                    <textarea class="form-control" id="address" name="address" rows="3"></textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="city" class="form-label text-primary">City</label>
+                                    <input type="text" class="form-control" id="city" name="city" placeholder="New Delhi" maxlength="50">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="state" class="form-label text-primary">Stat</label>
+                                    <select class="form-control" id="state" name="state">
+                                        <option value="">Select State</option>
+                                        <option value="Andhra Pradesh">Andhra Pradesh</option>
+                                        <option value="Arunachal Pradesh">Arunachal Pradesh</option>
+                                        <option value="Assam">Assam</option>
+                                        <option value="Bihar">Bihar</option>
+                                        <option value="Chhattisgarh">Chhattisgarh</option>
+                                        <option value="Goa">Goa</option>
+                                        <option value="Gujarat">Gujarat</option>
+                                        <option value="Haryana">Haryana</option>
+                                        <option value="Himachal Pradesh">Himachal Pradesh</option>
+                                        <option value="Jharkhand">Jharkhand</option>
+                                        <option value="Karnataka">Karnataka</option>
+                                        <option value="Kerala">Kerala</option>
+                                        <option value="Madhya Pradesh">Madhya Pradesh</option>
+                                        <option value="Maharashtra">Maharashtra</option>
+                                        <option value="Manipur">Manipur</option>
+                                        <option value="Meghalaya">Meghalaya</option>
+                                        <option value="Mizoram">Mizoram</option>
+                                        <option value="Nagaland">Nagaland</option>
+                                        <option value="Odisha">Odisha</option>
+                                        <option value="Punjab">Punjab</option>
+                                        <option value="Rajasthan">Rajasthan</option>
+                                        <option value="Sikkim">Sikkim</option>
+                                        <option value="Tamil Nadu">Tamil Nadu</option>
+                                        <option value="Telangana">Telangana</option>
+                                        <option value="Tripura">Tripura</option>
+                                        <option value="Uttar Pradesh">Uttar Pradesh</option>
+                                        <option value="Uttarakhand">Uttarakhand</option>
+                                        <option value="West Bengal">West Bengal</option>
+                                        <option value="Andaman and Nicobar Islands">Andaman and Nicobar Islands</option>
+                                        <option value="Chandigarh">Chandigarh</option>
+                                        <option value="Dadra and Nagar Haveli and Daman and Diu">Dadra and Nagar Haveli and Daman and Diu</option>
+                                        <option value="Delhi">Delhi</option>
+                                        <option value="Jammu and Kashmir">Jammu and Kashmir</option>
+                                        <option value="Ladakh">Ladakh</option>
+                                        <option value="Lakshadweep">Lakshadweep</option>
+                                        <option value="Puducherry">Puducherry</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="pincode" class="form-label text-primary">Pincode</label>
+                                    <input type="text" class="form-control" id="pincode" name="pincode" placeholder="110001" maxlength="10">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Guardian & Academic Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-xl-6 col-sm-6">
+                            <div class="mb-3">
+                                <label for="father_name" class="form-label text-primary">Father's Name<span class="required">*</span></label>
+                                <input type="text" class="form-control" id="father_name" name="father_name" placeholder="John Doe Sr." maxlength="100" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="mother_name" class="form-label text-primary">Mother's Name</label>
+                                <input type="text" class="form-control" id="mother_name" name="mother_name" placeholder="Jane Doe" maxlength="100">
+                            </div>
+                            <div class="mb-3">
+                                <label for="guardian_phone" class="form-label text-primary">Guardian Phone<span class="required">*</span></label>
+                                <input type="text" class="form-control" id="guardian_phone" name="guardian_phone" placeholder="9876543210" maxlength="20" required>
+                                <small class="form-text text-muted">Primary contact number</small>
+                            </div>
+                            <div class="mb-3">
+                                <label for="guardian_email" class="form-label text-primary">Guardian Email</label>
+                                <input type="email" class="form-control" id="guardian_email" name="guardian_email" placeholder="parent@example.com" maxlength="120">
+                            </div>
+                        </div>
+                        <div class="col-xl-6 col-sm-6">
+                            <div class="mb-3">
+                                <label for="class_id" class="form-label text-primary">Class<span class="required">*</span></label>
+                                <select class="form-control" id="class_id" name="class_id" required>
+                                    <option value="">Select Class</option>
+                                    {% if classes %}
+                                        {% for class in classes %}
+                                            <option value="{{ class.id }}">{{ class.class_name }}-{{ class.section }}</option>
+                                        {% endfor %}
+                                    {% endif %}
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="session_id" class="form-label text-primary">Academic Session<span class="required">*</span></label>
+                                <select class="form-control" id="session_id" name="session_id" required>
+                                    <option value="">Select Session</option>
+                                    {% if academic_sessions %}
+                                        {% for session in academic_sessions %}
+                                            <option value="{{ session.id }}" {% if session.is_current %}selected{% endif %}>{{ session.session_name }}</option>
+                                        {% endfor %}
+                                    {% endif %}
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="roll_number" class="form-label text-primary">Roll Number</label>
+                                <input type="text" class="form-control" id="roll_number" name="roll_number" placeholder="01" maxlength="10">
+                            </div>
+                            <div class="mb-3">
+                                <label for="admission_date" class="form-label text-primary">Admission Date<span class="required">*</span></label>
+                                <input type="text" class="form-control" id="admission_date" name="admission_date" required>
+                                <small class="form-text text-muted">Date of admission to school</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="float-end">
+                        <button class="btn btn-outline-primary me-3" type="button">Save as Draft</button>
+                        <button class="btn btn-primary" type="submit">Save Student</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </form>
+</div>
+
+<!--**********************************
+    Content body end
+***********************************-->
+{% endblock %}
+{% block additional_js %}
+<script src="{{ url_for('static', filename='akademi/vendor/bootstrap-datepicker-master/js/bootstrap-datepicker.min.js')}}"></script>
+<script>
+$(function () {
+    $("#date_of_birth, #admission_date").datepicker({ 
+        autoclose: true, 
+        todayHighlight: true,
+        format: 'yyyy-mm-dd'
+    });
+});
+
+// Image preview functionality
+function readURL(input) {
+    if (input.files && input.files[0]) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            $('#imagePreview').css('background-image', 'url('+e.target.result +')');
+            $('#imagePreview').hide();
+            $('#imagePreview').fadeIn(650);
+        }
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+$("#imageUpload").change(function() {
+    readURL(this);
+});
+
+$('.remove-img').on('click', function() {
+    var imageUrl = "{{ url_for('static', filename=  'akademi/images/no-img-avatar.png')}}";
+    $('.avatar-preview, #imagePreview').removeAttr('style');
+    $('#imagePreview').css('background-image', 'url(' + imageUrl + ')');
+    $('#imageUpload').val('');
+});
+
+// Form validation
+$('#addStudentForm').on('submit', function(e) {
+    var admissionNumber = $('#admission_number').val().trim();
+    var firstName = $('#first_name').val().trim();
+    var lastName = $('#last_name').val().trim();
+    var fatherName = $('#father_name').val().trim();
+    var guardianPhone = $('#guardian_phone').val().trim();
+    
+    if (!admissionNumber || !firstName || !lastName || !fatherName || !guardianPhone) {
+        e.preventDefault();
+        alert('Please fill all required fields marked with *');
+        return false;
+    }
+    
+    // Validate Aadhar number if provided
+    var aadhar = $('#aadhar_number').val().replace(/\s/g, '');
+    if (aadhar && aadhar.length !== 12) {
+        e.preventDefault();
+        alert('Aadhar number must be exactly 12 digits');
+        $('#aadhar_number').focus();
+        return false;
+    }
+});
+</script>
+{% endblock %}

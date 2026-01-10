@@ -1,0 +1,122 @@
+{% extends 'akademi/elements/layouts/admin.html' %}
+
+{% block title %}Library Settings{% endblock %}
+
+{% block content %}
+<!--**********************************
+    Content body start
+***********************************-->
+<div class="content-body">
+    <div class="container-fluid">
+        <div class="row page-titles">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('school.dashboard', tenant_slug=tenant_slug) }}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('school.library_dashboard', tenant_slug=tenant_slug) }}">Library</a></li>
+                <li class="breadcrumb-item active">Settings</li>
+            </ol>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title">Library Configuration</h4>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" action="{{ url_for('school.library_settings', tenant_slug=tenant_slug) }}">
+                            <h5 class="mb-3">Issue Rules</h5>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="max_books_per_student" class="form-label">Maximum Books per Student</label>
+                                    <input type="number" class="form-control" id="max_books_per_student" 
+                                           name="max_books_per_student" value="{{ settings.max_books_per_student }}" min="1" max="10">
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="issue_duration_days" class="form-label">Issue Duration (Days)</label>
+                                    <input type="number" class="form-control" id="issue_duration_days" 
+                                           name="issue_duration_days" value="{{ settings.issue_duration_days }}" min="1" max="365">
+                                </div>
+                            </div>
+
+                            <hr>
+
+                            <h5 class="mb-3">Fine Configuration</h5>
+
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <label for="fine_per_day" class="form-label">Fine per Day (₹)</label>
+                                    <input type="number" class="form-control" id="fine_per_day" 
+                                           name="fine_per_day" value="{{ settings.fine_per_day }}" step="0.01" min="0">
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label for="max_fine_amount" class="form-label">Maximum Fine (₹)</label>
+                                    <input type="number" class="form-control" id="max_fine_amount" 
+                                           name="max_fine_amount" value="{{ settings.max_fine_amount }}" step="0.01" min="0">
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label for="grace_period_days" class="form-label">Grace Period (Days)</label>
+                                    <input type="number" class="form-control" id="grace_period_days" 
+                                           name="grace_period_days" value="{{ settings.grace_period_days }}" min="0" max="30">
+                                </div>
+                            </div>
+
+                            <div class="alert alert-info">
+                                <i class="bi bi-info-circle"></i>
+                                <strong>Note:</strong> Grace period allows students extra days before fine is charged.
+                            </div>
+
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-save"></i> Save Settings
+                                </button>
+                                <a href="{{ url_for('school.library_dashboard', tenant_slug=tenant_slug) }}" class="btn btn-secondary">
+                                    <i class="bi bi-x-circle"></i> Cancel
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="card-title text-white mb-0">Current Settings Summary</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>Max Books:</span>
+                                <strong>{{ settings.max_books_per_student }}</strong>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>Issue Duration:</span>
+                                <strong>{{ settings.issue_duration_days }} days</strong>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>Fine/Day:</span>
+                                <strong>₹{{ settings.fine_per_day }}</strong>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>Max Fine:</span>
+                                <strong>₹{{ settings.max_fine_amount }}</strong>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>Grace Period:</span>
+                                <strong>{{ settings.grace_period_days }} days</strong>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!--**********************************
+    Content body end
+***********************************-->
+{% endblock %}

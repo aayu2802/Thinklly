@@ -1,0 +1,511 @@
+{% extends 'akademi/elements/layouts/admin.html' %}
+	
+{% block additional_css %}
+<style>
+.student-info-card {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    color: white;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 25px;
+}
+
+.student-info-card h5 {
+    color: white;
+    margin-bottom: 15px;
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.2);
+}
+
+.info-item:last-child {
+    border-bottom: none;
+}
+
+.info-label {
+    font-weight: 500;
+    opacity: 0.9;
+}
+
+.info-value {
+    font-weight: 600;
+}
+
+.fine-type-card {
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+}
+
+.fine-type-card:hover {
+    border-color: #dc3545;
+    background: #fff5f5;
+}
+
+.fine-type-card.selected {
+    border-color: #dc3545;
+    background: #fff5f5;
+}
+
+.fine-type-card .type-icon {
+    font-size: 2rem;
+    color: #dc3545;
+    margin-right: 15px;
+}
+
+.fine-type-card input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+}
+
+.fine-preview-box {
+    background: #fff3cd;
+    border-left: 4px solid #ffc107;
+    padding: 20px;
+    border-radius: 5px;
+    margin: 20px 0;
+}
+
+.fine-preview-box h5 {
+    color: #856404;
+    margin-bottom: 15px;
+}
+
+.fine-amount-display {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #dc3545;
+    margin: 10px 0;
+}
+
+.fee-summary-table {
+    margin-top: 15px;
+}
+
+.fee-summary-table td {
+    padding: 10px;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.fee-summary-table td:first-child {
+    font-weight: 600;
+    color: #6c757d;
+    width: 40%;
+}
+
+.fee-summary-table tr:last-child td {
+    border-bottom: none;
+    font-size: 1.1rem;
+    font-weight: bold;
+}
+
+.warning-box {
+    background: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.warning-box i {
+    color: #721c24;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!--**********************************
+    Content body start
+***********************************-->
+<div class="content-body">
+    <div class="container-fluid">   
+        <!-- Page Header -->
+        <div class="row">
+            <div class="col-xl-12">
+                <div class="page-title flex-wrap justify-content-between align-items-center">
+                    <div>
+                        <h4 class="mb-1">Apply Fine / Penalty</h4>
+                        <p class="mb-0">Add fine or penalty to student fee</p>
+                    </div>
+                    <div>
+                        <a href="{{ url_for('school.view_student_fee', tenant_slug=school.slug, student_fee_id=student_fee.id) }}" 
+                            class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Fee Details
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <div class="row">
+            <!-- Student Info & Balance Card -->
+            <div class="col-xl-4">
+                <div class="student-info-card">
+                    <h5><i class="fas fa-user-graduate me-2"></i>Student Information</h5>
+                    <div class="info-item">
+                        <span class="info-label">Name:</span>
+                        <span class="info-value">{{ student_fee.student.full_name }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Admission No:</span>
+                        <span class="info-value">{{ student_fee.student.admission_number }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Class:</span>
+                        <span class="info-value">
+                            {% if student_fee.student.student_class %}
+                                {{ student_fee.student.student_class.class_name }}-{{ student_fee.student.student_class.section }}
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Session:</span>
+                        <span class="info-value">{{ student_fee.session.session_name }}</span>
+                    </div>
+                </div>
+
+                <!-- Current Balance Summary -->
+                <div class="card">
+                    <div class="card-header bg-danger text-white">
+                        <h5 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Current Balance</h5>
+                    </div>
+                    <div class="card-body">
+                        <table class="fee-summary-table w-100">
+                            <tr>
+                                <td>Total Fee Amount:</td>
+                                <td class="text-end"><strong>₹ {{ "%.2f"|format(student_fee.total_amount) }}</strong></td>
+                            </tr>
+                            <tr>
+                                <td>Discount Amount:</td>
+                                <td class="text-end text-success">- ₹ {{ "%.2f"|format(student_fee.discount_amount or 0) }}</td>
+                            </tr>
+                            <tr>
+                                <td>Existing Fine:</td>
+                                <td class="text-end text-danger">+ ₹ {{ "%.2f"|format(student_fee.fine_amount or 0) }}</td>
+                            </tr>
+                            <tr>
+                                <td>Paid Amount:</td>
+                                <td class="text-end text-primary">₹ {{ "%.2f"|format(student_fee.paid_amount or 0) }}</td>
+                            </tr>
+                            <tr class="border-top">
+                                <td>Current Balance:</td>
+                                <td class="text-end">
+                                    <strong class="text-danger">₹ {{ "%.2f"|format(student_fee.balance_amount) }}</strong>
+                                </td>
+                            </tr>
+                        </table>
+
+                        {% if student_fee.due_date %}
+                        <div class="mt-3 pt-3 border-top">
+                            <small class="text-muted">
+                                <i class="fas fa-calendar me-1"></i>Due Date: 
+                                <strong>{{ student_fee.due_date.strftime('%d-%b-%Y') }}</strong>
+                            </small>
+                            {% set days_overdue = (today - student_fee.due_date).days %}
+                            {% if days_overdue > 0 %}
+                            <div class="alert alert-danger mt-2 mb-0 p-2">
+                                <small><i class="fas fa-clock me-1"></i>Overdue by <strong>{{ days_overdue }} days</strong></small>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Warning Box -->
+                <div class="warning-box">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Note:</strong>
+                    <p class="mb-0 mt-2 small">
+                        Fines are added to the student's total payable amount. 
+                        They can be waived later if needed. Please provide a clear reason for applying the fine.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Fine Form -->
+            <div class="col-xl-8">
+                <div class="card">
+                    <div class="card-header bg-danger text-white">
+                        <h5 class="mb-0"><i class="fas fa-exclamation-circle me-2"></i>Apply Fine</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" action="{{ url_for('school.add_fine', tenant_slug=school.slug, student_fee_id=student_fee.id) }}" id="fineForm">
+                            
+                            <!-- Fine Type Selection -->
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">Fine Type <span class="text-danger">*</span></label>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <div class="fine-type-card" onclick="selectFineType('LATE_PAYMENT', this)">
+                                            <input type="radio" name="fine_type" id="type_late" value="LATE_PAYMENT" required>
+                                            <label for="type_late" class="d-flex align-items-center mb-0">
+                                                <i class="fas fa-clock type-icon"></i>
+                                                <div>
+                                                    <strong>Late Payment</strong>
+                                                    <br><small class="text-muted">Fee paid after due date</small>
+                                                </div>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <div class="fine-type-card" onclick="selectFineType('BOUNCED_CHEQUE', this)">
+                                            <input type="radio" name="fine_type" id="type_bounced" value="BOUNCED_CHEQUE" required>
+                                            <label for="type_bounced" class="d-flex align-items-center mb-0">
+                                                <i class="fas fa-money-check-alt type-icon"></i>
+                                                <div>
+                                                    <strong>Bounced Cheque</strong>
+                                                    <br><small class="text-muted">Cheque dishonored by bank</small>
+                                                </div>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <div class="fine-type-card" onclick="selectFineType('PENALTY', this)">
+                                            <input type="radio" name="fine_type" id="type_penalty" value="PENALTY" required>
+                                            <label for="type_penalty" class="d-flex align-items-center mb-0">
+                                                <i class="fas fa-gavel type-icon"></i>
+                                                <div>
+                                                    <strong>Penalty</strong>
+                                                    <br><small class="text-muted">Disciplinary or other penalty</small>
+                                                </div>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <div class="fine-type-card" onclick="selectFineType('OTHER', this)">
+                                            <input type="radio" name="fine_type" id="type_other" value="OTHER" required>
+                                            <label for="type_other" class="d-flex align-items-center mb-0">
+                                                <i class="fas fa-ellipsis-h type-icon"></i>
+                                                <div>
+                                                    <strong>Other</strong>
+                                                    <br><small class="text-muted">Miscellaneous fine</small>
+                                                </div>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Fine Amount -->
+                            <div class="mb-4">
+                                <label for="fine_amount" class="form-label fw-bold">
+                                    Fine Amount <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group input-group-lg">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-rupee-sign"></i>
+                                    </span>
+                                    <input type="number" class="form-control" id="fine_amount" 
+                                        name="fine_amount" step="0.01" min="1" required 
+                                        placeholder="Enter fine amount" oninput="updateFinePreview()">
+                                </div>
+                                <small class="form-text text-muted">
+                                    Enter the fine amount to be added to student's payable amount
+                                </small>
+                            </div>
+
+                            <!-- Fine Preview -->
+                            <div class="fine-preview-box" id="finePreview" style="display: none;">
+                                <h5><i class="fas fa-calculator me-2"></i>Updated Balance Preview</h5>
+                                <div class="row">
+                                    <div class="col-6">
+                                        <small class="text-muted">Current Balance:</small>
+                                        <div class="fs-5 fw-bold">₹ {{ "%.2f"|format(student_fee.balance_amount) }}</div>
+                                    </div>
+                                    <div class="col-6">
+                                        <small class="text-muted">Fine Amount:</small>
+                                        <div class="fine-amount-display" id="fineAmountDisplay">₹ 0.00</div>
+                                    </div>
+                                </div>
+                                <hr class="my-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <strong class="fs-5">New Balance After Fine:</strong>
+                                    <strong class="fs-3 text-danger" id="newBalance">₹ {{ "%.2f"|format(student_fee.balance_amount) }}</strong>
+                                </div>
+                            </div>
+
+                            <!-- Reason -->
+                            <div class="mb-4">
+                                <label for="reason" class="form-label fw-bold">
+                                    Reason for Fine <span class="text-danger">*</span>
+                                </label>
+                                <textarea class="form-control" id="reason" name="reason" rows="4" required
+                                    placeholder="Enter detailed reason for applying this fine (this will be visible to parents and management)"></textarea>
+                                <small class="form-text text-muted">
+                                    Please provide a clear and specific reason. This will be recorded in the fee history.
+                                </small>
+                            </div>
+
+                            <!-- Final Summary -->
+                            <div class="alert alert-warning">
+                                <h6 class="mb-2"><i class="fas fa-info-circle me-2"></i>Fee Summary After Fine</h6>
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>Original Fee Amount:</span>
+                                    <strong>₹ {{ "%.2f"|format(student_fee.total_amount) }}</strong>
+                                </div>
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>Discount:</span>
+                                    <strong class="text-success">- ₹ {{ "%.2f"|format(student_fee.discount_amount or 0) }}</strong>
+                                </div>
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>Existing Fine:</span>
+                                    <strong class="text-danger">+ ₹ {{ "%.2f"|format(student_fee.fine_amount or 0) }}</strong>
+                                </div>
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>New Fine:</span>
+                                    <strong class="text-danger">+ ₹ <span id="summaryNewFine">0.00</span></strong>
+                                </div>
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>Paid Amount:</span>
+                                    <strong class="text-primary">₹ {{ "%.2f"|format(student_fee.paid_amount or 0) }}</strong>
+                                </div>
+                                <hr class="my-2">
+                                <div class="d-flex justify-content-between">
+                                    <strong>Total Balance Payable:</strong>
+                                    <strong class="text-danger fs-5">₹ <span id="summaryTotalBalance">{{ "%.2f"|format(student_fee.balance_amount) }}</span></strong>
+                                </div>
+                            </div>
+
+                            <!-- Confirmation Checkbox -->
+                            <div class="mb-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="confirmFine" required>
+                                    <label class="form-check-label" for="confirmFine">
+                                        <strong>I confirm that this fine is justified and has been reviewed.</strong>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Form Actions -->
+                            <div class="d-flex justify-content-end gap-2">
+                                <a href="{{ url_for('school.view_student_fee', tenant_slug=school.slug, student_fee_id=student_fee.id) }}" 
+                                    class="btn btn-secondary">
+                                    <i class="fas fa-times me-1"></i>Cancel
+                                </a>
+                                <button type="submit" class="btn btn-danger" id="submitBtn">
+                                    <i class="fas fa-check me-1"></i>Apply Fine
+                                </button>
+                            </div>
+
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<!--**********************************
+    Content body end
+***********************************-->
+{% endblock %}
+
+{% block additional_js %}
+<script>
+const currentBalance = {{ student_fee.balance_amount }};
+const existingFine = {{ student_fee.fine_amount or 0 }};
+
+// Select fine type
+function selectFineType(type, element) {
+    // Remove selected class from all cards
+    document.querySelectorAll('.fine-type-card').forEach(card => {
+        card.classList.remove('selected');
+    });
+    
+    // Add selected class to clicked card
+    element.classList.add('selected');
+    
+    // Check the radio button
+    document.getElementById('type_' + type.toLowerCase().split('_')[0]).checked = true;
+}
+
+// Update fine preview
+function updateFinePreview() {
+    const fineAmount = parseFloat(document.getElementById('fine_amount').value) || 0;
+    
+    if (fineAmount > 0) {
+        document.getElementById('finePreview').style.display = 'block';
+        document.getElementById('fineAmountDisplay').textContent = '₹ ' + fineAmount.toFixed(2);
+        
+        const newBalance = currentBalance + fineAmount;
+        document.getElementById('newBalance').textContent = '₹ ' + newBalance.toFixed(2);
+        document.getElementById('summaryNewFine').textContent = fineAmount.toFixed(2);
+        document.getElementById('summaryTotalBalance').textContent = newBalance.toFixed(2);
+    } else {
+        document.getElementById('finePreview').style.display = 'none';
+        document.getElementById('summaryNewFine').textContent = '0.00';
+        document.getElementById('summaryTotalBalance').textContent = currentBalance.toFixed(2);
+    }
+}
+
+// Form validation
+document.getElementById('fineForm').addEventListener('submit', function(e) {
+    const fineAmount = parseFloat(document.getElementById('fine_amount').value) || 0;
+    const reason = document.getElementById('reason').value.trim();
+    const confirmed = document.getElementById('confirmFine').checked;
+    
+    if (fineAmount <= 0) {
+        e.preventDefault();
+        alert('Please enter a valid fine amount greater than 0');
+        return false;
+    }
+    
+    if (reason.length < 10) {
+        e.preventDefault();
+        alert('Please provide a detailed reason (at least 10 characters)');
+        return false;
+    }
+    
+    if (!confirmed) {
+        e.preventDefault();
+        alert('Please confirm that this fine is justified');
+        return false;
+    }
+    
+    // Final confirmation
+    const confirmMsg = `Are you sure you want to apply a fine of ₹${fineAmount.toFixed(2)}?\n\nThis will increase the student's balance to ₹${(currentBalance + fineAmount).toFixed(2)}.`;
+    if (!confirm(confirmMsg)) {
+        e.preventDefault();
+        return false;
+    }
+});
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-dismiss alerts
+    setTimeout(function() {
+        $('.alert-success, .alert-info').fadeOut('slow');
+    }, 5000);
+    
+    // Focus on fine amount when a type is selected
+    document.querySelectorAll('input[name="fine_type"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            document.getElementById('fine_amount').focus();
+        });
+    });
+});
+</script>
+{% endblock %}

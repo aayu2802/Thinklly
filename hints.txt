@@ -1,0 +1,26 @@
+school admin for sastra
+--------------
+username admin
+pass sastra123
+
+teacher for sastra
+--------------
+email 1234567890
+pass Test@1234
+
+student for sastra
+-----------------
+Admission Number N211101
+pass student123
+Top level admin
+--------------------
+username portal2
+pass portal2pass
+
+
+http://127.0.0.1:5000/admin/login  ----Main admin
+http://127.0.0.1:5000/sastra/login  --school admin
+http://127.0.0.1:5000/sastra/teacher/login  ---teacher login of a school
+http://127.0.0.1:5000/<tenant_slug>/student/register
+
+.\venv\Scripts\python.exe main.py

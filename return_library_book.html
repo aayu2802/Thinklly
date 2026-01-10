@@ -1,0 +1,136 @@
+{% extends 'akademi/elements/layouts/admin.html' %}
+
+{% block title %}Return Book - Library{% endblock %}
+
+{% block content %}
+<!--**********************************
+    Content body start
+***********************************-->
+<div class="content-body">
+    <div class="container-fluid">
+        <div class="row page-titles">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('school.dashboard', tenant_slug=tenant_slug) }}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('school.library_dashboard', tenant_slug=tenant_slug) }}">Library</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('school.library_issued_books', tenant_slug=tenant_slug) }}">Issued Books</a></li>
+                <li class="breadcrumb-item active">Return Book</li>
+            </ol>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title">Return Book</h4>
+                    </div>
+                    <div class="card-body">
+                        <!-- Issue Details -->
+                        <div class="alert alert-info">
+                            <h5><i class="bi bi-info-circle"></i> Issue Details</h5>
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <p><strong>Issue Number:</strong> {{ issue.issue_number }}</p>
+                                    <p><strong>Book:</strong> {{ issue.book.title }}</p>
+                                    <p><strong>Author:</strong> {{ issue.book.author }}</p>
+                                    <p><strong>Accession No:</strong> {{ issue.book.accession_number }}</p>
+                                </div>
+                                <div class="col-md-3">
+                                    <p><strong>Student:</strong> {{ issue.student.full_name }}</p>
+                                    <p><strong>Admission No:</strong> {{ issue.student.admission_number }}</p>
+                                    <p><strong>Class:</strong> {{ issue.student.class_name }}</p>
+                                </div>
+                                <div class="col-md-3">
+                                    <p><strong>Issue Date:</strong> {{ issue.issue_date.strftime('%d-%m-%Y') }}</p>
+                                    <p><strong>Due Date:</strong> {{ issue.due_date.strftime('%d-%m-%Y') }}</p>
+                                    {% if issue.is_overdue %}
+                                    <p><strong class="text-danger">Days Overdue:</strong> <span class="badge badge-danger">{{ issue.days_overdue }} days</span></p>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-3">
+                                    <p><strong>Issue Condition:</strong> {{ issue.issue_condition.value if issue.issue_condition else 'N/A' }}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <form method="POST" action="{{ url_for('school.return_library_book', tenant_slug=tenant_slug, issue_id=issue.id) }}">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="condition" class="form-label">Book Condition on Return <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="condition" name="condition" required>
+                                        <option value="">Select Condition</option>
+                                        <option value="NEW">New</option>
+                                        <option value="GOOD" selected>Good</option>
+                                        <option value="FAIR">Fair</option>
+                                        <option value="POOR">Poor</option>
+                                        <option value="DAMAGED">Damaged</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label for="remarks" class="form-label">Return Remarks</label>
+                                    <textarea class="form-control" id="remarks" name="remarks" rows="3" 
+                                              placeholder="Any additional notes about the return..."></textarea>
+                                </div>
+                            </div>
+
+                            {% if issue.is_overdue %}
+                            <div class="alert alert-warning">
+                                <h6><i class="bi bi-exclamation-triangle"></i> Fine Calculation</h6>
+                                <p class="mb-0">This book is <strong>{{ issue.days_overdue }} days overdue</strong>. Expected fine will be calculated based on library settings and displayed after return.</p>
+                            </div>
+                            {% endif %}
+
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-arrow-return-left"></i> Process Return
+                                </button>
+                                <a href="{{ url_for('school.library_issued_books', tenant_slug=tenant_slug) }}" class="btn btn-secondary">
+                                    <i class="bi bi-x-circle"></i> Cancel
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header bg-warning text-white">
+                        <h5 class="card-title text-white mb-0"><i class="bi bi-exclamation-triangle"></i> Important Notes</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="mb-0">
+                            <li>Check book condition carefully before returning</li>
+                            <li>Fine will be calculated automatically if overdue</li>
+                            <li>Damaged books will be marked in the system</li>
+                            <li>Book will become available for other students</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="card-title text-white mb-0"><i class="bi bi-person-circle"></i> Student Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-3"><strong>Student:</strong> {{ issue.student.full_name }}</p>
+                        <p class="mb-3"><strong>Admission No:</strong> {{ issue.student.admission_number }}</p>
+                        <a href="{{ url_for('school.student_library_history', tenant_slug=tenant_slug, student_id=issue.student.id) }}" 
+                           class="btn btn-primary w-100">
+                            <i class="bi bi-clock-history"></i> View Complete Library History
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+<!--**********************************
+    Content body end
+***********************************-->
+{% endblock %}
